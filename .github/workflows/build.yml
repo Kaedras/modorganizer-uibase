@@ -17,10 +17,10 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        os: [windows-latest, ubuntu-24.04]
+        os: [windows-2022, ubuntu-24.04]
         include:
-          - os: windows-latest
-            preset: vs2022-windows
+          - os: windows-2022
+            preset: vs2022-windows-standalone
             build_dir: vsbuild
             prefix_path: "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\\msvc2019_64"
             test_prefix_path: "${env:QT_ROOT_DIR}\\msvc2019_64;..\\..\\install\\lib\\cmake\\"
@@ -44,7 +44,7 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: 6.7.0
+          version: 6.7.1
           modules:
           cache: true
 
@@ -107,7 +107,7 @@ jobs:
       - name: Download Windows Artifact
         uses: actions/download-artifact@master
         with:
-          name: uibase_windows-latest
+          name: uibase_windows-2022
           path: ./install_windows/install
 
       - name: Download Linux Artifact
@@ -115,16 +115,6 @@ jobs:
         with:
           name: uibase_ubuntu-24.04
           path: ./install_linux/install
-
-      - name: Install elfutils
-        run: sudo apt update && sudo apt install -y elfutils
-
-      - name: Strip Linux libraries
-        run: |
-            mkdir -p debug
-            eu-strip --strip-debug -f debug/libuibase.so.debug lib/libuibase.so
-            eu-strip --strip-debug -f debug/libuibased.so.debug lib/libuibased.so
-        working-directory: install_linux/install
 
       - name: Create Windows UI Base archive
         run: 7z a "uibase_${{ github.ref_name }}_windows.7z" ./install/*

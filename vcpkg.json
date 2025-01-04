@@ -1,9 +1,5 @@
 {
-  "dependencies": [
-    "mo2-cmake",
-    "spdlog",
-    "boost-thread"
-  ],
+  "dependencies": ["spdlog"],
   "overrides": [
     {
       "name": "spdlog",
@@ -11,6 +7,10 @@
     }
   ],
   "features": {
+    "standalone": {
+      "description": "Build Standalone.",
+      "dependencies": ["mo2-cmake"]
+    },
     "testing": {
       "description": "Build UI Base tests.",
       "dependencies": ["gtest"]

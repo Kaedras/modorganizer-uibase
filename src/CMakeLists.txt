@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
-find_package(Boost REQUIRED CONFIG COMPONENTS thread)
 
 if(WIN32)
 	set(OS_SPECIFIC_DIR win32)
@@ -35,8 +34,10 @@ set(root_headers
 	../include/uibase/safewritefile.h
 	../include/uibase/scopeguard.h
 	../include/uibase/steamutility.h
+	../include/uibase/strings.h
 	../include/uibase/utility.h
 	../include/uibase/${OS_SPECIFIC_DIR}/utility.h
+	../include/uibase/versioning.h
 	../include/uibase/versioninfo.h
 )
 set(interface_headers
@@ -123,15 +124,16 @@ mo2_target_sources(uibase
 	nxmurl.cpp
 	pch.cpp
 	pluginrequirements.cpp
-	pluginsetting.cpp
 	registry.cpp
 	report.cpp
 	${OS_SPECIFIC_DIR}/report.cpp
 	safewritefile.cpp
 	scopeguard.cpp
 	steamutility.cpp
+	strings.cpp
 	utility.cpp
 	${OS_SPECIFIC_DIR}/utility.cpp
+	versioning.cpp
 	versioninfo.cpp
 )
 
@@ -142,7 +144,6 @@ mo2_target_sources(uibase
 	ifiletree.cpp
 	imodrepositorybridge.cpp
 	imoinfo.cpp
-	iplugininstaller.cpp
 )
 
 mo2_target_sources(uibase
@@ -209,19 +210,14 @@ add_library(mo2::uibase ALIAS uibase)
 
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
-if(WIN32)
-	target_link_libraries(uibase
-		PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-		PRIVATE
-		Boost::headers Boost::thread spdlog::spdlog_header_only
-		Qt6::Qml Qt6::Quick Version)
+if (WIN32)
+target_link_libraries(uibase
+	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
+	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
 else()
-	target_compile_options(uibase PRIVATE "-Wl,--no-undefined")
 	target_link_libraries(uibase
 		PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-		PRIVATE
-		Boost::headers Boost::thread spdlog::spdlog_header_only
-		Qt6::Qml Qt6::Quick Qt6::DBus)
+		PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Qt6::DBus)
 endif()
 
 # installation

@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "imodlist.h"
 #include "iprofile.h"
 #include "versioninfo.h"
+#include "versioning.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -128,7 +129,12 @@ public:
   /**
    * @return the running version of Mod Organizer
    */
-  virtual VersionInfo appVersion() const = 0;
+  [[deprecated]] virtual VersionInfo appVersion() const = 0;
+
+  /**
+   * @return the running version of Mod Organizer
+   */
+  virtual Version version() const = 0;
 
   /**
    * @brief create a new mod with the specified name

@@ -114,68 +114,67 @@
         </translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="54"/>
-        <location filename="registry.cpp" line="55"/>
+        <location filename="registry.cpp" line="43"/>
+        <location filename="registry.cpp" line="44"/>
         <location filename="textviewer.cpp" line="173"/>
         <location filename="textviewer.cpp" line="174"/>
         <source>INI file is read-only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="56"/>
+        <location filename="registry.cpp" line="45"/>
         <location filename="textviewer.cpp" line="175"/>
         <source>Mod Organizer is attempting to write to &quot;%1&quot; which is currently set to read-only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="60"/>
+        <location filename="registry.cpp" line="49"/>
         <location filename="textviewer.cpp" line="179"/>
         <source>Clear the read-only flag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="61"/>
+        <location filename="registry.cpp" line="50"/>
         <location filename="textviewer.cpp" line="180"/>
         <source>Allow the write once</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="62"/>
+        <location filename="registry.cpp" line="51"/>
         <location filename="textviewer.cpp" line="181"/>
         <source>The file will be set to read-only again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="64"/>
+        <location filename="registry.cpp" line="53"/>
         <location filename="textviewer.cpp" line="183"/>
         <source>Skip this file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="linux/report.cpp" line="19"/>
-        <location filename="win32/report.cpp" line="20"/>
-        <location filename="win32/report.cpp" line="26"/>
+        <location filename="report.cpp" line="65"/>
+        <location filename="report.cpp" line="71"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="321"/>
+        <location filename="report.cpp" line="338"/>
         <source>You can reset these choices by clicking &quot;Reset Dialog Choices&quot; in the General tab of the Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="330"/>
+        <location filename="report.cpp" line="347"/>
         <source>Always ask</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="331"/>
-        <location filename="report.cpp" line="339"/>
+        <location filename="report.cpp" line="348"/>
+        <location filename="report.cpp" line="356"/>
         <source>Remember my choice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="333"/>
+        <location filename="report.cpp" line="350"/>
         <source>Remember my choice for %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -186,91 +185,90 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="85"/>
+        <location filename="utility.cpp" line="62"/>
         <source>removal of &quot;%1&quot; failed: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="94"/>
+        <location filename="utility.cpp" line="71"/>
         <source>removal of &quot;%1&quot; failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="98"/>
+        <location filename="utility.cpp" line="75"/>
         <source>&quot;%1&quot; doesn&apos;t exist (remove)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="182"/>
+        <location filename="utility.cpp" line="350"/>
         <source>Error %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="linux/utility.cpp" line="182"/>
-        <location filename="win32/utility.cpp" line="394"/>
-        <location filename="win32/utility.cpp" line="417"/>
+        <location filename="utility.cpp" line="534"/>
+        <location filename="utility.cpp" line="557"/>
         <source>You have an invalid custom browser command in the settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="297"/>
-        <location filename="utility.cpp" line="326"/>
+        <location filename="utility.cpp" line="673"/>
+        <location filename="utility.cpp" line="702"/>
         <source>failed to create directory &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="306"/>
-        <location filename="utility.cpp" line="333"/>
+        <location filename="utility.cpp" line="682"/>
+        <location filename="utility.cpp" line="709"/>
         <source>failed to copy &quot;%1&quot; to &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="531"/>
+        <location filename="utility.cpp" line="1113"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="531"/>
+        <location filename="utility.cpp" line="1113"/>
         <source>%1 KB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="532"/>
+        <location filename="utility.cpp" line="1114"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="532"/>
+        <location filename="utility.cpp" line="1114"/>
         <source>%1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="533"/>
+        <location filename="utility.cpp" line="1115"/>
         <source>%1 TB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="538"/>
+        <location filename="utility.cpp" line="1120"/>
         <source>%1 B/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="538"/>
+        <location filename="utility.cpp" line="1120"/>
         <source>%1 KB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="539"/>
+        <location filename="utility.cpp" line="1121"/>
         <source>%1 MB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="539"/>
+        <location filename="utility.cpp" line="1121"/>
         <source>%1 GB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="540"/>
+        <location filename="utility.cpp" line="1122"/>
         <source>%1 TB/s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -372,7 +370,7 @@
 <context>
     <name>TutorialControl</name>
     <message>
-        <location filename="tutorialcontrol.cpp" line="126"/>
+        <location filename="tutorialcontrol.cpp" line="135"/>
         <source>Tutorial failed to start, please check &quot;mo_interface.log&quot; for details.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -388,19 +386,19 @@
 <context>
     <name>uibase</name>
     <message>
-        <location filename="utility.cpp" line="602"/>
+        <location filename="utility.cpp" line="1184"/>
         <source>h</source>
         <extracomment>Time remaining hours</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="605"/>
+        <location filename="utility.cpp" line="1187"/>
         <source>m</source>
         <extracomment>Time remaining minutes</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="608"/>
+        <location filename="utility.cpp" line="1190"/>
         <source>s</source>
         <extracomment>Time remaining seconds</extracomment>
         <translation type="unfinished"></translation>
