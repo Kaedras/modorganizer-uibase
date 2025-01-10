@@ -248,7 +248,7 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
        outputParameter.toStdString().c_str()});
 
   QFile versionFile("/tmp/mo2/.rsrc/version.txt");
-  QString version = "1.0.0";
+  QString version;
 
   string keyword;
   switch (type) {
@@ -264,7 +264,8 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
   // FILEVERSION     1,3,22,0
   // to
   // 1.3.22.0
-  if (versionFile.isOpen()) {
+  // return empty string if version file is not open
+  if (!versionFile.isOpen()) {
     return version;
   }
   while (!versionFile.atEnd()) {
