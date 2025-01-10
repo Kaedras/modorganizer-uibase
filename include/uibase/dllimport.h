@@ -34,7 +34,7 @@ namespace MOBase
 #define QDLLEXPORT __declspec(dllimport)
 #endif
 #else  // _WIN32
-#define QDLLEXPORT
+#define QDLLEXPORT __attribute__((visibility("default")))
 #endif  // _WIN32
 
 }  // namespace MOBase
