@@ -28,4 +28,4 @@ void Logger::createLogger(const std::string& name)
   m_logger.reset(new spdlog::logger(name, m_sinks));
 }
 
-}  // namespace MOBase::log
+} // namespace MOBase::log
