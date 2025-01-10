@@ -14,7 +14,7 @@
     {
       "kind": "git",
       "repository": "https://github.com/Kaedras/vcpkg-registry",
-      "baseline": "90025af7e12789c3d7093cf1659d38d5b777844c",
+      "baseline": "3a1503dc40de5f822ce4717d92baa62ba26ab931",
       "packages": ["mo2-cmake", "spdlog"]
     }
   ]
