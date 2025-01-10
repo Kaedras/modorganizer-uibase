@@ -10,35 +10,35 @@ else()
 endif()
 
 set(root_headers
-	../include/uibase/delayedfilewriter.h
-	../include/uibase/diagnosisreport.h
-	../include/uibase/dllimport.h
-	../include/uibase/${OS_SPECIFIC_DIR}/errorcodes.h
-	../include/uibase/eventfilter.h
-	../include/uibase/exceptions.h
-	../include/uibase/executableinfo.h
-	../include/uibase/filemapping.h
-	../include/uibase/filesystemutilities.h
-	../include/uibase/guessedvalue.h
-	../include/uibase/idownloadmanager.h
-	../include/uibase/json.h
-	../include/uibase/log.h
-	../include/uibase/memoizedlock.h
-	../include/uibase/moassert.h
-	../include/uibase/modrepositoryfileinfo.h
-	../include/uibase/nxmurl.h
-	../include/uibase/pluginrequirements.h
-	../include/uibase/pluginsetting.h
-	../include/uibase/registry.h
-	../include/uibase/report.h
-	../include/uibase/safewritefile.h
-	../include/uibase/scopeguard.h
-	../include/uibase/steamutility.h
-	../include/uibase/strings.h
-	../include/uibase/utility.h
-	../include/uibase/${OS_SPECIFIC_DIR}/utility.h
-	../include/uibase/versioning.h
-	../include/uibase/versioninfo.h
+        ../include/uibase/delayedfilewriter.h
+        ../include/uibase/diagnosisreport.h
+        ../include/uibase/dllimport.h
+        ../include/uibase/${OS_NAME}/errorcodes.h
+        ../include/uibase/eventfilter.h
+        ../include/uibase/exceptions.h
+        ../include/uibase/executableinfo.h
+        ../include/uibase/filemapping.h
+        ../include/uibase/filesystemutilities.h
+        ../include/uibase/guessedvalue.h
+        ../include/uibase/idownloadmanager.h
+        ../include/uibase/json.h
+        ../include/uibase/log.h
+        ../include/uibase/memoizedlock.h
+        ../include/uibase/moassert.h
+        ../include/uibase/modrepositoryfileinfo.h
+        ../include/uibase/nxmurl.h
+        ../include/uibase/pluginrequirements.h
+        ../include/uibase/pluginsetting.h
+        ../include/uibase/registry.h
+        ../include/uibase/report.h
+        ../include/uibase/safewritefile.h
+        ../include/uibase/scopeguard.h
+        ../include/uibase/steamutility.h
+        ../include/uibase/stringutility.h
+        ../include/uibase/utility.h
+        ../include/uibase/${OS_SPECIFIC_DIR}/utility.h
+        ../include/uibase/versioning.h
+        ../include/uibase/versioninfo.h
 )
 set(interface_headers
 	../include/uibase/ifiletree.h
@@ -135,6 +135,7 @@ mo2_target_sources(uibase
 	${OS_SPECIFIC_DIR}/utility.cpp
 	versioning.cpp
 	versioninfo.cpp
+	stringutility.cpp
 )
 
 mo2_target_sources(uibase

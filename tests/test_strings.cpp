@@ -5,7 +5,7 @@
 
 #include <QCoreApplication>
 
-#include <uibase/strings.h>
+#include <uibase/stringutility.h>
 
 #include <format>
 
