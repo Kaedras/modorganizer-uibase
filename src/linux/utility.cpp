@@ -215,11 +215,16 @@ QString ToString(const SYSTEMTIME& time)
 
 QIcon iconForExecutable(const QString& filepath)
 {
+  QString tmpPath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).
+                    first() + "/mo2";
+  QString outputParameter = "-o " + tmpPath + "/.rsrc/";
+
   auto result = shell::ShellExecuteWrapper(
       spawnp, "7z",
-      {"x", filepath.toStdString().c_str(), ".rsrc/ICON/1", "-o /tmp/mo2/.rsrc/"});
+      {"x", filepath.toStdString().c_str(), ".rsrc/ICON/1",
+       outputParameter.toStdString().c_str()});
   if (result.success()) {
-    return QIcon("/tmp/mo-icon.ico");
+    return QIcon(tmpPath + "/mo-icon.ico");
   }
 
   return QIcon(":/MO/gui/executable");
@@ -233,9 +238,14 @@ enum version_t
 
 QString getFileVersionInfo(QString const& filepath, version_t type)
 {
+  QString tmpPath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).
+                    first() + "/mo2";
+  QString outputParameter = "-o " + tmpPath + "/.rsrc/";
+
   auto result = shell::ShellExecuteWrapper(
       spawnp, "7z",
-      {"x", filepath.toStdString().c_str(), ".rsrc/version.txt", "-o /tmp/mo2/.rsrc/"});
+      {"x", filepath.toStdString().c_str(), ".rsrc/version.txt",
+       outputParameter.toStdString().c_str()});
 
   QFile versionFile("/tmp/mo2/.rsrc/version.txt");
   QString version = "1.0.0";
