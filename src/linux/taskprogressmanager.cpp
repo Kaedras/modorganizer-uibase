@@ -55,7 +55,7 @@ void TaskProgressManager::showProgress()
 
   QVariantMap properties;
   if (!m_Percentages.empty()) {
-    properties.insert(QStringLiteral("progress-visible"), true); // enable the progress
+    properties.insert(QStringLiteral("progress-visible"), true);  // enable the progress
 
     QTime now                = QTime::currentTime();
     unsigned long long total = 0;
@@ -75,13 +75,13 @@ void TaskProgressManager::showProgress()
     log::debug("setting progress to {}", total / (count * 100));
     properties.insert(QStringLiteral("progress"),
                       total /
-                      (count * 100)); // set the progress value (from 0.0 to 1.0)
+                          (count * 100));  // set the progress value (from 0.0 to 1.0)
   } else {
     properties.insert(QStringLiteral("progress-visible"), false);
   }
 
   message << QStringLiteral("application://") + QGuiApplication::desktopFileName()
-      << properties;
+          << properties;
   QDBusConnection::sessionBus().send(message);
 }
 
@@ -95,4 +95,4 @@ TaskProgressManager::TaskProgressManager() : m_NextId(1)
   m_successful = true;
 }
 
-} // namespace MOBase
+}  // namespace MOBase

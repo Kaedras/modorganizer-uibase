@@ -49,7 +49,7 @@ enum spawnAction
 
 bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
 {
-  (void)dialog; // suppress unused parameter warning
+  (void)dialog;  // suppress unused parameter warning
 
   bool result = true;
   for (const auto& fileName : fileNames) {
@@ -204,7 +204,7 @@ namespace shell
     return ShellExecuteWrapper(spawn, program_s.c_str(), params_s.c_str());
   }
 
-} // namespace shell
+}  // namespace shell
 
 QString ToString(const SYSTEMTIME& time)
 {
@@ -215,14 +215,14 @@ QString ToString(const SYSTEMTIME& time)
 
 QIcon iconForExecutable(const QString& filepath)
 {
-  QString tmpPath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).
-                    first() + "/mo2";
+  QString tmpPath =
+      QStandardPaths::standardLocations(QStandardPaths::TempLocation).first() + "/mo2";
   QString outputParameter = "-o " + tmpPath + "/.rsrc/";
 
-  auto result = shell::ShellExecuteWrapper(
-      spawnp, "7z",
-      {"x", filepath.toStdString().c_str(), ".rsrc/ICON/1",
-       outputParameter.toStdString().c_str()});
+  auto result =
+      shell::ShellExecuteWrapper(spawnp, "7z",
+                                 {"x", filepath.toStdString().c_str(), ".rsrc/ICON/1",
+                                  outputParameter.toStdString().c_str()});
   if (result.success()) {
     return QIcon(tmpPath + "/mo-icon.ico");
   }
@@ -238,14 +238,14 @@ enum version_t
 
 QString getFileVersionInfo(QString const& filepath, version_t type)
 {
-  QString tmpPath = QStandardPaths::standardLocations(QStandardPaths::TempLocation).
-                    first() + "/mo2";
+  QString tmpPath =
+      QStandardPaths::standardLocations(QStandardPaths::TempLocation).first() + "/mo2";
   QString outputParameter = "-o " + tmpPath + "/.rsrc/";
 
-  auto result = shell::ShellExecuteWrapper(
-      spawnp, "7z",
-      {"x", filepath.toStdString().c_str(), ".rsrc/version.txt",
-       outputParameter.toStdString().c_str()});
+  auto result = shell::ShellExecuteWrapper(spawnp, "7z",
+                                           {"x", filepath.toStdString().c_str(),
+                                            ".rsrc/version.txt",
+                                            outputParameter.toStdString().c_str()});
 
   QFile versionFile("/tmp/mo2/.rsrc/version.txt");
   QString version;
@@ -293,4 +293,4 @@ QString getProductVersion(QString const& filepath)
   return getFileVersionInfo(filepath, productversion);
 }
 
-} // namespace MOBase
+}  // namespace MOBase
