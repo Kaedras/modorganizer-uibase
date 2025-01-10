@@ -6,7 +6,7 @@ on:
     tags:
       - "*"
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
   workflow_dispatch:
 
 env:
@@ -17,7 +17,8 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        os: [windows-2022, ubuntu-24.04]
+        os: [ windows-2022, ubuntu-24.04 ]
+        fail-fast: false
         include:
           - os: windows-2022
             preset: vs2022-windows-standalone
