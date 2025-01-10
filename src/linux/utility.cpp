@@ -24,10 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QApplication>
 #include <QBuffer>
 #include <QDir>
-#include <QStringEncoder>
-#include <QUuid>
 #include <format>
-#include <iostream>
 
 #include <QStandardPaths>
 #include <cerrno>
@@ -87,7 +84,7 @@ namespace shell
     }
 
     if (!params.empty()) {
-      for (auto param : params) {
+      for (const auto param : params) {
         s << ToQString(param);
       }
     }
@@ -194,9 +191,9 @@ namespace shell
 
     if (g_urlHandler.isEmpty()) {
       return ShellExecuteWrapper(spawnp, "xdg-open", s_url.c_str());
-    } else {
-      return OpenCustomURL(g_urlHandler.toStdString(), s_url);
     }
+
+    return OpenCustomURL(g_urlHandler.toStdString(), s_url);
   }
 
   Result Execute(const QString& program, const QString& params)
@@ -266,7 +263,7 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
       line.remove(0, keyword.length());
       // remove whitespaces
       version = line.trimmed();
-      // replace '' with ''
+      // replace ',' with '.'
       version.replace(',', '.');
       break;
     }

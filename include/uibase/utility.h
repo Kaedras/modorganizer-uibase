@@ -470,7 +470,7 @@ QDLLEXPORT QString getFileVersion(QString const& filepath);
 /**
  * @brief Retrieve the product version of the given executable.
  *
- * @param filepath Absolute path to the executable.
+ * @param program Absolute path to the executable.
  *
  * @return the file version, or an empty string if the product
  *   version could not be retrieved.

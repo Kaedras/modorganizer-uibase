@@ -1,7 +1,7 @@
 #ifndef TASKPROGRESSMANAGER_H
 #define TASKPROGRESSMANAGER_H
 
-#include "dllimport.h"
+#include "../dllimport.h"
 #include <QMutexLocker>
 #include <QObject>
 #include <QTime>

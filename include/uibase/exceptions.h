@@ -1,10 +1,9 @@
 #ifndef UIBASE_EXCEPTIONS_H
 #define UIBASE_EXCEPTIONS_H
 
-#include <stdexcept>
-
 #include <QObject>
 #include <QString>
+#include <exception>
 
 #include "dllimport.h"
 
