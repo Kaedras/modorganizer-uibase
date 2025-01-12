@@ -26,7 +26,7 @@ jobs:
             prefix_path: "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\\msvc2019_64"
             test_prefix_path: "${env:QT_ROOT_DIR}\\msvc2019_64;..\\..\\install\\lib\\cmake\\"
           - os: ubuntu-24.04
-            preset: linux
+            preset: linux-standalone
             build_dir: linux-build
             prefix_path: ""
             test_prefix_path: ../../install/lib/cmake/
