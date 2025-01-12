@@ -3,17 +3,17 @@ cmake_minimum_required(VERSION 3.16)
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
 
-if(WIN32)
-	set(OS_SPECIFIC_DIR win32)
-else()
-	set(OS_SPECIFIC_DIR linux)
-endif()
+if (WIN32)
+    set(OS_SPECIFIC_DIR win32)
+else ()
+    set(OS_SPECIFIC_DIR linux)
+endif ()
 
 set(root_headers
         ../include/uibase/delayedfilewriter.h
         ../include/uibase/diagnosisreport.h
         ../include/uibase/dllimport.h
-        ../include/uibase/${OS_NAME}/errorcodes.h
+        ../include/uibase/${OS_SPECIFIC_DIR}/errorcodes.h
         ../include/uibase/eventfilter.h
         ../include/uibase/exceptions.h
         ../include/uibase/executableinfo.h
@@ -41,65 +41,65 @@ set(root_headers
         ../include/uibase/versioninfo.h
 )
 set(interface_headers
-	../include/uibase/ifiletree.h
-	../include/uibase/iinstallationmanager.h
-	../include/uibase/imodinterface.h
-	../include/uibase/imodlist.h
-	../include/uibase/imodrepositorybridge.h
-	../include/uibase/imoinfo.h
-	../include/uibase/iplugin.h
-	../include/uibase/iplugindiagnose.h
-	../include/uibase/ipluginfilemapper.h
-	../include/uibase/iplugingame.h
-	../include/uibase/iplugingamefeatures.h
-	../include/uibase/iplugininstaller.h
-	../include/uibase/iplugininstallercustom.h
-	../include/uibase/iplugininstallersimple.h
-	../include/uibase/ipluginlist.h
-	../include/uibase/ipluginmodpage.h
-	../include/uibase/ipluginpreview.h
-	../include/uibase/ipluginproxy.h
-	../include/uibase/iplugintool.h
-	../include/uibase/iprofile.h
-	../include/uibase/isavegame.h
-	../include/uibase/isavegameinfowidget.h
+        ../include/uibase/ifiletree.h
+        ../include/uibase/iinstallationmanager.h
+        ../include/uibase/imodinterface.h
+        ../include/uibase/imodlist.h
+        ../include/uibase/imodrepositorybridge.h
+        ../include/uibase/imoinfo.h
+        ../include/uibase/iplugin.h
+        ../include/uibase/iplugindiagnose.h
+        ../include/uibase/ipluginfilemapper.h
+        ../include/uibase/iplugingame.h
+        ../include/uibase/iplugingamefeatures.h
+        ../include/uibase/iplugininstaller.h
+        ../include/uibase/iplugininstallercustom.h
+        ../include/uibase/iplugininstallersimple.h
+        ../include/uibase/ipluginlist.h
+        ../include/uibase/ipluginmodpage.h
+        ../include/uibase/ipluginpreview.h
+        ../include/uibase/ipluginproxy.h
+        ../include/uibase/iplugintool.h
+        ../include/uibase/iprofile.h
+        ../include/uibase/isavegame.h
+        ../include/uibase/isavegameinfowidget.h
 )
 set(tutorial_headers
-	../include/uibase/tutorabledialog.h
-	../include/uibase/tutorialcontrol.h
-	../include/uibase/tutorialmanager.h
+        ../include/uibase/tutorabledialog.h
+        ../include/uibase/tutorialcontrol.h
+        ../include/uibase/tutorialmanager.h
 )
 set(widget_headers
-	../include/uibase/expanderwidget.h
-	../include/uibase/filterwidget.h
-	../include/uibase/finddialog.h
-	../include/uibase/lineeditclear.h
-	../include/uibase/linklabel.h
-	../include/uibase/questionboxmemory.h
-	../include/uibase/sortabletreewidget.h
-	../include/uibase/${OS_SPECIFIC_DIR}/taskprogressmanager.h
-	../include/uibase/textviewer.h
-	../include/uibase/widgetutility.h
+        ../include/uibase/expanderwidget.h
+        ../include/uibase/filterwidget.h
+        ../include/uibase/finddialog.h
+        ../include/uibase/lineeditclear.h
+        ../include/uibase/linklabel.h
+        ../include/uibase/questionboxmemory.h
+        ../include/uibase/sortabletreewidget.h
+        ../include/uibase/${OS_SPECIFIC_DIR}/taskprogressmanager.h
+        ../include/uibase/textviewer.h
+        ../include/uibase/widgetutility.h
 )
 set(game_features_header
-	../include/uibase/game_features/bsainvalidation.h
-	../include/uibase/game_features/dataarchives.h
-	../include/uibase/game_features/game_feature.h
-	../include/uibase/game_features/gameplugins.h
-	../include/uibase/game_features/igamefeatures.h
-	../include/uibase/game_features/localsavegames.h
-	../include/uibase/game_features/moddatachecker.h
-	../include/uibase/game_features/moddatacontent.h
-	../include/uibase/game_features/savegameinfo.h
-	../include/uibase/game_features/scriptextender.h
-	../include/uibase/game_features/unmanagedmods.h
+        ../include/uibase/game_features/bsainvalidation.h
+        ../include/uibase/game_features/dataarchives.h
+        ../include/uibase/game_features/game_feature.h
+        ../include/uibase/game_features/gameplugins.h
+        ../include/uibase/game_features/igamefeatures.h
+        ../include/uibase/game_features/localsavegames.h
+        ../include/uibase/game_features/moddatachecker.h
+        ../include/uibase/game_features/moddatacontent.h
+        ../include/uibase/game_features/savegameinfo.h
+        ../include/uibase/game_features/scriptextender.h
+        ../include/uibase/game_features/unmanagedmods.h
 )
 set(formatters_header
-	../include/uibase/formatters/enums.h
-	../include/uibase/formatters/qt.h
-	../include/uibase/formatters/random_access_containers.h
-	../include/uibase/formatters/strings.h
-	../include/uibase/formatters.h
+        ../include/uibase/formatters/enums.h
+        ../include/uibase/formatters/qt.h
+        ../include/uibase/formatters/random_access_containers.h
+        ../include/uibase/formatters/strings.h
+        ../include/uibase/formatters.h
 )
 
 add_library(uibase SHARED)
@@ -107,104 +107,103 @@ mo2_configure_target(uibase NO_SOURCES WARNINGS ON EXTERNAL_WARNINGS ON)
 mo2_default_source_group()
 
 mo2_target_sources(uibase
-	FOLDER src
-	PRIVATE
-	${root_headers}
-	delayedfilewriter.cpp
-	diagnosisreport.cpp
-	${OS_SPECIFIC_DIR}/errorcodes.cpp
-	eventfilter.cpp
-	executableinfo.cpp
-	filesystemutilities.cpp
-	guessedvalue.cpp
-	json.cpp
-	log.cpp
-	${OS_SPECIFIC_DIR}/log.cpp
-	modrepositoryfileinfo.cpp
-	nxmurl.cpp
-	pch.cpp
-	pluginrequirements.cpp
-	registry.cpp
-	report.cpp
-	${OS_SPECIFIC_DIR}/report.cpp
-	safewritefile.cpp
-	scopeguard.cpp
-	steamutility.cpp
-	strings.cpp
-	utility.cpp
-	${OS_SPECIFIC_DIR}/utility.cpp
-	versioning.cpp
-	versioninfo.cpp
-	stringutility.cpp
+        FOLDER src
+        PRIVATE
+        ${root_headers}
+        delayedfilewriter.cpp
+        diagnosisreport.cpp
+        ${OS_SPECIFIC_DIR}/errorcodes.cpp
+        eventfilter.cpp
+        executableinfo.cpp
+        filesystemutilities.cpp
+        guessedvalue.cpp
+        json.cpp
+        log.cpp
+        ${OS_SPECIFIC_DIR}/log.cpp
+        modrepositoryfileinfo.cpp
+        nxmurl.cpp
+        pch.cpp
+        pluginrequirements.cpp
+        registry.cpp
+        report.cpp
+        ${OS_SPECIFIC_DIR}/report.cpp
+        safewritefile.cpp
+        scopeguard.cpp
+        steamutility.cpp
+        stringutility.cpp
+        utility.cpp
+        ${OS_SPECIFIC_DIR}/utility.cpp
+        versioning.cpp
+        versioninfo.cpp
 )
 
 mo2_target_sources(uibase
-	FOLDER src/interfaces
-	PRIVATE
-	${interface_headers}
-	ifiletree.cpp
-	imodrepositorybridge.cpp
-	imoinfo.cpp
+        FOLDER src/interfaces
+        PRIVATE
+        ${interface_headers}
+        ifiletree.cpp
+        imodrepositorybridge.cpp
+        imoinfo.cpp
 )
 
 mo2_target_sources(uibase
-	FOLDER src/tutorials
-	PRIVATE
-	${tutorial_headers}
-	tutorabledialog.cpp
-	tutorialcontrol.cpp
-	tutorialmanager.cpp
+        FOLDER src/tutorials
+        PRIVATE
+        ${tutorial_headers}
+        tutorabledialog.cpp
+        tutorialcontrol.cpp
+        tutorialmanager.cpp
 )
 
 mo2_target_sources(uibase
-	FOLDER src/widgets
-	PRIVATE
-	${widget_headers}
-	expanderwidget.cpp
-	finddialog.cpp
-	lineeditclear.cpp
-	linklabel.cpp
-	questionboxmemory.cpp
-	sortabletreewidget.cpp
-	${OS_SPECIFIC_DIR}/taskprogressmanager.cpp
-	textviewer.cpp
-	widgetutility.cpp
-	filterwidget.cpp
+        FOLDER src/widgets
+        PRIVATE
+        ${widget_headers}
+        expanderwidget.cpp
+        finddialog.cpp
+        lineeditclear.cpp
+        linklabel.cpp
+        questionboxmemory.cpp
+        sortabletreewidget.cpp
+        ${OS_SPECIFIC_DIR}/taskprogressmanager.cpp
+        textviewer.cpp
+        widgetutility.cpp
+        filterwidget.cpp
 )
 
-mo2_target_sources(uibase FOLDER src/formatters	PRIVATE ${formatters_header})
-mo2_target_sources(uibase FOLDER src/game_features	PRIVATE ${game_features_header})
+mo2_target_sources(uibase FOLDER src/formatters PRIVATE ${formatters_header})
+mo2_target_sources(uibase FOLDER src/game_features PRIVATE ${game_features_header})
 
 target_sources(uibase
-	PRIVATE
-		finddialog.ui
-		questionboxmemory.ui
-		taskdialog.ui
-		textviewer.ui
+        PRIVATE
+        finddialog.ui
+        questionboxmemory.ui
+        taskdialog.ui
+        textviewer.ui
 
-		version.rc
+        version.rc
 
-		${root_headers}
-		pch.h
+        ${root_headers}
+        pch.h
 
-	PUBLIC
-		FILE_SET HEADERS
-		BASE_DIRS ${CMAKE_CURRENT_LIST_DIR}/../include
-		FILES
-			${root_headers}
-			${interface_headers}
-			${tutorial_headers}
-			${widget_headers}
-			${game_features_header}
-			${formatters_header}
+        PUBLIC
+        FILE_SET HEADERS
+        BASE_DIRS ${CMAKE_CURRENT_LIST_DIR}/../include
+        FILES
+        ${root_headers}
+        ${interface_headers}
+        ${tutorial_headers}
+        ${widget_headers}
+        ${game_features_header}
+        ${formatters_header}
 )
 
 set_target_properties(uibase PROPERTIES DEBUG_POSTFIX d)
 
 # TODO: remove this after fixing UIBase #include<> directives
 target_include_directories(uibase PRIVATE
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase>
-	$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase/game_features>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase/game_features>
 )
 
 add_library(mo2::uibase ALIAS uibase)
@@ -212,22 +211,22 @@ add_library(mo2::uibase ALIAS uibase)
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 if (WIN32)
-	target_link_libraries(uibase
-		PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-		PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
-else()
-	target_link_libraries(uibase
-		PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-		PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Qt6::DBus)
-endif()
+    target_link_libraries(uibase
+            PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
+            PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
+else ()
+    target_link_libraries(uibase
+            PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
+            PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Qt6::DBus)
+endif ()
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
 if (WIN32)
-	install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
-endif()
+    install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
+endif ()
 install(EXPORT uibaseTargets
-	FILE mo2-uibase-targets.cmake
-	NAMESPACE mo2::
-	DESTINATION lib/cmake/mo2-uibase
+        FILE mo2-uibase-targets.cmake
+        NAMESPACE mo2::
+        DESTINATION lib/cmake/mo2-uibase
 )
