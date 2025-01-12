@@ -18,9 +18,9 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "utility.h"
 #include "log.h"
 #include "report.h"
+#include "utility.h"
 #include <QApplication>
 #include <QBuffer>
 #include <QDir>
