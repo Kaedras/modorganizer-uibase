@@ -1,5 +1,5 @@
-#include "log.h"
 #include "../pch.h"
+#include "log.h"
 #include <memory>
 
 #include <spdlog/logger.h>

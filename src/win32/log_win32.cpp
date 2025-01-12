@@ -1,5 +1,5 @@
-#include "log.h"
 #include "../pch.h"
+#include "log.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4668)

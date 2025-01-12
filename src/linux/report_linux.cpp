@@ -1,5 +1,5 @@
-#include "report.h"
 #include "log.h"
+#include "report.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>
