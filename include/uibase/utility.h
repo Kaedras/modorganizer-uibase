@@ -33,9 +33,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vector>
 
 #ifdef _WIN32
-#include "win32/utility.h"
+#include "win32/utility_win32.h"
 #else
-#include "linux/utility.h"
+#include "linux/utility_linux.h"
 #endif
 
 #include "dllimport.h"
