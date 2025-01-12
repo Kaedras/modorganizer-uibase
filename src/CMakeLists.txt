@@ -4,16 +4,16 @@ find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widge
 find_package(spdlog CONFIG REQUIRED)
 
 if (WIN32)
-    set(OS_SPECIFIC_DIR win32)
+    set(OS_NAME win32)
 else ()
-    set(OS_SPECIFIC_DIR linux)
+    set(OS_NAME linux)
 endif ()
 
 set(root_headers
         ../include/uibase/delayedfilewriter.h
         ../include/uibase/diagnosisreport.h
         ../include/uibase/dllimport.h
-        ../include/uibase/${OS_SPECIFIC_DIR}/errorcodes.h
+        ../include/uibase/${OS_NAME}/errorcodes.h
         ../include/uibase/eventfilter.h
         ../include/uibase/exceptions.h
         ../include/uibase/executableinfo.h
@@ -36,7 +36,7 @@ set(root_headers
         ../include/uibase/steamutility.h
         ../include/uibase/stringutility.h
         ../include/uibase/utility.h
-        ../include/uibase/${OS_SPECIFIC_DIR}/utility.h
+        ../include/uibase/${OS_NAME}/utility_${OS_NAME}.h
         ../include/uibase/versioning.h
         ../include/uibase/versioninfo.h
 )
@@ -77,7 +77,7 @@ set(widget_headers
         ../include/uibase/linklabel.h
         ../include/uibase/questionboxmemory.h
         ../include/uibase/sortabletreewidget.h
-        ../include/uibase/${OS_SPECIFIC_DIR}/taskprogressmanager.h
+        ../include/uibase/${OS_NAME}/taskprogressmanager.h
         ../include/uibase/textviewer.h
         ../include/uibase/widgetutility.h
 )
@@ -112,27 +112,27 @@ mo2_target_sources(uibase
         ${root_headers}
         delayedfilewriter.cpp
         diagnosisreport.cpp
-        ${OS_SPECIFIC_DIR}/errorcodes.cpp
+        ${OS_NAME}/errorcodes.cpp
         eventfilter.cpp
         executableinfo.cpp
         filesystemutilities.cpp
         guessedvalue.cpp
         json.cpp
         log.cpp
-        ${OS_SPECIFIC_DIR}/log.cpp
+        ${OS_NAME}/log_${OS_NAME}.cpp
         modrepositoryfileinfo.cpp
         nxmurl.cpp
         pch.cpp
         pluginrequirements.cpp
         registry.cpp
         report.cpp
-        ${OS_SPECIFIC_DIR}/report.cpp
+        ${OS_NAME}/report_${OS_NAME}.cpp
         safewritefile.cpp
         scopeguard.cpp
         steamutility.cpp
         stringutility.cpp
         utility.cpp
-        ${OS_SPECIFIC_DIR}/utility.cpp
+        ${OS_NAME}/utility_${OS_NAME}.cpp
         versioning.cpp
         versioninfo.cpp
 )
@@ -165,7 +165,7 @@ mo2_target_sources(uibase
         linklabel.cpp
         questionboxmemory.cpp
         sortabletreewidget.cpp
-        ${OS_SPECIFIC_DIR}/taskprogressmanager.cpp
+        ${OS_NAME}/taskprogressmanager.cpp
         textviewer.cpp
         widgetutility.cpp
         filterwidget.cpp

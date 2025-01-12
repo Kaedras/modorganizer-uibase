@@ -96,16 +96,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="linux/report.cpp" line="19"/>
-        <location filename="win32/report.cpp" line="20"/>
-        <location filename="win32/report.cpp" line="26"/>
+        <location filename="linux/report_linux.cpp" line="19"/>
+        <location filename="win32/report_win32.cpp" line="20"/>
+        <location filename="win32/report_win32.cpp" line="26"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="linux/utility.cpp" line="179"/>
-        <location filename="win32/utility.cpp" line="394"/>
-        <location filename="win32/utility.cpp" line="417"/>
+        <location filename="linux/utility_linux.cpp" line="179"/>
+        <location filename="win32/utility_win32.cpp" line="394"/>
+        <location filename="win32/utility_win32.cpp" line="417"/>
         <source>You have an invalid custom browser command in the settings.</source>
         <translation type="unfinished"></translation>
     </message>
