@@ -16,9 +16,9 @@ jobs:
   build:
     strategy:
       max-parallel: 2
+      fail-fast: false
       matrix:
         os: [ windows-2022, ubuntu-24.04 ]
-        fail-fast: false
         include:
           - os: windows-2022
             preset: vs2022-windows-standalone
