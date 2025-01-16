@@ -247,7 +247,7 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
                                             ".rsrc/version.txt",
                                             outputParameter.toStdString().c_str()});
 
-  QFile versionFile("/tmp/mo2/.rsrc/version.txt");
+  QFile versionFile(tmpPath + "/.rsrc/version.txt");
   QString version;
 
   string keyword;
