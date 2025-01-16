@@ -13,6 +13,7 @@ set(root_headers
         ../include/uibase/delayedfilewriter.h
         ../include/uibase/diagnosisreport.h
         ../include/uibase/dllimport.h
+        ../include/uibase/errorcodes.h
         ../include/uibase/${OS_NAME}/errorcodes.h
         ../include/uibase/eventfilter.h
         ../include/uibase/exceptions.h
@@ -77,6 +78,7 @@ set(widget_headers
         ../include/uibase/linklabel.h
         ../include/uibase/questionboxmemory.h
         ../include/uibase/sortabletreewidget.h
+        ../include/uibase/taskprogressmanager.h
         ../include/uibase/${OS_NAME}/taskprogressmanager.h
         ../include/uibase/textviewer.h
         ../include/uibase/widgetutility.h
