@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "utility.h"
 #include "log.h"
+#include "moassert.h"
 #include "report.h"
 #include <QApplication>
 #include <QBuffer>
@@ -36,18 +37,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define FO_RECYCLE 0x1003
 
-#ifdef __linux__
+#ifdef __unix__
 #include <csignal>
 #define ERROR_SUCCESS EXIT_SUCCESS
 #define ERROR_FILE_NOT_FOUND ENOENT
 #define INVALID_HANDLE_VALUE 0
+using HANDLE = pid_t;
 inline int GetLastError()
 {
   return errno;
-}
-inline void DebugBreak()
-{
-  raise(SIGTRAP);
 }
 #define sprintf_s sprintf
 static constexpr bool USE_UNC = false;

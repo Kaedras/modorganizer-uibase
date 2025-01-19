@@ -25,6 +25,9 @@ public:
 
   quint32 getId();
 
+public slots:
+  bool tryCreateTaskbar();
+
 private:
   TaskProgressManager();
   void showProgress();

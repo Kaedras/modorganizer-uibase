@@ -32,10 +32,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <set>
 #include <vector>
 
-#ifdef _WIN32
-#include "win32/utility_win32.h"
-#else
+#ifdef __unix__
 #include "linux/utility_linux.h"
+#define HANDLE pid_t
+#define INVALID_HANDLE_VALUE 0
+#else
+#include "win32/utility_win32.h"
 #endif
 
 #include "dllimport.h"
@@ -599,5 +601,10 @@ bool forEachLineInFile(const QString& filePath, F&& f)
 }
 
 }  // namespace MOBase
+
+#ifdef __unix__
+#undef HANDLE
+#undef INVALID_HANDLE_VALUE
+#endif
 
 #endif  // MO_UIBASE_UTILITY_INCLUDED

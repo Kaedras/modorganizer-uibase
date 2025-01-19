@@ -6,10 +6,8 @@
 namespace MOBase
 {
 
-using HANDLE                              = pid_t;
-using DWORD                               = int;
-using SYSTEMTIME                          = timespec;
-static constexpr int INVALID_HANDLE_VALUE = 0;
+using DWORD      = uint32_t;
+using SYSTEMTIME = timespec;
 
 namespace details
 {

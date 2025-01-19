@@ -3,6 +3,46 @@
 
 #include "log.h"
 
+#ifdef __unix__
+#ifdef __cpp_lib_debugging
+// These functions are part of C++26
+#include <debugging>
+inline bool IsDebuggerPresent()
+{
+  return std::is_debugger_present();
+}
+inline void DebugBreak()
+{
+  std::breakpoint();
+}
+#else
+#include <csignal>
+#include <fstream>
+
+// Detect if the application is running inside a debugger.
+// Source: https://stackoverflow.com/a/69842462
+inline bool IsDebuggerPresent()
+{
+  std::ifstream sf("/proc/self/status");
+  std::string s;
+  while (sf >> s) {
+    if (s == "TracerPid:") {
+      int pid;
+      sf >> pid;
+      return pid != 0;
+    }
+    std::getline(sf, s);
+  }
+
+  return false;
+}
+inline void DebugBreak()
+{
+  raise(SIGTRAP);
+}
+#endif
+#endif  // __unix__
+
 namespace MOBase
 {
 

@@ -47,6 +47,19 @@ quint32 TaskProgressManager::getId()
   return m_NextId++;
 }
 
+bool TaskProgressManager::tryCreateTaskbar()
+{
+  auto message = QDBusMessage::createSignal(
+    QStringLiteral("/org/ModOrganizer2/ModOrganizer2"),
+    QStringLiteral("com.canonical.Unity.LauncherEntry"), QStringLiteral("Update"));
+
+  QVariantMap properties;
+  properties.insert(QStringLiteral("progress-visible"), false);
+  message << QStringLiteral("application://") + QGuiApplication::desktopFileName()
+        << properties;
+  return QDBusConnection::sessionBus().send(message);
+}
+
 void TaskProgressManager::showProgress()
 {
   auto message = QDBusMessage::createSignal(

@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QApplication>
 #include <QBuffer>
 #include <QDir>
+#include <QErrorMessage>
 #include <format>
 
 #include <QStandardPaths>
@@ -67,6 +68,78 @@ bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
     }
   }
   return result;
+}
+
+bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
+               QWidget* dialog)
+{
+  if (sourceNames.length() != destinationNames.length() &&
+      destinationNames.length() != 1) {
+    return false;
+  }
+
+  QStringList destinations;
+  for (qsizetype i = 0; i < sourceNames.length(); i++) {
+    if (destinationNames.length() == 1) {
+      destinations.append(QFileInfo(destinationNames[0]).absolutePath() + "/" +
+                          QFileInfo(sourceNames[i]).fileName());
+    } else {
+      destinations.append(QFileInfo(destinationNames[i]).absolutePath());
+    }
+  }
+
+  bool yesToAll = false;
+
+  for (qsizetype i = 0; i < sourceNames.length(); i++) {
+    QFile src = sourceNames[i];
+    QFile dst = destinations[i];
+    // prompt user if file already exists
+    if (dst.exists()) {
+      if (yesToAll) {
+        dst.remove();
+      }
+
+      QMessageBox msgBox;
+      msgBox.setText("Target file already exists");
+      msgBox.setDetailedText(
+          QString("\"%1\" already exists. Would you like to overwrite it?")
+              .arg(destinations[i]));
+      msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll |
+                                QMessageBox::No | QMessageBox::Cancel);
+      msgBox.setDefaultButton(QMessageBox::Cancel);
+      msgBox.setParent(dialog);
+
+      int result = msgBox.exec();
+      switch (result) {
+      case QMessageBox::YesToAll:
+        yesToAll = true;
+        [[fallthrough]];
+      case QMessageBox::Yes:
+        // delete destination file, QFile::copy cannot directly overwrite files
+        if (!dst.remove()) {
+          if (dst.error() == QFileDevice::RemoveError) {
+            QErrorMessage().showMessage("The file could not be overwritten.");
+          } else {
+            QErrorMessage().showMessage(dst.errorString());
+          }
+          return false;
+        }
+        break;
+      case QMessageBox::No:
+        continue;
+      case QMessageBox::Cancel:
+      default:
+        return false;
+      }
+    }
+
+    if (!src.copy(destinations[i])) {
+      QErrorMessage().showMessage(src.errorString());
+      return false;
+    }
+  }
+
+  return true;
 }
 
 namespace shell
@@ -132,7 +205,7 @@ namespace shell
     return ShellExecuteWrapper(operation, file, vector<const char*>{param});
   }
 
-  HANDLE Result::processHandle() const
+  pid_t Result::processHandle() const
   {
     return m_process;
   }
