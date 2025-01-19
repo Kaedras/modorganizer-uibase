@@ -103,7 +103,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="linux/utility_linux.cpp" line="252"/>
+        <location filename="linux/utility_linux.cpp" line="251"/>
         <location filename="win32/utility_win32.cpp" line="394"/>
         <location filename="win32/utility_win32.cpp" line="417"/>
         <source>You have an invalid custom browser command in the settings.</source>

@@ -25,14 +25,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QBuffer>
 #include <QDir>
 #include <QErrorMessage>
-#include <format>
-
-#include <QStandardPaths>
+#include <bit7z/bitarchivereader.hpp>
 #include <cerrno>
+#include <format>
 #include <spawn.h>
 
 using namespace std;
 namespace fs = std::filesystem;
+
+static inline constexpr string SEVEN_ZIP_LIB = "lib/lib7zip.so";
 
 namespace MOBase
 {
@@ -288,19 +289,45 @@ QString ToString(const SYSTEMTIME& time)
 
 QIcon iconForExecutable(const QString& filepath)
 {
-  QString tmpPath =
-      QStandardPaths::standardLocations(QStandardPaths::TempLocation).first() + "/mo2";
-  QString outputParameter = "-o " + tmpPath + "/.rsrc/";
+  try {
+    using namespace bit7z;
 
-  auto result =
-      shell::ShellExecuteWrapper(spawnp, "7z",
-                                 {"x", filepath.toStdString().c_str(), ".rsrc/ICON/1",
-                                  outputParameter.toStdString().c_str()});
-  if (result.success()) {
-    return QIcon(tmpPath + "/mo-icon.ico");
+    Bit7zLibrary lib{SEVEN_ZIP_LIB};
+    BitArchiveReader reader{lib, filepath.toStdString(), BitFormat::Pe};
+    auto items = reader.items();
+
+    vector<BitArchiveItemInfo> icons;
+    for (const auto& item : items) {
+      if (item.extension() == ".ico") {
+        icons.emplace_back(item);
+      }
+    }
+
+    // determine largest icon
+    uint32_t largestIconIndex = 0;
+    uint64_t largestIconSize  = 0;
+
+    for (const auto& icon : icons) {
+      if (icon.size() > largestIconSize) {
+        largestIconSize  = icon.size();
+        largestIconIndex = icon.index();
+      }
+    }
+
+    std::vector<byte_t> buffer;
+    reader.extractTo(buffer, largestIconIndex);
+
+    auto byteArray = QByteArray((const char*)buffer.data(), buffer.size());
+
+    QPixmap pixmap;
+    if (!pixmap.loadFromData(byteArray)) {
+      return QIcon(":/MO/gui/executable");
+    }
+    return QIcon(pixmap);
+  } catch (const bit7z::BitException& ex) {
+    cerr << ex.what() << endl;
+    return QIcon(":/MO/gui/executable");
   }
-
-  return QIcon(":/MO/gui/executable");
 }
 
 enum version_t
@@ -311,49 +338,67 @@ enum version_t
 
 QString getFileVersionInfo(QString const& filepath, version_t type)
 {
-  QString tmpPath =
-      QStandardPaths::standardLocations(QStandardPaths::TempLocation).first() + "/mo2";
-  QString outputParameter = "-o " + tmpPath + "/.rsrc/";
+  try {
+    using namespace bit7z;
 
-  auto result = shell::ShellExecuteWrapper(spawnp, "7z",
-                                           {"x", filepath.toStdString().c_str(),
-                                            ".rsrc/version.txt",
-                                            outputParameter.toStdString().c_str()});
+    Bit7zLibrary lib{SEVEN_ZIP_LIB};
 
-  QFile versionFile(tmpPath + "/.rsrc/version.txt");
-  QString version;
+    std::vector<byte_t> buffer;
 
-  string keyword;
-  switch (type) {
-  case fileversion:
-    keyword = "FILEVERSION";
-    break;
-  case productversion:
-    keyword = "PRODUCTVERSION";
-    break;
-  }
+    BitArchiveReader reader{lib, filepath.toStdString(), BitFormat::Pe};
+    auto items = reader.items();
 
-  // convert
-  // FILEVERSION     1,3,22,0
-  // to
-  // 1.3.22.0
-  // return empty string if version file is not open
-  if (!versionFile.isOpen()) {
-    return version;
-  }
-  while (!versionFile.atEnd()) {
-    auto line = versionFile.readLine();
-    if (line.startsWith(keyword)) {
-      line.remove(0, keyword.length());
-      // remove whitespaces
-      version = line.trimmed();
-      // replace ',' with '.'
-      version.replace(',', '.');
+    vector<BitArchiveItemInfo> versions;
+    for (const auto& item : items) {
+      if (item.name() == "version.txt") {
+        versions.emplace_back(item);
+      }
+    }
+
+    // could this even happen?
+    if (versions.size() > 1) {
+      cout << "warning: " << filepath.toStdString() << " contains " << versions.size()
+           << " files named version.txt" << "\n";
+    }
+    reader.extractTo(buffer, versions.at(0).index());
+
+    auto stream = QTextStream(QByteArray(buffer), QIODeviceBase::ReadOnly);
+    stream.setEncoding(QStringConverter::Utf16);
+
+    QString version;
+
+    QString keyword;
+    switch (type) {
+    case fileversion:
+      keyword = "FILEVERSION";
+      break;
+    case productversion:
+      keyword = "PRODUCTVERSION";
       break;
     }
-  }
 
-  return version;
+    // convert
+    // FILEVERSION     1,3,22,0
+    // to
+    // 1.3.22.0
+
+    while (!stream.atEnd()) {
+      auto line = stream.readLine();
+      if (line.startsWith(keyword)) {
+        line.remove(0, keyword.length());
+        // remove whitespaces
+        version = line.trimmed();
+        // replace ',' with '.'
+        version.replace(',', '.');
+        break;
+      }
+    }
+
+    return version;
+  } catch (const bit7z::BitException& ex) {
+    cerr << ex.what() << endl;
+    return {};
+  }
 }
 
 QString getFileVersion(QString const& filepath)

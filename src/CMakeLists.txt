@@ -219,7 +219,7 @@ if (WIN32)
 else ()
     target_link_libraries(uibase
             PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-            PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Qt6::DBus)
+            PRIVATE spdlog::spdlog_header_only unofficial::bit7z::bit7z64 Qt6::Qml Qt6::Quick Qt6::DBus)
 endif ()
 
 # installation

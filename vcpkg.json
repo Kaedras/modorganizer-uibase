@@ -1,5 +1,11 @@
 {
-  "dependencies": ["spdlog"],
+  "dependencies": [
+    "spdlog",
+    {
+      "name": "bit7z",
+      "platform": "linux"
+    }
+  ],
   "overrides": [
     {
       "name": "spdlog",
