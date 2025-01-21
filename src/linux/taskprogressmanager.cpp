@@ -50,13 +50,13 @@ quint32 TaskProgressManager::getId()
 bool TaskProgressManager::tryCreateTaskbar()
 {
   auto message = QDBusMessage::createSignal(
-    QStringLiteral("/org/ModOrganizer2/ModOrganizer2"),
-    QStringLiteral("com.canonical.Unity.LauncherEntry"), QStringLiteral("Update"));
+      QStringLiteral("/org/ModOrganizer2/ModOrganizer2"),
+      QStringLiteral("com.canonical.Unity.LauncherEntry"), QStringLiteral("Update"));
 
   QVariantMap properties;
   properties.insert(QStringLiteral("progress-visible"), false);
   message << QStringLiteral("application://") + QGuiApplication::desktopFileName()
-        << properties;
+          << properties;
   return QDBusConnection::sessionBus().send(message);
 }
 
