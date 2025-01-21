@@ -3,7 +3,7 @@
 
 #include "log.h"
 
-#ifdef __unix__
+#ifndef _MSC_VER
 #ifdef __cpp_lib_debugging
 // These functions are part of C++26
 #include <debugging>
@@ -16,6 +16,7 @@ inline void DebugBreak()
   std::breakpoint();
 }
 #else
+#define __FUNCSIG__ __PRETTY_FUNCTION__
 #include <csignal>
 #include <fstream>
 
@@ -41,7 +42,7 @@ inline void DebugBreak()
   raise(SIGTRAP);
 }
 #endif
-#endif  // __unix__
+#endif  // _MSC_VER
 
 namespace MOBase
 {
