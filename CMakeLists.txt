@@ -15,13 +15,6 @@ find_package(mo2-cmake CONFIG REQUIRED)
 
 add_subdirectory(src)
 
-# set compiler threads to host core count
-if (NOT CMAKE_BUILD_PARALLEL_LEVEL)
-	include(ProcessorCount)
-	ProcessorCount(HOST_PROC_COUNT)
-	set(CMAKE_BUILD_PARALLEL_LEVEL ${HOST_PROC_COUNT})
-endif ()
-
 mo2_set_project_to_run_from_install(uibase EXECUTABLE ${CMAKE_INSTALL_PREFIX}/bin/ModOrganizer.exe)
 set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT uibase)
 

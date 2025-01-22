@@ -355,11 +355,6 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
       }
     }
 
-    // could this even happen?
-    if (versions.size() > 1) {
-      cout << "warning: " << filepath.toStdString() << " contains " << versions.size()
-           << " files named version.txt" << "\n";
-    }
     reader.extractTo(buffer, versions.at(0).index());
 
     auto stream = QTextStream(QByteArray(buffer), QIODeviceBase::ReadOnly);
