@@ -212,14 +212,22 @@ add_library(mo2::uibase ALIAS uibase)
 
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
+set(PUBLIC_LIBS Qt6::Widgets Qt6::Network Qt6::QuickWidgets)
+set(PRIVATE_LIBS spdlog::spdlog_header_only
+        Qt6::Qml Qt6::Quick
+)
+
+set(PRIVATE_WIN32_LIBS Version)
+set(PRIVATE_UNIX_LIBS unofficial::bit7z::bit7z64 Qt6::DBus)
+
 if (WIN32)
     target_link_libraries(uibase
-            PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-            PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
+            PUBLIC ${PUBLIC_LIBS}
+            PRIVATE ${PRIVATE_LIBS} ${PRIVATE_WIN32_LIBS})
 else ()
     target_link_libraries(uibase
-            PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-            PRIVATE spdlog::spdlog_header_only unofficial::bit7z::bit7z64 Qt6::Qml Qt6::Quick Qt6::DBus)
+            PUBLIC ${PUBLIC_LIBS}
+            PRIVATE ${PRIVATE_LIBS} ${PRIVATE_UNIX_LIBS})
 endif ()
 
 # installation
