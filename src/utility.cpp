@@ -23,45 +23,82 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "moassert.h"
 #include "report.h"
 #include <QApplication>
-#include <QBuffer>
 #include <QCollator>
 #include <QDir>
+#include <QErrorMessage>
 #include <QImage>
-#include <QScreen>
+#include <QProcess>
 #include <QStandardPaths>
 #include <QStringEncoder>
-#include <QUuid>
-#include <QtDebug>
 #include <memory>
-#include <sstream>
-
-#define FO_RECYCLE 0x1003
 
 #ifdef __unix__
 #include <csignal>
 #define ERROR_SUCCESS EXIT_SUCCESS
 #define ERROR_FILE_NOT_FOUND ENOENT
-#define INVALID_HANDLE_VALUE 0
-using HANDLE = pid_t;
 inline int GetLastError()
 {
   return errno;
 }
 #define sprintf_s sprintf
-static constexpr bool USE_UNC = false;
+static inline constexpr bool USE_UNC = false;
+static const QString launchCommand   = QStringLiteral("xdg-open");
+static const QString exploreCommand  = QStringLiteral("xdg-open");
 #else
-static constexpr bool USE_UNC = true;
+static inline constexpr bool USE_UNC = true;
+static const QString launchCommand   = QStringLiteral(R"(start "" /b)");
+static const QString exploreCommand  = QStringLiteral(R"(start "" /b explore)");
 #endif
 
 namespace MOBase
 {
 
-// some function declarations with os specific implementations
+// forward declarations
 namespace shell
 {
   Result ExploreDirectory(const QFileInfo& info);
-  Result ExploreFileInDirectory(const QFileInfo& info);
+  Result
+  ExploreFileInDirectory(const QFileInfo& info);  // has os specific implementation
 }  // namespace shell
+
+QString fileErrorToString(QFileDevice::FileError error)
+{
+  switch (error) {
+
+  case QFileDevice::NoError:
+    return QStringLiteral("No error occurred.");
+  case QFileDevice::ReadError:
+    return QStringLiteral("An error occurred when reading from the file.");
+  case QFileDevice::WriteError:
+    return QStringLiteral("An error occurred when writing to the file.");
+  case QFileDevice::FatalError:
+    return QStringLiteral("A fatal error occurred.");
+  case QFileDevice::ResourceError:
+    return QStringLiteral(
+        "Out of resources (e.g., too many open files, out of memory, etc.)");
+  case QFileDevice::OpenError:
+    return QStringLiteral("The file could not be opened.");
+  case QFileDevice::AbortError:
+    return QStringLiteral("The operation was aborted.");
+  case QFileDevice::TimeOutError:
+    return QStringLiteral("A timeout occurred.");
+  case QFileDevice::RemoveError:
+    return QStringLiteral("The file could not be removed.");
+  case QFileDevice::RenameError:
+    return QStringLiteral("The file could not be renamed.");
+  case QFileDevice::PositionError:
+    return QStringLiteral("The position in the file could not be changed.");
+  case QFileDevice::ResizeError:
+    return QStringLiteral("The file could not be resized.");
+  case QFileDevice::PermissionsError:
+    return QStringLiteral("The file could not be accessed.");
+  case QFileDevice::CopyError:
+    return QStringLiteral("The file could not be copied.");
+  case QFileDevice::UnspecifiedError:
+  default:
+    return QStringLiteral("An unspecified error occurred.");
+  }
+}
 
 bool removeDir(const QString& dirName)
 {
@@ -134,24 +171,28 @@ bool copyDir(const QString& sourceName, const QString& destinationName, bool mer
 
 namespace shell
 {
+  QString toUNC(const QFileInfo& path);
 
-  Result::Result(bool success, DWORD error, QString message, HANDLE process)
+  static QString g_urlHandler;
+
+  Result::Result(bool success, int error, QString message,
+                 std::shared_ptr<QProcess> process)
       : m_success(success), m_error(error), m_message(std::move(message)),
-        m_process(process)
+        m_process(std::move(process))
   {
     if (m_message.isEmpty()) {
       m_message = ToQString(formatSystemMessage(m_error));
     }
   }
 
-  Result Result::makeFailure(DWORD error, QString message)
+  Result Result::makeFailure(int error, QString message)
   {
-    return Result(false, error, std::move(message), INVALID_HANDLE_VALUE);
+    return Result(false, error, std::move(message), nullptr);
   }
 
-  Result Result::makeSuccess(HANDLE process)
+  Result Result::makeSuccess(std::shared_ptr<QProcess> process)
   {
-    return Result(true, ERROR_SUCCESS, {}, process);
+    return Result(true, ERROR_SUCCESS, {}, std::move(process));
   }
 
   bool Result::success() const
@@ -164,7 +205,7 @@ namespace shell
     return m_success;
   }
 
-  DWORD Result::error() const
+  int Result::error() const
   {
     return m_error;
   }
@@ -172,6 +213,18 @@ namespace shell
   const QString& Result::message() const
   {
     return m_message;
+  }
+
+  std::shared_ptr<QProcess> Result::processHandle() const
+  {
+    return m_process;
+  }
+
+  std::shared_ptr<QProcess> Result::stealProcessHandle()
+  {
+    auto tmp = m_process;
+    m_process.reset();
+    return tmp;
   }
 
   QString Result::toString() const
@@ -211,41 +264,117 @@ namespace shell
     return Explore(QFileInfo(dir.absolutePath()));
   }
 
-  std::wstring toUNC(const QFileInfo& path)
+  QString toUNC(const QFileInfo& path)
   {
-    auto wpath = QDir::toNativeSeparators(path.absoluteFilePath()).toStdWString();
-    if (!wpath.starts_with(L"\\\\?\\")) {
-      wpath = L"\\\\?\\" + wpath;
+    auto wpath = QDir::toNativeSeparators(path.absoluteFilePath());
+    if (!wpath.startsWith(R"(\\?\)") && USE_UNC) {
+      wpath = R"(\\?\)" + wpath;
     }
 
     return wpath;
   }
 
+  Result ShellExecuteWrapper(const QString& operation, const QString& file,
+                             const QString& params)
+  {
+    QStringList commands;
+    if (!operation.isEmpty()) {
+      commands << operation;
+    }
+    if (!file.isEmpty()) {
+      commands << file;
+    }
+    if (!params.isEmpty()) {
+      commands << params;
+    }
+    auto process = std::make_unique<QProcess>();
+    process->startCommand(commands.join(' '));
+    if (!process->waitForStarted(500)) {
+      log::error("failed to run '{}': {}", commands.join(' '), process->errorString());
+      return Result::makeFailure(process->exitCode(), process->errorString());
+    }
+
+    return Result::makeSuccess(std::move(process));
+  }
+
+  Result ExploreDirectory(const QFileInfo& info)
+  {
+    const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
+
+    return ShellExecuteWrapper(exploreCommand, path, {});
+  }
+
+  void SetUrlHandler(const QString& cmd)
+  {
+    g_urlHandler = cmd;
+  }
+
+  Result OpenCustomURL(const QString& format, const QString& url)
+  {
+    log::debug("custom url handler: '{}'", format);
+
+    QString formatStr = format;
+
+    // remove %2 %3 ... %98 %99
+    static QRegularExpression regex =
+        QRegularExpression("%([2-9]|[1-9][0-9](?![0-9]))");
+    formatStr.replace(regex, "");
+
+    QString cmd = QString(formatStr).arg(url);
+
+    log::debug("running '{}'", cmd);
+
+    QProcess p;
+    p.setProgram(launchCommand);
+    p.setArguments({cmd});
+
+    bool success = p.startDetached();
+    if (!success) {
+      const auto e = p.error();
+      log::error("failed to run '{}'", cmd);
+      log::error("{}", p.errorString());
+      log::error(
+          "{}",
+          QObject::tr("You have an invalid custom browser command in the settings."));
+      return Result::makeFailure(e);
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result Open(const QString& path)
+  {
+    return ShellExecuteWrapper(launchCommand, path, {});
+  }
+
+  Result Open(const QUrl& url)
+  {
+    if (g_urlHandler.isEmpty()) {
+      return ShellExecuteWrapper(launchCommand, url.toString(QUrl::FullyEncoded), {});
+    }
+    return OpenCustomURL(g_urlHandler, url.toString(QUrl::FullyEncoded));
+  }
+
+  Result Execute(const QString& program, const QString& params)
+  {
+    return ShellExecuteWrapper({}, program, params);
+  }
+
   Result Delete(const QFileInfo& path)
   {
-    QFile file;
-    if (USE_UNC) {
-      file.setFileName(QString::fromStdWString(toUNC(path)));
-    } else {
-      file.setFileName(path.absolutePath());
-    }
+    QFile file(toUNC(path));
+
     if (!file.remove()) {
-      const auto e = ::GetLastError();
-      return Result::makeFailure(e);
+      return Result::makeFailure(file.error(), file.errorString());
     }
     return Result::makeSuccess();
   }
 
   Result Rename(const QFileInfo& src, const QFileInfo& dest)
   {
-    QFile source, destination;
-    if (USE_UNC) {
-      source.setFileName(QString::fromStdWString(toUNC(src)));
-      destination.setFileName(QString::fromStdWString(toUNC(dest)));
-    } else {
-      source.setFileName(src.absoluteFilePath());
-      destination.setFileName(dest.absoluteFilePath());
-    }
+    QFile source(toUNC(src));
+    QFile destination(toUNC(dest));
+
     if (!source.rename(destination.fileName())) {
       return Result::makeFailure(source.error(), source.errorString());
     }
@@ -336,6 +465,135 @@ bool copyFileRecursive(const QString& source, const QString& baseDir,
   return true;
 }
 
+int promptUserForOverwrite(const QString& file, QWidget* dialog = nullptr)
+{
+  QMessageBox msgBox;
+  msgBox.setText("Target file already exists");
+  msgBox.setDetailedText(
+      QString("\"%1\" already exists. Would you like to overwrite it?").arg(file));
+  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No |
+                            QMessageBox::Cancel);
+  msgBox.setDefaultButton(QMessageBox::Cancel);
+  msgBox.setParent(dialog);
+
+  return msgBox.exec();
+}
+
+enum class fileOperation
+{
+  copy,
+  move,
+  rename
+};
+
+QFileDevice::FileError doOperation(const QStringList& sourceNames,
+                                   const QStringList& destinationNames,
+                                   fileOperation operation, bool yesToAll,
+                                   QWidget* dialog)
+{
+  if (sourceNames.length() != destinationNames.length() &&
+      destinationNames.length() != 1) {
+    return QFileDevice::UnspecifiedError;
+  }
+
+  QStringList destinations;
+  for (qsizetype i = 0; i < sourceNames.length(); i++) {
+    if (destinationNames.length() == 1) {
+      destinations.append(QFileInfo(destinationNames[0]).absolutePath() + "/" +
+                          QFileInfo(sourceNames[i]).fileName());
+    } else {
+      destinations.append(QFileInfo(destinationNames[i]).absolutePath());
+    }
+  }
+
+  for (qsizetype i = 0; i < sourceNames.length(); i++) {
+    QFile src = sourceNames[i];
+    QFile dst = destinations[i];
+    // prompt user if file already exists
+    if (dst.exists()) {
+      if (yesToAll) {
+        dst.remove();
+      } else {
+        QMessageBox msgBox;
+        msgBox.setText("Target file already exists");
+        msgBox.setDetailedText(
+            QString("\"%1\" already exists. Would you like to overwrite it?")
+                .arg(sourceNames[i]));
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll |
+                                  QMessageBox::No | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        msgBox.setParent(dialog);
+        int result = msgBox.exec();
+
+        switch (result) {
+        case QMessageBox::YesToAll:
+          yesToAll = true;
+          [[fallthrough]];
+        case QMessageBox::Yes:
+          // delete destination file, QFile::copy cannot directly overwrite files
+          if (!dst.remove()) {
+            if (dst.error() == QFileDevice::RemoveError) {
+              // RemoveError could be misleading in this context
+              QErrorMessage().showMessage(
+                  QStringLiteral("Destination file could not be overwritten."));
+            } else {
+              QErrorMessage().showMessage(dst.errorString());
+            }
+            return dst.error();
+          }
+          break;
+        case QMessageBox::No:
+          continue;
+        case QMessageBox::Cancel:
+          return QFileDevice::AbortError;
+        default:
+          return dst.error();
+        }
+      }
+    }
+
+    bool result;
+
+    switch (operation) {
+    case fileOperation::copy:
+      result = src.copy(destinations[i]);
+      break;
+    case fileOperation::move:
+    case fileOperation::rename:
+    default:
+      result = src.rename(destinations[i]);
+      break;
+    }
+
+    if (!result) {
+      QErrorMessage().showMessage(src.errorString());
+      return dst.error();
+    }
+  }
+
+  return QFileDevice::NoError;
+}
+
+QFileDevice::FileError shellCopy(const QStringList& sourceNames,
+                                 const QStringList& destinationNames, QWidget* dialog)
+{
+  return doOperation(sourceNames, destinationNames, fileOperation::copy, false, dialog);
+}
+
+QFileDevice::FileError shellCopy(const QString& sourceNames,
+                                 const QString& destinationNames, bool yesToAll,
+                                 QWidget* dialog)
+{
+  return doOperation({sourceNames}, {destinationNames}, fileOperation::copy, yesToAll,
+                     dialog);
+}
+
+QFileDevice::FileError shellMove(const QStringList& sourceNames,
+                                 const QStringList& destinationNames, QWidget* dialog)
+{
+  return doOperation(sourceNames, destinationNames, fileOperation::move, false, dialog);
+}
+
 std::wstring ToWString(const QString& source)
 {
   return source.toStdWString();
@@ -391,6 +649,26 @@ int naturalCompare(const QString& a, const QString& b, Qt::CaseSensitivity cs)
   return c.compare(a, b);
 }
 
+QDir getKnownFolder(QStandardPaths::StandardLocation location) noexcept(false)
+{
+  auto paths = QStandardPaths::standardLocations(location);
+  if (paths.empty()) {
+    throw std::runtime_error("couldn't get known folder path");
+  }
+
+  return paths.first();
+}
+
+QString getOptionalKnownFolder(QStandardPaths::StandardLocation location) noexcept
+{
+  auto paths = QStandardPaths::standardLocations(location);
+  if (paths.empty()) {
+    return {};
+  }
+
+  return paths.first();
+}
+
 QString getDesktopDirectory()
 {
   return QStandardPaths::standardLocations(QStandardPaths::DesktopLocation).first();
@@ -402,12 +680,27 @@ QString getStartMenuDirectory()
       .first();
 }
 
-bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
+QFileDevice::FileError shellDelete(const QStringList& fileNames, bool recycle,
+                                   QWidget* dialog)
 {
-  if (!QFile::remove(fileName)) {
-    return shellDelete(QStringList(fileName), false, dialog);
+  for (const auto& fileName : fileNames) {
+    QFile file(fileName);
+    bool result;
+    if (recycle) {
+      result = file.moveToTrash();
+    } else {
+      result = file.remove();
+    }
+    if (!result) {
+      QErrorMessage msg;
+      msg.setParent(dialog);
+      msg.showMessage(QString("Could not delete '%1': %2")
+                          .arg(file.fileName(), file.errorString()));
+      return file.error();
+    }
   }
-  return true;
+
+  return QFileDevice::NoError;
 }
 
 QString readFileText(const QString& fileName, QString* encoding)
@@ -462,9 +755,10 @@ void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
       deleteFiles.append(files.at(i).absoluteFilePath());
     }
 
-    if (!shellDelete(deleteFiles)) {
-      const auto e = ::GetLastError();
-      log::warn("failed to remove log files: {}", formatSystemMessage(e));
+    auto result = shellDelete(deleteFiles);
+
+    if (result != 0) {
+      log::warn("failed to remove log files: {}", fileErrorToString(result));
     }
   }
 }

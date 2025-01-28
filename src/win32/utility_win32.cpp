@@ -98,193 +98,8 @@ static DWORD TranslateError(int error)
   }
 }
 
-static bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
-                    QWidget* dialog, UINT operation, bool yesToAll, bool silent = false)
-{
-  std::vector<wchar_t> fromBuffer;
-  std::vector<wchar_t> toBuffer;
-
-  foreach (const QString& from, sourceNames) {
-    // SHFileOperation has to be used with absolute maths, err paths ("It cannot be
-    // overstated" they say)
-    std::wstring tempFrom =
-        ToWString(QDir::toNativeSeparators(QFileInfo(from).absoluteFilePath()));
-    fromBuffer.insert(fromBuffer.end(), tempFrom.begin(), tempFrom.end());
-    fromBuffer.push_back(L'\0');
-  }
-
-  bool recycle = operation == FO_RECYCLE;
-
-  if (recycle) {
-    operation = FO_DELETE;
-  }
-
-  if ((destinationNames.count() == sourceNames.count()) ||
-      (destinationNames.count() == 1)) {
-    foreach (const QString& to, destinationNames) {
-      std::wstring tempTo =
-          ToWString(QDir::toNativeSeparators(QFileInfo(to).absoluteFilePath()));
-      toBuffer.insert(toBuffer.end(), tempTo.begin(), tempTo.end());
-      toBuffer.push_back(L'\0');
-    }
-  } else if ((operation == FO_DELETE) && (destinationNames.count() == 0)) {
-    // pTo is not used but as I understand the documentation it should still be
-    // double-null terminated
-    toBuffer.push_back(L'\0');
-  } else {
-    ::SetLastError(ERROR_INVALID_PARAMETER);
-    return false;
-  }
-
-  // both buffers have to be double-null terminated
-  fromBuffer.push_back(L'\0');
-  toBuffer.push_back(L'\0');
-
-  SHFILEOPSTRUCTW op;
-  memset(&op, 0, sizeof(SHFILEOPSTRUCTW));
-  if (dialog != nullptr) {
-    op.hwnd = (HWND)dialog->winId();
-  } else {
-    op.hwnd = nullptr;
-  }
-  op.wFunc = operation;
-  op.pFrom = &fromBuffer[0];
-  op.pTo   = &toBuffer[0];
-
-  if ((operation == FO_DELETE) || yesToAll) {
-    op.fFlags = FOF_NOCONFIRMATION;
-    if (recycle) {
-      op.fFlags |= FOF_ALLOWUNDO;
-    }
-  } else {
-    op.fFlags = FOF_NOCOPYSECURITYATTRIBS |  // always use security of target directory
-                FOF_SILENT |                 // don't show a progress bar
-                FOF_NOCONFIRMMKDIR;          // silently create directories
-
-    if (destinationNames.count() == sourceNames.count()) {
-      op.fFlags |= FOF_MULTIDESTFILES;
-    }
-  }
-
-  if (silent) {
-    op.fFlags |= FOF_NO_UI;
-  }
-
-  int res = ::SHFileOperationW(&op);
-  if (res == 0) {
-    return true;
-  } else {
-    ::SetLastError(TranslateError(res));
-    return false;
-  }
-}
-
-bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
-               QWidget* dialog)
-{
-  return shellOp(sourceNames, destinationNames, dialog, FO_COPY, false);
-}
-
-bool shellCopy(const QString& sourceNames, const QString& destinationNames,
-               bool yesToAll, QWidget* dialog)
-{
-  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames,
-                 dialog, FO_COPY, yesToAll);
-}
-
-bool shellMove(const QStringList& sourceNames, const QStringList& destinationNames,
-               QWidget* dialog)
-{
-  return shellOp(sourceNames, destinationNames, dialog, FO_MOVE, false);
-}
-
-bool shellMove(const QString& sourceNames, const QString& destinationNames,
-               bool yesToAll, QWidget* dialog)
-{
-  return shellOp(QStringList() << sourceNames, QStringList() << destinationNames,
-                 dialog, FO_MOVE, yesToAll);
-}
-
-bool shellRename(const QString& oldName, const QString& newName, bool yesToAll,
-                 QWidget* dialog)
-{
-  return shellOp(QStringList(oldName), QStringList(newName), dialog, FO_RENAME,
-                 yesToAll);
-}
-
-bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
-{
-  const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
-  return shellOp(fileNames, QStringList(), dialog, op, false);
-}
-
 namespace shell
 {
-  std::wstring toUNC(const QFileInfo& path);
-
-  static QString g_urlHandler;
-
-  HANDLE Result::processHandle() const
-  {
-    return m_process.get();
-  }
-
-  HANDLE Result::stealProcessHandle()
-  {
-    const auto h = m_process.release();
-    m_process.reset(INVALID_HANDLE_VALUE);
-    return h;
-  }
-
-  QString formatError(int i)
-  {
-    switch (i) {
-    case 0:
-      return "The operating system is out of memory or resources";
-
-    case ERROR_FILE_NOT_FOUND:
-      return "The specified file was not found";
-
-    case ERROR_PATH_NOT_FOUND:
-      return "The specified path was not found";
-
-    case ERROR_BAD_FORMAT:
-      return "The .exe file is invalid (non-Win32 .exe or error in .exe image)";
-
-    case SE_ERR_ACCESSDENIED:
-      return "The operating system denied access to the specified file";
-
-    case SE_ERR_ASSOCINCOMPLETE:
-      return "The file name association is incomplete or invalid";
-
-    case SE_ERR_DDEBUSY:
-      return "The DDE transaction could not be completed because other DDE "
-             "transactions were being processed";
-
-    case SE_ERR_DDEFAIL:
-      return "The DDE transaction failed";
-
-    case SE_ERR_DDETIMEOUT:
-      return "The DDE transaction could not be completed because the request "
-             "timed out";
-
-    case SE_ERR_DLLNOTFOUND:
-      return "The specified DLL was not found";
-
-    case SE_ERR_NOASSOC:
-      return "There is no application associated with the given file name "
-             "extension";
-
-    case SE_ERR_OOM:
-      return "There was not enough memory to complete the operation";
-
-    case SE_ERR_SHARE:
-      return "A sharing violation occurred";
-
-    default:
-      return QString("Unknown error %1").arg(i);
-    }
-  }
 
   void LogShellFailure(const wchar_t* operation, const wchar_t* file,
                        const wchar_t* params, DWORD error)
@@ -331,14 +146,6 @@ namespace shell
     return Result::makeSuccess(process);
   }
 
-  Result ExploreDirectory(const QFileInfo& info)
-  {
-    const auto path    = QDir::toNativeSeparators(info.absoluteFilePath());
-    const auto ws_path = path.toStdWString();
-
-    return ShellExecuteWrapper(L"explore", ws_path.c_str(), nullptr);
-  }
-
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
     const auto path      = QDir::toNativeSeparators(info.absoluteFilePath());
@@ -346,17 +153,6 @@ namespace shell
     const auto ws_params = params.toStdWString();
 
     return ShellExecuteWrapper(nullptr, L"explorer", ws_params.c_str());
-  }
-
-  void SetUrlHandler(const QString& cmd)
-  {
-    g_urlHandler = cmd;
-  }
-
-  Result Open(const QString& path)
-  {
-    const auto ws_path = path.toStdWString();
-    return ShellExecuteWrapper(L"open", ws_path.c_str(), nullptr);
   }
 
   Result OpenCustomURL(const std::wstring& format, const std::wstring& url)
@@ -424,27 +220,6 @@ namespace shell
     return Result::makeSuccess();
   }
 
-  Result Open(const QUrl& url)
-  {
-    log::debug("opening url '{}'", url.toString());
-
-    const auto ws_url = url.toString().toStdWString();
-
-    if (g_urlHandler.isEmpty()) {
-      return ShellExecuteWrapper(L"open", ws_url.c_str(), nullptr);
-    } else {
-      return OpenCustomURL(g_urlHandler.toStdWString(), ws_url);
-    }
-  }
-
-  Result Execute(const QString& program, const QString& params)
-  {
-    const auto program_ws = program.toStdWString();
-    const auto params_ws  = params.toStdWString();
-
-    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
-  }
-
 }  // namespace shell
 
 QString ToString(const SYSTEMTIME& time)
@@ -466,46 +241,6 @@ struct CoTaskMemFreer
 
 template <class T>
 using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
-
-QString getOptionalKnownFolder(KNOWNFOLDERID id)
-{
-  COMMemPtr<wchar_t> path;
-
-  {
-    wchar_t* rawPath = nullptr;
-    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
-
-    if (FAILED(res)) {
-      return {};
-    }
-
-    path.reset(rawPath);
-  }
-
-  return QString::fromWCharArray(path.get());
-}
-
-QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
-{
-  COMMemPtr<wchar_t> path;
-
-  {
-    wchar_t* rawPath = nullptr;
-    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
-
-    if (FAILED(res)) {
-      log::error("failed to get known folder '{}', {}",
-                 what.isEmpty() ? QUuid(id).toString() : what,
-                 formatSystemMessage(res));
-
-      throw std::runtime_error("couldn't get known folder path");
-    }
-
-    path.reset(rawPath);
-  }
-
-  return QString::fromWCharArray(path.get());
-}
 
 QIcon iconForExecutable(const QString& filePath)
 {

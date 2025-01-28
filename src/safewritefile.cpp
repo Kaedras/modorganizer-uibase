@@ -57,7 +57,7 @@ QFile* SafeWriteFile::operator->()
 
 void SafeWriteFile::commit()
 {
-  shellDeleteQuiet(m_FileName);
+  shellDelete({m_FileName});
   m_TempFile.rename(m_FileName);
   m_TempFile.setAutoRemove(false);
   m_TempFile.close();

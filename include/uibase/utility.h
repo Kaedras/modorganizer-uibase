@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QList>
 #include <QString>
 #include <QTextStream>
-#include <QUrl>
 #include <QVariant>
 #include <algorithm>
 #include <set>
@@ -34,8 +33,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef __unix__
 #include "linux/utility_linux.h"
-#define HANDLE pid_t
-#define INVALID_HANDLE_VALUE 0
 #else
 #include "win32/utility_win32.h"
 #endif
@@ -43,6 +40,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "dllimport.h"
 #include "exceptions.h"
 
+#include <QStandardPaths>
+
+class QProcess;
 namespace MOBase
 {
 
@@ -86,22 +86,22 @@ QDLLEXPORT bool copyFileRecursive(const QString& source, const QString& baseDir,
                                   const QString& destination);
 
 /**
- * @brief copy one or multiple files using a shell operation (this will ask the user for
- *confirmation on overwrite or elevation requirement)
+ * @brief copy one or multiple files using an emulated shell operation (this will ask
+ *the user for confirmation on overwrite)
  * @param sourceNames names of files to be copied. This can include wildcards
  * @param destinationNames names of the files in the destination location or the
  *destination directory to copy to. There has to be one destination name for each source
  *name or a single directory
  * @param dialog a dialog to be the parent of possible confirmation dialogs
- * @return true on success, false on error. Call ::GetLastError() to retrieve error code
+ * @return error code
  **/
-QDLLEXPORT bool shellCopy(const QStringList& sourceNames,
-                          const QStringList& destinationNames,
-                          QWidget* dialog = nullptr);
+QDLLEXPORT QFileDevice::FileError shellCopy(const QStringList& sourceNames,
+                                            const QStringList& destinationNames,
+                                            QWidget* dialog = nullptr);
 
 /**
- * @brief copy one or multiple files using a shell operation (this will ask the user for
- *confirmation on overwrite or elevation requirement)
+ * @brief copy one or multiple files using an emulated shell operation (this will ask
+ *the user for confirmation on overwrite)
  * @param sourceName names of file to be copied. This can include wildcards
  * @param destinationName name of the files in the destination location or the
  *destination directory to copy to. There has to be one destination name for each source
@@ -109,70 +109,67 @@ QDLLEXPORT bool shellCopy(const QStringList& sourceNames,
  * @param yesToAll if true, the operation will assume "yes" to overwrite confirmations.
  *This doesn't seem to work when providing multiple files to copy
  * @param dialog a dialog to be the parent of possible confirmation dialogs
- * @return true on success, false on error. Call ::GetLastError() to retrieve error code
+ * @return error code
  **/
-QDLLEXPORT bool shellCopy(const QString& sourceNames, const QString& destinationNames,
-                          bool yesToAll = false, QWidget* dialog = nullptr);
+QDLLEXPORT QFileDevice::FileError shellCopy(const QString& sourceNames,
+                                            const QString& destinationNames,
+                                            bool yesToAll   = false,
+                                            QWidget* dialog = nullptr);
 
 /**
- * @brief move one or multiple files using a shell operation (this will ask the user for
- *confirmation on overwrite or elevation requirement)
+ * @brief move one or multiple files using an emulated shell operation (this will ask
+ *the user for confirmation on overwrite)
  * @param sourceNames names of files to be moved. This can include wildcards
  * @param destinationNames names of the files in the destination location or the
  *destination directory to move to. There has to be one destination name for each source
  *name or a single directory
  * @param dialog a dialog to be the parent of possible confirmation dialogs
- * @return true on success, false on error. Call ::GetLastError() to retrieve error code
+ * @return error code
  **/
-QDLLEXPORT bool shellMove(const QStringList& sourceNames,
-                          const QStringList& destinationNames,
-                          QWidget* dialog = nullptr);
+QDLLEXPORT QFileDevice::FileError shellMove(const QStringList& sourceNames,
+                                            const QStringList& destinationNames,
+                                            QWidget* dialog = nullptr);
 
 /**
- * @brief move one files using a shell operation (this will ask the user for
- *confirmation on overwrite or elevation requirement)
+ * @brief move one files using an emulated shell operation (this will ask the user for
+ * confirmation on overwrite)
  * @param sourceNames names of files to be moved. This can include wildcards
  * @param destinationNames names of the files in the destination location or the
  *destination directory to move to. There has to be one destination name for each source
  *name or a single directory
  * @param dialog a dialog to be the parent of possible confirmation dialogs
- * @return true on success, false on error. Call ::GetLastError() to retrieve error code
+ * @return error code
  **/
-QDLLEXPORT bool shellMove(const QString& sourceNames, const QString& destinationNames,
-                          bool yesToAll = false, QWidget* dialog = nullptr);
+QDLLEXPORT QFileDevice::FileError shellMove(const QString& sourceNames,
+                                            const QString& destinationNames,
+                                            bool yesToAll   = false,
+                                            QWidget* dialog = nullptr);
 
 /**
- * @brief rename a file using a shell operation (this will ask the user for confirmation
- *on overwrite or elevation requirement)
+ * @brief rename a file using an emulated shell operation (this will ask the user for
+ *confirmation on overwrite)
  * @param oldName old name of file to be renamed
  * @param newName new name of the file
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @param yesToAll if true, the operation will assume "yes" to all overwrite
  *confirmations
- * @return true on success, false on error. Call ::GetLastError() to retrieve error code
+ * @return error code
  **/
-QDLLEXPORT bool shellRename(const QString& oldName, const QString& newName,
-                            bool yesToAll = false, QWidget* dialog = nullptr);
+QDLLEXPORT QFileDevice::FileError shellRename(const QString& oldName,
+                                              const QString& newName,
+                                              bool yesToAll   = false,
+                                              QWidget* dialog = nullptr);
 
 /**
- * @brief delete files using a shell operation (this will ask the user for confirmation
- *on overwrite or elevation requirement)
+ * @brief delete files using an emulated shell operation
  * @param fileNames names of files to be deleted
  * @param recycle if true, the file goes to the recycle bin instead of being permanently
- *deleted
- * @return true on success, false on error. Call ::GetLastError() to retrieve error code
+ * deleted
+ * @return error code
  **/
-QDLLEXPORT bool shellDelete(const QStringList& fileNames, bool recycle = false,
-                            QWidget* dialog = nullptr);
-
-/**
- * @brief delete a file. This tries a regular delete and falls back to a shell operation
- *if that fails.
- * @param fileName names of file to be deleted
- * @note this is a workaround for win 8 and newer where shell operations caused the
- *windows to loose focus even if no dialog is shown
- **/
-QDLLEXPORT bool shellDeleteQuiet(const QString& fileName, QWidget* dialog = nullptr);
+QDLLEXPORT QFileDevice::FileError shellDelete(const QStringList& fileNames,
+                                              bool recycle    = false,
+                                              QWidget* dialog = nullptr);
 
 namespace shell
 {
@@ -183,7 +180,7 @@ namespace shell
   class QDLLEXPORT Result
   {
   public:
-    Result(bool success, DWORD error, QString message, HANDLE process);
+    Result(bool success, int error, QString message, std::shared_ptr<QProcess> process);
 
     // non-copyable
     Result(const Result&)            = delete;
@@ -191,8 +188,8 @@ namespace shell
     Result(Result&&)                 = default;
     Result& operator=(Result&&)      = default;
 
-    static Result makeFailure(DWORD error, QString message = {});
-    static Result makeSuccess(HANDLE process = INVALID_HANDLE_VALUE);
+    static Result makeFailure(int error, QString message = {});
+    static Result makeSuccess(std::shared_ptr<QProcess> = nullptr);
 
     // whether the operation was successful
     //
@@ -201,7 +198,7 @@ namespace shell
 
     // error returned by the underlying function
     //
-    DWORD error() const;
+    int error() const;
 
     // string representation of the message, may be localized
     //
@@ -209,12 +206,12 @@ namespace shell
 
     // process handle, if any
     //
-    HANDLE processHandle() const;
+    std::shared_ptr<QProcess> processHandle() const;
 
     // process handle, if any; sets the internal handle to INVALID_HANDLE_VALUE
     // so that the caller is in charge of closing it
     //
-    HANDLE stealProcessHandle();
+    std::shared_ptr<QProcess> stealProcessHandle();
 
     // the message, or the error number if empty
     //
@@ -222,9 +219,9 @@ namespace shell
 
   private:
     bool m_success;
-    DWORD m_error;
+    int m_error;
     QString m_message;
-    details::HandlePtr m_process;
+    std::shared_ptr<QProcess> m_process;
   };
 
   // returns a string representation of the given shell error; these errors are
@@ -409,14 +406,27 @@ private:
 };
 
 /**
- * throws on failure
+ * @param location the folder location type
+ * @return absolute path of the given StandardLocation
+ * @throw std::runtime_error
+ **/
+QDLLEXPORT QDir
+getKnownFolder(QStandardPaths::StandardLocation location);
+
+// same as above, does not log failure
+//
+QDLLEXPORT QString
+getOptionalKnownFolder(QStandardPaths::StandardLocation location);
+
+/**
  * @return absolute path of the desktop directory for the current user
+ * @throw std::runtime_error
  **/
 QDLLEXPORT QString getDesktopDirectory();
 
 /**
- * throws on failure
  * @return absolute path of the start menu directory for the current user
+ * @throw std::runtime_error
  **/
 QDLLEXPORT QString getStartMenuDirectory();
 
@@ -601,10 +611,5 @@ bool forEachLineInFile(const QString& filePath, F&& f)
 }
 
 }  // namespace MOBase
-
-#ifdef __unix__
-#undef HANDLE
-#undef INVALID_HANDLE_VALUE
-#endif
 
 #endif  // MO_UIBASE_UTILITY_INCLUDED

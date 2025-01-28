@@ -103,13 +103,6 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="linux/utility_linux.cpp" line="253"/>
-        <location filename="win32/utility_win32.cpp" line="394"/>
-        <location filename="win32/utility_win32.cpp" line="417"/>
-        <source>You have an invalid custom browser command in the settings.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="pluginrequirements.cpp" line="31"/>
         <source>One of the following plugins must be enabled: %1.</source>
         <translation type="unfinished"></translation>
@@ -192,84 +185,91 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="83"/>
+        <location filename="utility.cpp" line="120"/>
         <source>removal of &quot;%1&quot; failed: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="92"/>
+        <location filename="utility.cpp" line="129"/>
         <source>removal of &quot;%1&quot; failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="96"/>
+        <location filename="utility.cpp" line="133"/>
         <source>&quot;%1&quot; doesn&apos;t exist (remove)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="180"/>
+        <location filename="utility.cpp" line="233"/>
         <source>Error %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="295"/>
-        <location filename="utility.cpp" line="324"/>
+        <location filename="utility.cpp" line="338"/>
+        <location filename="win32/utility_win32.cpp" line="191"/>
+        <location filename="win32/utility_win32.cpp" line="214"/>
+        <source>You have an invalid custom browser command in the settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="utility.cpp" line="424"/>
+        <location filename="utility.cpp" line="453"/>
         <source>failed to create directory &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="304"/>
-        <location filename="utility.cpp" line="331"/>
+        <location filename="utility.cpp" line="433"/>
+        <location filename="utility.cpp" line="460"/>
         <source>failed to copy &quot;%1&quot; to &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="529"/>
+        <location filename="utility.cpp" line="823"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="529"/>
+        <location filename="utility.cpp" line="823"/>
         <source>%1 KB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="530"/>
+        <location filename="utility.cpp" line="824"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="530"/>
+        <location filename="utility.cpp" line="824"/>
         <source>%1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="531"/>
+        <location filename="utility.cpp" line="825"/>
         <source>%1 TB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="536"/>
+        <location filename="utility.cpp" line="830"/>
         <source>%1 B/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="536"/>
+        <location filename="utility.cpp" line="830"/>
         <source>%1 KB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="537"/>
+        <location filename="utility.cpp" line="831"/>
         <source>%1 MB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="537"/>
+        <location filename="utility.cpp" line="831"/>
         <source>%1 GB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="538"/>
+        <location filename="utility.cpp" line="832"/>
         <source>%1 TB/s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -387,19 +387,19 @@
 <context>
     <name>uibase</name>
     <message>
-        <location filename="utility.cpp" line="600"/>
+        <location filename="utility.cpp" line="894"/>
         <source>h</source>
         <extracomment>Time remaining hours</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="603"/>
+        <location filename="utility.cpp" line="897"/>
         <source>m</source>
         <extracomment>Time remaining minutes</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="606"/>
+        <location filename="utility.cpp" line="900"/>
         <source>s</source>
         <extracomment>Time remaining seconds</extracomment>
         <translation type="unfinished"></translation>
