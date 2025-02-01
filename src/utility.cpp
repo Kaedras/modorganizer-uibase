@@ -649,7 +649,7 @@ int naturalCompare(const QString& a, const QString& b, Qt::CaseSensitivity cs)
   return c.compare(a, b);
 }
 
-QDir getKnownFolder(QStandardPaths::StandardLocation location) noexcept(false)
+QDir getKnownFolder(QStandardPaths::StandardLocation location)
 {
   auto paths = QStandardPaths::standardLocations(location);
   if (paths.empty()) {
@@ -659,7 +659,7 @@ QDir getKnownFolder(QStandardPaths::StandardLocation location) noexcept(false)
   return paths.first();
 }
 
-QString getOptionalKnownFolder(QStandardPaths::StandardLocation location) noexcept
+QString getOptionalKnownFolder(QStandardPaths::StandardLocation location)
 {
   auto paths = QStandardPaths::standardLocations(location);
   if (paths.empty()) {

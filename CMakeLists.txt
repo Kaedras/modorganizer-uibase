@@ -8,7 +8,6 @@ project(uibase)
 if (UNIX)
   include(FindOpenGL)
   find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-  find_package(unofficial-bit7z CONFIG REQUIRED)
 endif()
 
 find_package(mo2-cmake CONFIG REQUIRED)

@@ -18,21 +18,20 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+#include "linux/PeExtractor.h"
 #include "log.h"
 #include "report.h"
 #include "utility.h"
+
 #include <QApplication>
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDir>
-#include <bit7z/bitarchivereader.hpp>
 #include <cerrno>
 #include <spawn.h>
 
 using namespace std;
 namespace fs = std::filesystem;
-
-static inline constexpr string SEVEN_ZIP_LIB = "lib/lib7zip.so";
 
 namespace MOBase
 {
@@ -85,48 +84,28 @@ QString ToString(const SYSTEMTIME& time)
   return t.toString(QLocale::system().dateFormat());
 }
 
-// TODO: parse pe file directly
 QIcon iconForExecutable(const QString& filepath)
 {
-  try {
-    using namespace bit7z;
+  QFile exeFile(filepath);
+  QBuffer buffer;
 
-    Bit7zLibrary lib{SEVEN_ZIP_LIB};
-    BitArchiveReader reader{lib, filepath.toStdString(), BitFormat::Pe};
-    auto items = reader.items();
-
-    vector<BitArchiveItemInfo> icons;
-    for (const auto& item : items) {
-      if (item.extension() == ".ico") {
-        icons.emplace_back(item);
-      }
-    }
-
-    // determine largest icon
-    uint32_t largestIconIndex = 0;
-    uint64_t largestIconSize  = 0;
-
-    for (const auto& icon : icons) {
-      if (icon.size() > largestIconSize) {
-        largestIconSize  = icon.size();
-        largestIconIndex = icon.index();
-      }
-    }
-
-    std::vector<byte_t> buffer;
-    reader.extractTo(buffer, largestIconIndex);
-
-    auto byteArray = QByteArray((const char*)buffer.data(), buffer.size());
-
-    QPixmap pixmap;
-    if (!pixmap.loadFromData(byteArray)) {
-      return QIcon(":/MO/gui/executable");
-    }
-    return QIcon(pixmap);
-  } catch (const bit7z::BitException& ex) {
-    cerr << ex.what() << endl;
-    return QIcon(":/MO/gui/executable");
+  if (!exeFile.open(QIODeviceBase::ReadOnly) ||
+      !buffer.open(QIODeviceBase::ReadWrite)) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
   }
+
+  PeExtractor extractor(&exeFile, &buffer);
+
+  if (!extractor.loadIconData()) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  }
+
+  QPixmap pixmap;
+  if (!pixmap.loadFromData(buffer.buffer())) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  }
+
+  return QIcon(pixmap);
 }
 
 enum version_t
@@ -135,65 +114,38 @@ enum version_t
   productversion
 };
 
-// TODO: parse pe file directly
 QString getFileVersionInfo(QString const& filepath, version_t type)
 {
-  try {
-    using namespace bit7z;
-
-    Bit7zLibrary lib{SEVEN_ZIP_LIB};
-
-    std::vector<byte_t> buffer;
-
-    BitArchiveReader reader{lib, filepath.toStdString(), BitFormat::Pe};
-    auto items = reader.items();
-
-    vector<BitArchiveItemInfo> versions;
-    for (const auto& item : items) {
-      if (item.name() == "version.txt") {
-        versions.emplace_back(item);
-      }
-    }
-
-    reader.extractTo(buffer, versions.at(0).index());
-
-    auto stream = QTextStream(QByteArray(buffer), QIODeviceBase::ReadOnly);
-    stream.setEncoding(QStringConverter::Utf16);
-
-    QString version;
-
-    QString keyword;
-    switch (type) {
-    case fileversion:
-      keyword = "FILEVERSION";
-      break;
-    case productversion:
-      keyword = "PRODUCTVERSION";
-      break;
-    }
-
-    // convert
-    // FILEVERSION     1,3,22,0
-    // to
-    // 1.3.22.0
-
-    while (!stream.atEnd()) {
-      auto line = stream.readLine();
-      if (line.startsWith(keyword)) {
-        line.remove(0, keyword.length());
-        // remove whitespaces
-        version = line.trimmed();
-        // replace ',' with '.'
-        version.replace(',', '.');
-        break;
-      }
-    }
-
-    return version;
-  } catch (const bit7z::BitException& ex) {
-    cerr << ex.what() << endl;
+  QFile exeFile(filepath);
+  if (!exeFile.open(QIODeviceBase::ReadOnly)) {
     return {};
   }
+
+  QBuffer buffer;
+  if (!buffer.open(QIODeviceBase::ReadWrite)) {
+    return {};
+  }
+
+  PeExtractor extractor(&exeFile, &buffer);
+
+  if (!extractor.loadVersionData()) {
+    return {};
+  }
+
+  QString fileVersion, productVersion;
+
+  buffer.seek(0);
+  QDataStream stream(&buffer);
+  stream >> fileVersion >> productVersion;
+
+  switch (type) {
+
+  case fileversion:
+    return fileVersion;
+  case productversion:
+    return productVersion;
+  }
+  return {};
 }
 
 QString getFileVersion(QString const& filepath)

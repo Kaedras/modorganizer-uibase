@@ -1,10 +1,6 @@
 {
   "dependencies": [
-    "spdlog",
-    {
-      "name": "bit7z",
-      "platform": "linux"
-    }
+    "spdlog"
   ],
   "overrides": [
     {

@@ -206,8 +206,8 @@
     </message>
     <message>
         <location filename="utility.cpp" line="338"/>
-        <location filename="win32/utility_win32.cpp" line="191"/>
-        <location filename="win32/utility_win32.cpp" line="214"/>
+        <location filename="win32/utility_win32.cpp" line="190"/>
+        <location filename="win32/utility_win32.cpp" line="213"/>
         <source>You have an invalid custom browser command in the settings.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -108,9 +108,7 @@ add_library(uibase SHARED)
 mo2_configure_target(uibase NO_SOURCES WARNINGS ON EXTERNAL_WARNINGS ON)
 mo2_default_source_group()
 
-mo2_target_sources(uibase
-        FOLDER src
-        PRIVATE
+set(root_sources
         ${root_headers}
         delayedfilewriter.cpp
         diagnosisreport.cpp
@@ -137,6 +135,24 @@ mo2_target_sources(uibase
         ${OS_NAME}/utility_${OS_NAME}.cpp
         versioning.cpp
         versioninfo.cpp
+)
+if(UNIX)
+    set(root_sources
+            ${root_sources}
+            linux/PeExtractor.cpp
+    )
+    set(root_headers
+            ${root_headers}
+            ../include/uibase/linux/PeExtractor.h
+            ../include/uibase/linux/peTypes.h
+    )
+endif()
+
+
+mo2_target_sources(uibase
+        FOLDER src
+        PRIVATE
+        ${root_sources}
 )
 
 mo2_target_sources(uibase
@@ -218,7 +234,7 @@ set(PRIVATE_LIBS spdlog::spdlog_header_only
 )
 
 set(PRIVATE_WIN32_LIBS Version)
-set(PRIVATE_UNIX_LIBS unofficial::bit7z::bit7z64 Qt6::DBus)
+set(PRIVATE_UNIX_LIBS Qt6::DBus)
 
 if (WIN32)
     target_link_libraries(uibase
