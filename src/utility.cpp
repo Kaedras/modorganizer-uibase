@@ -516,9 +516,9 @@ QFileDevice::FileError doOperation(const QStringList& sourceNames,
         dst.remove();
       } else {
         QMessageBox msgBox;
-        msgBox.setText("Target file already exists");
+        msgBox.setText(QObject::tr("Target file already exists"));
         msgBox.setDetailedText(
-            QString("\"%1\" already exists. Would you like to overwrite it?")
+            QObject::tr("\"%1\" already exists. Would you like to overwrite it?")
                 .arg(sourceNames[i]));
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll |
                                   QMessageBox::No | QMessageBox::Cancel);

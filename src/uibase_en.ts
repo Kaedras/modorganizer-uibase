@@ -222,6 +222,16 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="utility.cpp" line="519"/>
+        <source>Target file already exists</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="utility.cpp" line="521"/>
+        <source>&quot;%1&quot; already exists. Would you like to overwrite it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="utility.cpp" line="892"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
