@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QtTypes>
 #include <QChar>
+#include <QtTypes>
 
 namespace peTypes
 {

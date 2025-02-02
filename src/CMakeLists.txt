@@ -28,6 +28,8 @@ set(root_headers
         ../include/uibase/moassert.h
         ../include/uibase/modrepositoryfileinfo.h
         ../include/uibase/nxmurl.h
+        ../include/uibase/peextractor.h
+        ../include/uibase/petypes.h
         ../include/uibase/pluginrequirements.h
         ../include/uibase/pluginsetting.h
         ../include/uibase/registry.h
@@ -122,6 +124,7 @@ set(root_sources
         ${OS_NAME}/log_${OS_NAME}.cpp
         modrepositoryfileinfo.cpp
         nxmurl.cpp
+        peextractor.cpp
         pch.cpp
         pluginrequirements.cpp
         registry.cpp
@@ -136,17 +139,18 @@ set(root_sources
         versioning.cpp
         versioninfo.cpp
 )
-if(UNIX)
-    set(root_sources
-            ${root_sources}
-            linux/PeExtractor.cpp
-    )
-    set(root_headers
-            ${root_headers}
-            ../include/uibase/linux/PeExtractor.h
-            ../include/uibase/linux/peTypes.h
-    )
-endif()
+
+# potentially add platform specific files here
+#if (UNIX)
+#    set(root_sources
+#            ${root_sources}
+#
+#    )
+#    set(root_headers
+#            ${root_headers}
+#
+#    )
+#endif()
 
 
 mo2_target_sources(uibase

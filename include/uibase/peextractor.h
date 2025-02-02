@@ -4,7 +4,7 @@
 // source:
 // https://invent.kde.org/network/kio-extras/-/blob/master/thumbnail/exeutils.cpp
 
-#include "peTypes.h"
+#include "petypes.h"
 #include <QMap>
 #include <QVector>
 #include <optional>
@@ -15,11 +15,12 @@ class QIODevice;
 class PeExtractor
 {
 public:
-  explicit PeExtractor(QIODevice* inputDevice, QIODevice* outputDevice);
-  bool loadIconData();
-  bool loadVersionData();
+  static bool loadIconData(QIODevice* inputDevice, QIODevice* outputDevice);
+  static bool loadVersionData(QIODevice* inputDevice, QIODevice* outputDevice);
 
 private:
+  explicit PeExtractor(QIODevice* inputDevice, QIODevice* outputDevice);
+
   QVector<peTypes::PeSection> m_sections;
   QIODevice* m_inputDevice  = nullptr;
   QIODevice* m_outputDevice = nullptr;

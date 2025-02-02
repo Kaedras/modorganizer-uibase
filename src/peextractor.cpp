@@ -1,5 +1,5 @@
-#include "linux/PeExtractor.h"
-#include "linux/peTypes.h"
+#include "peextractor.h"
+#include "petypes.h"
 
 #include <QDataStream>
 #include <QIODevice>
@@ -55,20 +55,6 @@ QDataStream& operator>>(QDataStream& s, PeVersionInfo& v)
       v.ProductVersion[1] >> v.ProductVersion[2] >> v.ProductVersion[3] >>
       v.FileFlagsMask[0] >> v.FileFlagsMask[1] >> v.FileFlags >> v.FileOS >>
       v.FileType >> v.FileSubtype >> v.FileTimestamp;
-  return s;
-}
-
-QDataStream& operator<<(QDataStream& s, const PeVersionInfo& v)
-{
-  s << v.StructLength << v.ValueLength << v.StructType << v.Info[0] << v.Info[1]
-    << v.Info[2] << v.Info[3] << v.Info[4] << v.Info[5] << v.Info[6] << v.Info[7]
-    << v.Info[8] << v.Info[9] << v.Info[10] << v.Info[11] << v.Info[12] << v.Info[13]
-    << v.Info[14] << v.Info[15] << v.Padding[0] << v.Padding[1] << v.Signature
-    << v.StructVersion[0] << v.StructVersion[1] << v.FileVersion[0] << v.FileVersion[1]
-    << v.FileVersion[2] << v.FileVersion[3] << v.ProductVersion[0]
-    << v.ProductVersion[1] << v.ProductVersion[2] << v.ProductVersion[3]
-    << v.FileFlagsMask[0] << v.FileFlagsMask[1] << v.FileFlags << v.FileOS << v.FileType
-    << v.FileSubtype << v.FileTimestamp;
   return s;
 }
 
@@ -379,20 +365,24 @@ PeExtractor::PeExtractor(QIODevice* inputDevice, QIODevice* outputDevice)
     : m_inputDevice(inputDevice), m_outputDevice(outputDevice)
 {}
 
-bool PeExtractor::loadIconData()
+bool PeExtractor::loadIconData(QIODevice* inputDevice, QIODevice* outputDevice)
 {
-  if (!readPeData()) {
+  PeExtractor extractor(inputDevice, outputDevice);
+
+  if (!extractor.readPeData()) {
     return false;
   }
 
-  return readIcon();
+  return extractor.readIcon();
 }
 
-bool PeExtractor::loadVersionData()
+bool PeExtractor::loadVersionData(QIODevice* inputDevice, QIODevice* outputDevice)
 {
-  if (!readPeData()) {
+  PeExtractor extractor(inputDevice, outputDevice);
+
+  if (!extractor.readPeData()) {
     return false;
   }
 
-  return readVersionInfo();
+  return extractor.readVersionInfo();
 }

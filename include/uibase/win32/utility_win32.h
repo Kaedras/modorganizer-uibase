@@ -16,4 +16,9 @@ inline std::wstring formatSystemMessage(HRESULT hr)
   return formatSystemMessage(static_cast<DWORD>(hr));
 }
 
+inline std::wstring formatSystemMessage(int id)
+{
+  return formatSystemMessage(static_cast<DWORD>(id));
+}
+
 }  // namespace MOBase

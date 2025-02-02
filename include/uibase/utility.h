@@ -410,13 +410,11 @@ private:
  * @return absolute path of the given StandardLocation
  * @throw std::runtime_error
  **/
-QDLLEXPORT QDir
-getKnownFolder(QStandardPaths::StandardLocation location);
+QDLLEXPORT QDir getKnownFolder(QStandardPaths::StandardLocation location);
 
 // same as above, does not log failure
 //
-QDLLEXPORT QString
-getOptionalKnownFolder(QStandardPaths::StandardLocation location);
+QDLLEXPORT QString getOptionalKnownFolder(QStandardPaths::StandardLocation location);
 
 /**
  * @return absolute path of the desktop directory for the current user

@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "utility.h"
 #include "log.h"
 #include "moassert.h"
+#include "peextractor.h"
 #include "report.h"
 #include <QApplication>
 #include <QCollator>
@@ -761,6 +762,74 @@ void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
       log::warn("failed to remove log files: {}", fileErrorToString(result));
     }
   }
+}
+
+QIcon iconForExecutable(const QString& filepath)
+{
+  QFile exeFile(filepath);
+  QBuffer buffer;
+
+  if (!exeFile.open(QIODeviceBase::ReadOnly) ||
+      !buffer.open(QIODeviceBase::ReadWrite)) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  }
+
+  if (!PeExtractor::loadIconData(&exeFile, &buffer)) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  }
+
+  QPixmap pixmap;
+  if (!pixmap.loadFromData(buffer.buffer())) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  }
+
+  return QIcon(pixmap);
+}
+
+enum version_t
+{
+  fileversion,
+  productversion
+};
+
+QString getFileVersionInfo(QString const& filepath, version_t type)
+{
+  QFile exeFile(filepath);
+  QBuffer buffer;
+
+  if (!exeFile.open(QIODeviceBase::ReadOnly) ||
+      !buffer.open(QIODeviceBase::ReadWrite)) {
+    return {};
+  }
+
+  if (!PeExtractor::loadVersionData(&exeFile, &buffer)) {
+    return {};
+  }
+
+  QString fileVersion, productVersion;
+
+  buffer.seek(0);
+  QDataStream stream(&buffer);
+  stream >> fileVersion >> productVersion;
+
+  switch (type) {
+
+  case fileversion:
+    return fileVersion;
+  case productversion:
+    return productVersion;
+  }
+  return {};
+}
+
+QString getFileVersion(QString const& filepath)
+{
+  return getFileVersionInfo(filepath, fileversion);
+}
+
+QString getProductVersion(QString const& filepath)
+{
+  return getFileVersionInfo(filepath, productversion);
 }
 
 void deleteChildWidgets(QWidget* w)
