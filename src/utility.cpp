@@ -595,6 +595,14 @@ QFileDevice::FileError shellMove(const QStringList& sourceNames,
   return doOperation(sourceNames, destinationNames, fileOperation::move, false, dialog);
 }
 
+QFileDevice::FileError shellMove(const QString& sourceNames,
+                                 const QString& destinationNames, bool yesToAll,
+                                 QWidget* dialog)
+{
+  return doOperation({sourceNames}, {destinationNames}, fileOperation::move, yesToAll,
+                     dialog);
+}
+
 std::wstring ToWString(const QString& source)
 {
   return source.toStdWString();

@@ -24,30 +24,25 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace MOBase
 {
-inline QString ToQString(const char* str)
+bool WriteRegistryValue(const QString& appName, const QString& keyName,
+                        const QString& value, const QString& fileName)
 {
-  return QString::fromLocal8Bit(str);
-}
-inline QString ToQString(const wchar_t* str)
-{
-  return QString::fromWCharArray(str);
+  return WriteRegistryValue(QString("%1/%2").arg(appName, keyName), value, fileName);
 }
 
-bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
-                        LPCWSTR fileName)
+bool WriteRegistryValue(const QString& key, const QString& value,
+                        const QString& fileName)
 {
-  QString fileNameQString = ToQString(fileName);
-  QSettings settings(fileNameQString, QSettings::Format::IniFormat);
-  QString key  = QString("%1/%2").arg(appName, keyName);
+  QSettings settings(fileName, QSettings::Format::IniFormat);
   bool success = true;
 
-  settings.setValue(key, ToQString(value));
+  settings.setValue(key, value);
   settings.sync();
   if (settings.status() != QSettings::NoError) {
     success = false;
     switch (settings.status()) {
     case QSettings::AccessError: {
-      QFile file(fileNameQString);
+      QFile file(fileName);
       if (!file.isWritable() && file.isReadable()) {
         QMessageBox::StandardButton result =
             MOBase::TaskDialog(qApp->activeModalWidget(),
@@ -69,7 +64,7 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
         // clear the read-only flag if requested
         if (result & (QMessageBox::Yes | QMessageBox::Ignore)) {
           if (file.setPermissions(oldPermissions | QFile::Permission::WriteOwner)) {
-            settings.setValue(key, ToQString(value));
+            settings.setValue(key, value);
             if (settings.status() == QSettings::NoError) {
               success = true;
             }
@@ -83,7 +78,7 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
       }
     } break;
     case QSettings::FormatError:
-      log::error("Format error while writing settings to '{}'", fileNameQString);
+      log::error("Format error while writing settings to '{}'", fileName);
       success = false;
       break;
     default:
