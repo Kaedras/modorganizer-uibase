@@ -137,4 +137,44 @@ QString windowsErrorString(DWORD errorCode)
   return QString::fromStdWString(formatSystemMessage(errorCode));
 }
 
+QString getOptionalKnownFolder(KNOWNFOLDERID id)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      return {};
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
+
+QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      log::error("failed to get known folder '{}', {}",
+                 what.isEmpty() ? QUuid(id).toString() : what,
+                 formatSystemMessage(res));
+
+      throw std::runtime_error("couldn't get known folder path");
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
+
 }  // namespace MOBase
