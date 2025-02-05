@@ -601,6 +601,34 @@ OperationResult shellMove(const QString& sourceNames, const QString& destination
                      dialog);
 }
 
+OperationResult shellRename(const QString& oldName, const QString& newName,
+                            bool yesToAll, QWidget* dialog)
+{
+  return doOperation({oldName}, {newName}, fileOperation::rename, yesToAll, dialog);
+}
+
+OperationResult shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
+{
+  for (const auto& fileName : fileNames) {
+    QFile file(fileName);
+    bool result;
+    if (recycle) {
+      result = file.moveToTrash();
+    } else {
+      result = file.remove();
+    }
+    if (!result) {
+      QErrorMessage msg;
+      msg.setParent(dialog);
+      msg.showMessage(QString("Could not delete '%1': %2")
+                          .arg(file.fileName(), file.errorString()));
+      return {file.error(), file.errorString()};
+    }
+  }
+
+  return {};
+}
+
 std::wstring ToWString(const QString& source)
 {
   return source.toStdWString();
@@ -685,28 +713,6 @@ QString getStartMenuDirectory()
 {
   return QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)
       .first();
-}
-
-OperationResult shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
-{
-  for (const auto& fileName : fileNames) {
-    QFile file(fileName);
-    bool result;
-    if (recycle) {
-      result = file.moveToTrash();
-    } else {
-      result = file.remove();
-    }
-    if (!result) {
-      QErrorMessage msg;
-      msg.setParent(dialog);
-      msg.showMessage(QString("Could not delete '%1': %2")
-                          .arg(file.fileName(), file.errorString()));
-      return {file.error(), file.errorString()};
-    }
-  }
-
-  return {};
 }
 
 QString readFileText(const QString& fileName, QString* encoding)
