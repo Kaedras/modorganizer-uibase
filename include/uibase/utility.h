@@ -46,7 +46,7 @@ class QProcess;
 namespace MOBase
 {
 
-QDLLEXPORT struct OperationResult
+struct QDLLEXPORT OperationResult
 {
   QFileDevice::FileError error = QFileDevice::NoError;
   QString message;

@@ -222,6 +222,11 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="utility.cpp" line="497"/>
+        <source>source and destination lists have different sizes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="utility.cpp" line="519"/>
         <source>Target file already exists</source>
         <translation type="unfinished"></translation>
@@ -232,52 +237,62 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="900"/>
+        <location filename="utility.cpp" line="539"/>
+        <source>Destination file could not be overwritten.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="utility.cpp" line="549"/>
+        <source>Aborted by user</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="utility.cpp" line="897"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="900"/>
+        <location filename="utility.cpp" line="897"/>
         <source>%1 KB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="901"/>
+        <location filename="utility.cpp" line="898"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="901"/>
+        <location filename="utility.cpp" line="898"/>
         <source>%1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="902"/>
+        <location filename="utility.cpp" line="899"/>
         <source>%1 TB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="907"/>
+        <location filename="utility.cpp" line="904"/>
         <source>%1 B/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="907"/>
+        <location filename="utility.cpp" line="904"/>
         <source>%1 KB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="908"/>
+        <location filename="utility.cpp" line="905"/>
         <source>%1 MB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="908"/>
+        <location filename="utility.cpp" line="905"/>
         <source>%1 GB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="909"/>
+        <location filename="utility.cpp" line="906"/>
         <source>%1 TB/s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -395,19 +410,19 @@
 <context>
     <name>uibase</name>
     <message>
-        <location filename="utility.cpp" line="971"/>
+        <location filename="utility.cpp" line="968"/>
         <source>h</source>
         <extracomment>Time remaining hours</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="974"/>
+        <location filename="utility.cpp" line="971"/>
         <source>m</source>
         <extracomment>Time remaining minutes</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="977"/>
+        <location filename="utility.cpp" line="974"/>
         <source>s</source>
         <extracomment>Time remaining seconds</extracomment>
         <translation type="unfinished"></translation>

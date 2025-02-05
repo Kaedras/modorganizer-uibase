@@ -137,6 +137,32 @@ QString windowsErrorString(DWORD errorCode)
   return QString::fromStdWString(formatSystemMessage(errorCode));
 }
 
+struct CoTaskMemFreer
+{
+  void operator()(void* p) { ::CoTaskMemFree(p); }
+};
+
+template <class T>
+using COMMemPtr = std::unique_ptr<T, CoTaskMemFreer>;
+
+QString getOptionalKnownFolder(KNOWNFOLDERID id)
+{
+  COMMemPtr<wchar_t> path;
+
+  {
+    wchar_t* rawPath = nullptr;
+    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
+
+    if (FAILED(res)) {
+      return {};
+    }
+
+    path.reset(rawPath);
+  }
+
+  return QString::fromWCharArray(path.get());
+}
+
 QString getOptionalKnownFolder(KNOWNFOLDERID id)
 {
   COMMemPtr<wchar_t> path;
