@@ -46,6 +46,12 @@ class QProcess;
 namespace MOBase
 {
 
+QDLLEXPORT struct OperationResult
+{
+  QFileDevice::FileError error = QFileDevice::NoError;
+  QString message;
+};
+
 /**
  * @brief remove the specified directory including all sub-directories
  *
@@ -95,9 +101,9 @@ QDLLEXPORT bool copyFileRecursive(const QString& source, const QString& baseDir,
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @return error code
  **/
-QDLLEXPORT QFileDevice::FileError shellCopy(const QStringList& sourceNames,
-                                            const QStringList& destinationNames,
-                                            QWidget* dialog = nullptr);
+QDLLEXPORT OperationResult shellCopy(const QStringList& sourceNames,
+                                     const QStringList& destinationNames,
+                                     QWidget* dialog = nullptr);
 
 /**
  * @brief copy one or multiple files using an emulated shell operation (this will ask
@@ -111,10 +117,9 @@ QDLLEXPORT QFileDevice::FileError shellCopy(const QStringList& sourceNames,
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @return error code
  **/
-QDLLEXPORT QFileDevice::FileError shellCopy(const QString& sourceNames,
-                                            const QString& destinationNames,
-                                            bool yesToAll   = false,
-                                            QWidget* dialog = nullptr);
+QDLLEXPORT OperationResult shellCopy(const QString& sourceNames,
+                                     const QString& destinationNames,
+                                     bool yesToAll = false, QWidget* dialog = nullptr);
 
 /**
  * @brief move one or multiple files using an emulated shell operation (this will ask
@@ -126,9 +131,9 @@ QDLLEXPORT QFileDevice::FileError shellCopy(const QString& sourceNames,
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @return error code
  **/
-QDLLEXPORT QFileDevice::FileError shellMove(const QStringList& sourceNames,
-                                            const QStringList& destinationNames,
-                                            QWidget* dialog = nullptr);
+QDLLEXPORT OperationResult shellMove(const QStringList& sourceNames,
+                                     const QStringList& destinationNames,
+                                     QWidget* dialog = nullptr);
 
 /**
  * @brief move one files using an emulated shell operation (this will ask the user for
@@ -140,10 +145,9 @@ QDLLEXPORT QFileDevice::FileError shellMove(const QStringList& sourceNames,
  * @param dialog a dialog to be the parent of possible confirmation dialogs
  * @return error code
  **/
-QDLLEXPORT QFileDevice::FileError shellMove(const QString& sourceNames,
-                                            const QString& destinationNames,
-                                            bool yesToAll   = false,
-                                            QWidget* dialog = nullptr);
+QDLLEXPORT OperationResult shellMove(const QString& sourceNames,
+                                     const QString& destinationNames,
+                                     bool yesToAll = false, QWidget* dialog = nullptr);
 
 /**
  * @brief rename a file using an emulated shell operation (this will ask the user for
@@ -155,10 +159,9 @@ QDLLEXPORT QFileDevice::FileError shellMove(const QString& sourceNames,
  *confirmations
  * @return error code
  **/
-QDLLEXPORT QFileDevice::FileError shellRename(const QString& oldName,
-                                              const QString& newName,
-                                              bool yesToAll   = false,
-                                              QWidget* dialog = nullptr);
+QDLLEXPORT OperationResult shellRename(const QString& oldName, const QString& newName,
+                                       bool yesToAll   = false,
+                                       QWidget* dialog = nullptr);
 
 /**
  * @brief delete files using an emulated shell operation
@@ -167,9 +170,8 @@ QDLLEXPORT QFileDevice::FileError shellRename(const QString& oldName,
  * deleted
  * @return error code
  **/
-QDLLEXPORT QFileDevice::FileError shellDelete(const QStringList& fileNames,
-                                              bool recycle    = false,
-                                              QWidget* dialog = nullptr);
+QDLLEXPORT OperationResult shellDelete(const QStringList& fileNames,
+                                       bool recycle = false, QWidget* dialog = nullptr);
 
 namespace shell
 {

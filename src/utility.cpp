@@ -487,14 +487,14 @@ enum class fileOperation
   rename
 };
 
-QFileDevice::FileError doOperation(const QStringList& sourceNames,
-                                   const QStringList& destinationNames,
-                                   fileOperation operation, bool yesToAll,
-                                   QWidget* dialog)
+OperationResult doOperation(const QStringList& sourceNames,
+                            const QStringList& destinationNames,
+                            fileOperation operation, bool yesToAll, QWidget* dialog)
 {
   if (sourceNames.length() != destinationNames.length() &&
       destinationNames.length() != 1) {
-    return QFileDevice::UnspecifiedError;
+    return {QFileDevice::UnspecifiedError,
+            QObject::tr("source and destination lists have different sizes")};
   }
 
   QStringList destinations;
@@ -536,19 +536,19 @@ QFileDevice::FileError doOperation(const QStringList& sourceNames,
             if (dst.error() == QFileDevice::RemoveError) {
               // RemoveError could be misleading in this context
               QErrorMessage().showMessage(
-                  QStringLiteral("Destination file could not be overwritten."));
+                  QObject::tr("Destination file could not be overwritten."));
             } else {
               QErrorMessage().showMessage(dst.errorString());
             }
-            return dst.error();
+            return {dst.error(), dst.errorString()};
           }
           break;
         case QMessageBox::No:
           continue;
         case QMessageBox::Cancel:
-          return QFileDevice::AbortError;
+          return {QFileDevice::AbortError, QObject::tr("Aborted by user")};
         default:
-          return dst.error();
+          return {dst.error(), dst.errorString()};
         }
       }
     }
@@ -568,36 +568,34 @@ QFileDevice::FileError doOperation(const QStringList& sourceNames,
 
     if (!result) {
       QErrorMessage().showMessage(src.errorString());
-      return dst.error();
+      return {dst.error(), dst.errorString()};
     }
   }
 
-  return QFileDevice::NoError;
+  return {};
 }
 
-QFileDevice::FileError shellCopy(const QStringList& sourceNames,
-                                 const QStringList& destinationNames, QWidget* dialog)
+OperationResult shellCopy(const QStringList& sourceNames,
+                          const QStringList& destinationNames, QWidget* dialog)
 {
   return doOperation(sourceNames, destinationNames, fileOperation::copy, false, dialog);
 }
 
-QFileDevice::FileError shellCopy(const QString& sourceNames,
-                                 const QString& destinationNames, bool yesToAll,
-                                 QWidget* dialog)
+OperationResult shellCopy(const QString& sourceNames, const QString& destinationNames,
+                          bool yesToAll, QWidget* dialog)
 {
   return doOperation({sourceNames}, {destinationNames}, fileOperation::copy, yesToAll,
                      dialog);
 }
 
-QFileDevice::FileError shellMove(const QStringList& sourceNames,
-                                 const QStringList& destinationNames, QWidget* dialog)
+OperationResult shellMove(const QStringList& sourceNames,
+                          const QStringList& destinationNames, QWidget* dialog)
 {
   return doOperation(sourceNames, destinationNames, fileOperation::move, false, dialog);
 }
 
-QFileDevice::FileError shellMove(const QString& sourceNames,
-                                 const QString& destinationNames, bool yesToAll,
-                                 QWidget* dialog)
+OperationResult shellMove(const QString& sourceNames, const QString& destinationNames,
+                          bool yesToAll, QWidget* dialog)
 {
   return doOperation({sourceNames}, {destinationNames}, fileOperation::move, yesToAll,
                      dialog);
@@ -689,8 +687,7 @@ QString getStartMenuDirectory()
       .first();
 }
 
-QFileDevice::FileError shellDelete(const QStringList& fileNames, bool recycle,
-                                   QWidget* dialog)
+OperationResult shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
 {
   for (const auto& fileName : fileNames) {
     QFile file(fileName);
@@ -705,11 +702,11 @@ QFileDevice::FileError shellDelete(const QStringList& fileNames, bool recycle,
       msg.setParent(dialog);
       msg.showMessage(QString("Could not delete '%1': %2")
                           .arg(file.fileName(), file.errorString()));
-      return file.error();
+      return {file.error(), file.errorString()};
     }
   }
 
-  return QFileDevice::NoError;
+  return {};
 }
 
 QString readFileText(const QString& fileName, QString* encoding)
@@ -766,8 +763,8 @@ void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
 
     auto result = shellDelete(deleteFiles);
 
-    if (result != 0) {
-      log::warn("failed to remove log files: {}", fileErrorToString(result));
+    if (result.error != 0) {
+      log::warn("failed to remove log files: {}", result.message);
     }
   }
 }
