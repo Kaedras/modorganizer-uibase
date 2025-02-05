@@ -163,24 +163,6 @@ QString getOptionalKnownFolder(KNOWNFOLDERID id)
   return QString::fromWCharArray(path.get());
 }
 
-QString getOptionalKnownFolder(KNOWNFOLDERID id)
-{
-  COMMemPtr<wchar_t> path;
-
-  {
-    wchar_t* rawPath = nullptr;
-    HRESULT res      = SHGetKnownFolderPath(id, 0, nullptr, &rawPath);
-
-    if (FAILED(res)) {
-      return {};
-    }
-
-    path.reset(rawPath);
-  }
-
-  return QString::fromWCharArray(path.get());
-}
-
 QDir getKnownFolder(KNOWNFOLDERID id, const QString& what)
 {
   COMMemPtr<wchar_t> path;
