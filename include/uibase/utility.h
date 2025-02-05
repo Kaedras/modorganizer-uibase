@@ -51,10 +51,7 @@ struct QDLLEXPORT OperationResult
   QFileDevice::FileError error = QFileDevice::NoError;
   QString message;
 
-  operator bool() const
-  {
-    return error == QFileDevice::NoError;
-  }
+  operator bool() const { return error == QFileDevice::NoError; }
 };
 
 /**
