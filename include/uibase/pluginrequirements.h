@@ -73,7 +73,7 @@ class PluginDependencyRequirement : public IPluginRequirement
 public:
   PluginDependencyRequirement(QStringList const& pluginNames);
 
-  virtual std::optional<Problem> check(IOrganizer* organizer) const;
+  std::optional<Problem> check(IOrganizer* organizer) const override;
 
   /**
    * @return the list of plugin names in this dependency requirement.
@@ -97,7 +97,7 @@ class GameDependencyRequirement : public IPluginRequirement
 public:
   GameDependencyRequirement(QStringList const& gameNames);
 
-  virtual std::optional<Problem> check(IOrganizer* organizer) const;
+  std::optional<Problem> check(IOrganizer* organizer) const override;
 
   /**
    * @return the list of game names in this dependency requirement.
@@ -125,7 +125,7 @@ class DiagnoseRequirement : public IPluginRequirement
 public:
   DiagnoseRequirement(const IPluginDiagnose* diagnose);
 
-  virtual std::optional<Problem> check(IOrganizer* organizer) const;
+  std::optional<Problem> check(IOrganizer* organizer) const override;
 
 private:
   const IPluginDiagnose* m_Diagnose;
