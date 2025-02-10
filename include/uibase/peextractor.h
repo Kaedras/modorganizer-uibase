@@ -4,6 +4,7 @@
 // source:
 // https://invent.kde.org/network/kio-extras/-/blob/master/thumbnail/exeutils.cpp
 
+#include "dllimport.h"
 #include "petypes.h"
 #include <QMap>
 #include <QVector>
@@ -12,7 +13,7 @@
 class QDataStream;
 class QIODevice;
 
-class PeExtractor
+class QDLLEXPORT PeExtractor
 {
 public:
   static bool loadIconData(QIODevice* inputDevice, QIODevice* outputDevice);
