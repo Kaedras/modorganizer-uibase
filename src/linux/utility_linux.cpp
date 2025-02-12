@@ -26,10 +26,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDir>
+#include <QProcess>
 #include <cerrno>
+#include <fcntl.h>
 #include <spawn.h>
 
+extern "C"
+{
+#include <sys/pidfd.h>
+}
+
 using namespace std;
+using namespace Qt::Literals::StringLiterals;
 namespace fs = std::filesystem;
 
 namespace MOBase
@@ -42,6 +50,12 @@ std::string formatSystemMessage(int id)
 
 namespace shell
 {
+  static QString g_urlHandler;
+
+  void SetUrlHandler(const QString& cmd)
+  {
+    g_urlHandler = cmd;
+  }
 
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
@@ -62,16 +76,72 @@ namespace shell
     </method>
   </interface>
   */
-    QDBusInterface interface("org.freedesktop.FileManager1",
-                             "/org/freedesktop/FileManager1",
-                             "org.freedesktop.FileManager1");
-    interface.call("org.freedesktop.FileManager1.ShowItems",
-                   QStringList("file://" + info.absoluteFilePath()), "");
+    QDBusInterface interface(u"org.freedesktop.FileManager1"_s,
+                             u"/org/freedesktop/FileManager1"_s,
+                             u"org.freedesktop.FileManager1"_s);
+    interface.call(u"org.freedesktop.FileManager1.ShowItems"_s,
+                   QStringList(u"file://"_s % info.absoluteFilePath()), "");
     auto errorType = interface.lastError().type();
     if (errorType != QDBusError::NoError) {
       return Result::makeFailure((int)errorType, QDBusError::errorString(errorType));
     }
     return Result::makeSuccess();
+  }
+
+  extern Result OpenURL(const QUrl& url);
+
+  Result OpenCustomURL(const QString& format, const QString& url)
+  {
+    log::debug("custom url handler: '{}'", format);
+
+    QString formatStr = format;
+
+    // remove %2 %3 ... %98 %99
+    static auto regex = QRegularExpression(u"%([2-9]|[1-9][0-9](?![0-9]))"_s);
+    formatStr.replace(regex, "");
+
+    QString cmd = QString(formatStr).arg(url);
+
+    log::debug("running '{}'", cmd);
+
+    auto cmdList = QProcess::splitCommand(cmd);
+
+    QProcess p;
+    qint64 pid;
+    p.setProgram(cmdList.takeFirst());
+    p.setArguments(cmdList);
+    if (!p.startDetached(&pid)) {
+      log::error("failed to run '{}'", cmd);
+      log::error("{}", p.errorString());
+      log::error(
+          "{}",
+          QObject::tr("You have an invalid custom browser command in the settings."));
+      return Result::makeFailure(p.error(), p.errorString());
+    }
+    return Result::makeSuccess(pidfd_open(static_cast<pid_t>(pid), 0));
+  }
+
+  Result Open(const QUrl& url)
+  {
+    if (g_urlHandler.isEmpty()) {
+      return OpenURL(url);
+    }
+    return OpenCustomURL(g_urlHandler, url.toString(QUrl::FullyEncoded));
+  }
+
+  HANDLE GetHandleFromPid(qint64 pid)
+  {
+    return pidfd_open(static_cast<pid_t>(pid), 0);
+  }
+
+  QString toUNC(const QFileInfo& path)
+  {
+    return path.absoluteFilePath();
+  }
+
+  QString formatError(int i)
+  {
+    return strerror(i);
   }
 
 }  // namespace shell

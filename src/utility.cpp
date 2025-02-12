@@ -25,30 +25,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "report.h"
 #include <QApplication>
 #include <QCollator>
+#include <QDesktopServices>
 #include <QDir>
 #include <QErrorMessage>
 #include <QImage>
+#include <QNtfsPermissionCheckGuard>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QStringEncoder>
-#include <memory>
 
 #ifdef __unix__
-#include <csignal>
-#define ERROR_SUCCESS EXIT_SUCCESS
-#define ERROR_FILE_NOT_FOUND ENOENT
-inline int GetLastError()
-{
-  return errno;
-}
-#define sprintf_s sprintf
-static inline constexpr bool USE_UNC = false;
-static const QString launchCommand   = QStringLiteral("xdg-open");
-static const QString exploreCommand  = QStringLiteral("xdg-open");
-#else
-static inline constexpr bool USE_UNC = true;
-static const QString launchCommand   = QStringLiteral(R"(start "" /b)");
-static const QString exploreCommand  = QStringLiteral(R"(start "" /b explore)");
+#define QNtfsPermissionCheckGuard void*
 #endif
 
 namespace MOBase
@@ -57,9 +44,9 @@ namespace MOBase
 // forward declarations
 namespace shell
 {
-  Result ExploreDirectory(const QFileInfo& info);
-  Result
-  ExploreFileInDirectory(const QFileInfo& info);  // has os specific implementation
+  extern Result ExploreFileInDirectory(const QFileInfo& info);
+  extern QString toUNC(const QFileInfo& path);
+  extern HANDLE GetHandleFromPid(qint64 pid);
 }  // namespace shell
 
 QString fileErrorToString(QFileDevice::FileError error)
@@ -172,28 +159,24 @@ bool copyDir(const QString& sourceName, const QString& destinationName, bool mer
 
 namespace shell
 {
-  QString toUNC(const QFileInfo& path);
 
-  static QString g_urlHandler;
-
-  Result::Result(bool success, int error, QString message,
-                 std::shared_ptr<QProcess> process)
+  Result::Result(bool success, DWORD error, QString message, HANDLE process)
       : m_success(success), m_error(error), m_message(std::move(message)),
-        m_process(std::move(process))
+        m_process(process)
   {
     if (m_message.isEmpty()) {
       m_message = ToQString(formatSystemMessage(m_error));
     }
   }
 
-  Result Result::makeFailure(int error, QString message)
+  Result Result::makeFailure(DWORD error, QString message)
   {
-    return Result(false, error, std::move(message), nullptr);
+    return Result(false, error, std::move(message), INVALID_HANDLE_VALUE);
   }
 
-  Result Result::makeSuccess(std::shared_ptr<QProcess> process)
+  Result Result::makeSuccess(HANDLE process)
   {
-    return Result(true, ERROR_SUCCESS, {}, std::move(process));
+    return Result(true, ERROR_SUCCESS, {}, process);
   }
 
   bool Result::success() const
@@ -206,7 +189,7 @@ namespace shell
     return m_success;
   }
 
-  int Result::error() const
+  DWORD Result::error() const
   {
     return m_error;
   }
@@ -216,16 +199,16 @@ namespace shell
     return m_message;
   }
 
-  std::shared_ptr<QProcess> Result::processHandle() const
+  HANDLE Result::processHandle() const
   {
-    return m_process;
+    return m_process.get();
   }
 
-  std::shared_ptr<QProcess> Result::stealProcessHandle()
+  HANDLE Result::stealProcessHandle()
   {
-    auto tmp = m_process;
-    m_process.reset();
-    return tmp;
+    const auto h = m_process.release();
+    m_process.reset(INVALID_HANDLE_VALUE);
+    return h;
   }
 
   QString Result::toString() const
@@ -235,6 +218,40 @@ namespace shell
     } else {
       return m_message;
     }
+  }
+
+  // check if file exists and is readable
+  int CheckFile(const QFileInfo& info)
+  {
+    QNtfsPermissionCheckGuard permissionGuard;
+    if (!info.exists()) {
+      return ERROR_PATH_NOT_FOUND;
+    }
+    if (!info.isReadable()) {
+      // If the NTFS permissions check has not been enabled,
+      // the result on Windows will merely reflect whether the entry exists.
+      return ERROR_ACCESS_DENIED;
+    }
+
+    return 0;
+  }
+  int CheckFile(const QString& path)
+  {
+    return CheckFile(QFileInfo(path));
+  }
+
+  Result ExploreDirectory(const QFileInfo& info)
+  {
+    auto check = CheckFile(info);
+    if (check != 0) {
+      return Result::makeFailure(check, formatError(check));
+    }
+    auto result = QDesktopServices::openUrl(QUrl::fromLocalFile(info.absolutePath()));
+    if (!result) {
+      const auto e = GetLastError();
+      return Result::makeFailure(e, formatError(e));
+    }
+    return Result::makeSuccess();
   }
 
   Result Explore(const QFileInfo& info)
@@ -265,100 +282,42 @@ namespace shell
     return Explore(QFileInfo(dir.absolutePath()));
   }
 
-  QString toUNC(const QFileInfo& path)
+  Result Open(const QString& path)
   {
-    auto wpath = QDir::toNativeSeparators(path.absoluteFilePath());
-    if (!wpath.startsWith(R"(\\?\)") && USE_UNC) {
-      wpath = R"(\\?\)" + wpath;
+    auto check = CheckFile(path);
+    if (check != 0) {
+      return Result::makeFailure(check, formatError(check));
     }
-
-    return wpath;
-  }
-
-  Result ShellExecuteWrapper(const QString& operation, const QString& file,
-                             const QString& params)
-  {
-    QStringList commands;
-    if (!operation.isEmpty()) {
-      commands << operation;
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(path))) {
+      const auto e = GetLastError();
+      return Result::makeFailure(e, formatError(e));
     }
-    if (!file.isEmpty()) {
-      commands << file;
-    }
-    if (!params.isEmpty()) {
-      commands << params;
-    }
-    auto process = std::make_unique<QProcess>();
-    process->startCommand(commands.join(' '));
-    if (!process->waitForStarted(500)) {
-      log::error("failed to run '{}': {}", commands.join(' '), process->errorString());
-      return Result::makeFailure(process->exitCode(), process->errorString());
-    }
-
-    return Result::makeSuccess(std::move(process));
-  }
-
-  Result ExploreDirectory(const QFileInfo& info)
-  {
-    const auto path = QDir::toNativeSeparators(info.absoluteFilePath());
-
-    return ShellExecuteWrapper(exploreCommand, path, {});
-  }
-
-  void SetUrlHandler(const QString& cmd)
-  {
-    g_urlHandler = cmd;
-  }
-
-  Result OpenCustomURL(const QString& format, const QString& url)
-  {
-    log::debug("custom url handler: '{}'", format);
-
-    QString formatStr = format;
-
-    // remove %2 %3 ... %98 %99
-    static QRegularExpression regex =
-        QRegularExpression("%([2-9]|[1-9][0-9](?![0-9]))");
-    formatStr.replace(regex, "");
-
-    QString cmd = QString(formatStr).arg(url);
-
-    log::debug("running '{}'", cmd);
-
-    QProcess p;
-    p.setProgram(launchCommand);
-    p.setArguments({cmd});
-
-    bool success = p.startDetached();
-    if (!success) {
-      const auto e = p.error();
-      log::error("failed to run '{}'", cmd);
-      log::error("{}", p.errorString());
-      log::error(
-          "{}",
-          QObject::tr("You have an invalid custom browser command in the settings."));
-      return Result::makeFailure(e);
-    }
-
     return Result::makeSuccess();
   }
 
-  Result Open(const QString& path)
+  Result OpenURL(const QUrl& url)
   {
-    return ShellExecuteWrapper(launchCommand, path, {});
-  }
-
-  Result Open(const QUrl& url)
-  {
-    if (g_urlHandler.isEmpty()) {
-      return ShellExecuteWrapper(launchCommand, url.toString(QUrl::FullyEncoded), {});
+    if (!url.isValid()) {
+      return Result::makeFailure(ERROR_BAD_ARGUMENTS, url.errorString());
     }
-    return OpenCustomURL(g_urlHandler, url.toString(QUrl::FullyEncoded));
+    if (!QDesktopServices::openUrl(url)) {
+      const auto e = GetLastError();
+      return Result::makeFailure(e, formatError(e));
+    }
+    return Result::makeSuccess();
   }
 
   Result Execute(const QString& program, const QString& params)
   {
-    return ShellExecuteWrapper({}, program, params);
+    QProcess p;
+    qint64 pid;
+    p.setProgram(program);
+    p.setArguments(QProcess::splitCommand(params));
+    bool result = p.startDetached(&pid);
+    if (!result) {
+      return Result::makeFailure(p.error(), p.errorString());
+    }
+    return Result::makeSuccess(GetHandleFromPid(pid));
   }
 
   Result Delete(const QFileInfo& path)
@@ -401,10 +360,9 @@ namespace shell
   Result DeleteDirectoryRecursive(const QDir& dir)
   {
     std::error_code ec;
-    bool success;
-    success = std::filesystem::remove_all(dir.filesystemPath(), ec);
+    std::filesystem::remove_all(dir.filesystemPath(), ec);
 
-    if (!success) {
+    if (ec) {
       return Result::makeFailure(ec.value(), ToQString(ec.message()));
     }
 
@@ -416,7 +374,7 @@ namespace shell
 bool moveFileRecursive(const QString& source, const QString& baseDir,
                        const QString& destination)
 {
-  QStringList pathComponents = destination.split("/");
+  QStringList pathComponents = destination.split('/');
   QString path               = baseDir;
   for (QStringList::Iterator iter = pathComponents.begin();
        iter != pathComponents.end() - 1; ++iter) {

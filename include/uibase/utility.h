@@ -184,7 +184,7 @@ namespace shell
   class QDLLEXPORT Result
   {
   public:
-    Result(bool success, int error, QString message, std::shared_ptr<QProcess> process);
+    Result(bool success, DWORD error, QString message, HANDLE process);
 
     // non-copyable
     Result(const Result&)            = delete;
@@ -192,8 +192,8 @@ namespace shell
     Result(Result&&)                 = default;
     Result& operator=(Result&&)      = default;
 
-    static Result makeFailure(int error, QString message = {});
-    static Result makeSuccess(std::shared_ptr<QProcess> = nullptr);
+    static Result makeFailure(DWORD error, QString message = {});
+    static Result makeSuccess(HANDLE process = INVALID_HANDLE_VALUE);
 
     // whether the operation was successful
     //
@@ -202,7 +202,7 @@ namespace shell
 
     // error returned by the underlying function
     //
-    int error() const;
+    DWORD error() const;
 
     // string representation of the message, may be localized
     //
@@ -210,12 +210,12 @@ namespace shell
 
     // process handle, if any
     //
-    std::shared_ptr<QProcess> processHandle() const;
+    HANDLE processHandle() const;
 
     // process handle, if any; sets the internal handle to INVALID_HANDLE_VALUE
     // so that the caller is in charge of closing it
     //
-    std::shared_ptr<QProcess> stealProcessHandle();
+    HANDLE stealProcessHandle();
 
     // the message, or the error number if empty
     //
@@ -223,9 +223,9 @@ namespace shell
 
   private:
     bool m_success;
-    int m_error;
+    DWORD m_error;
     QString m_message;
-    std::shared_ptr<QProcess> m_process;
+    details::HandlePtr m_process;
   };
 
   // returns a string representation of the given shell error; these errors are
