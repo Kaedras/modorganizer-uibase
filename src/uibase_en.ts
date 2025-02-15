@@ -185,114 +185,116 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="121"/>
+        <location filename="utility.cpp" line="108"/>
         <source>removal of &quot;%1&quot; failed: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="130"/>
+        <location filename="utility.cpp" line="117"/>
         <source>removal of &quot;%1&quot; failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="134"/>
+        <location filename="utility.cpp" line="121"/>
         <source>&quot;%1&quot; doesn&apos;t exist (remove)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="234"/>
+        <location filename="utility.cpp" line="217"/>
         <source>Error %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="339"/>
+        <location filename="linux/utility_linux.cpp" line="118"/>
+        <location filename="win32/utility_win32.cpp" line="192"/>
+        <location filename="win32/utility_win32.cpp" line="215"/>
         <source>You have an invalid custom browser command in the settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="425"/>
-        <location filename="utility.cpp" line="454"/>
+        <location filename="utility.cpp" line="383"/>
+        <location filename="utility.cpp" line="412"/>
         <source>failed to create directory &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="434"/>
-        <location filename="utility.cpp" line="461"/>
+        <location filename="utility.cpp" line="392"/>
+        <location filename="utility.cpp" line="419"/>
         <source>failed to copy &quot;%1&quot; to &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="497"/>
+        <location filename="utility.cpp" line="455"/>
         <source>source and destination lists have different sizes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="519"/>
+        <location filename="utility.cpp" line="477"/>
         <source>Target file already exists</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="521"/>
+        <location filename="utility.cpp" line="479"/>
         <source>&quot;%1&quot; already exists. Would you like to overwrite it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="539"/>
+        <location filename="utility.cpp" line="497"/>
         <source>Destination file could not be overwritten.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="549"/>
+        <location filename="utility.cpp" line="507"/>
         <source>Aborted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="903"/>
+        <location filename="utility.cpp" line="861"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="903"/>
+        <location filename="utility.cpp" line="861"/>
         <source>%1 KB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="904"/>
+        <location filename="utility.cpp" line="862"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="904"/>
+        <location filename="utility.cpp" line="862"/>
         <source>%1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="905"/>
+        <location filename="utility.cpp" line="863"/>
         <source>%1 TB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="910"/>
+        <location filename="utility.cpp" line="868"/>
         <source>%1 B/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="910"/>
+        <location filename="utility.cpp" line="868"/>
         <source>%1 KB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="911"/>
+        <location filename="utility.cpp" line="869"/>
         <source>%1 MB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="911"/>
+        <location filename="utility.cpp" line="869"/>
         <source>%1 GB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="912"/>
+        <location filename="utility.cpp" line="870"/>
         <source>%1 TB/s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -410,19 +412,19 @@
 <context>
     <name>uibase</name>
     <message>
-        <location filename="utility.cpp" line="974"/>
+        <location filename="utility.cpp" line="932"/>
         <source>h</source>
         <extracomment>Time remaining hours</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="977"/>
+        <location filename="utility.cpp" line="935"/>
         <source>m</source>
         <extracomment>Time remaining minutes</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="980"/>
+        <location filename="utility.cpp" line="938"/>
         <source>s</source>
         <extracomment>Time remaining seconds</extracomment>
         <translation type="unfinished"></translation>
