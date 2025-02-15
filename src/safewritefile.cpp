@@ -18,55 +18,52 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "safewritefile.h"
+#include "exceptions.h"
 #include "log.h"
 #include <QCryptographicHash>
-#include <QList>
 #include <QStorageInfo>
 #include <QString>
 
 namespace MOBase
 {
 
-SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName)
+SafeWriteFile::SafeWriteFile(const QString& fileName) : m_File(fileName)
 {
-  if (!m_TempFile.open()) {
+  if (!m_File.open(QIODeviceBase::ReadWrite | QIODeviceBase::Truncate)) {
     const auto av =
         static_cast<double>(QStorageInfo(QDir::tempPath()).bytesAvailable());
 
     log::error("failed to create temporary file for '{}', error {} ('{}'), "
                "temp path is '{}', {:.3f}GB available",
-               m_FileName, m_TempFile.error(), m_TempFile.errorString(),
+               fileName, m_File.error(), m_File.errorString(),
                QDir::tempPath(), (av / 1024 / 1024 / 1024));
 
     QString errorMsg =
         QObject::tr(
             "Failed to save '%1', could not create a temporary file: %2 (error %3)")
-            .arg(m_FileName)
-            .arg(m_TempFile.errorString())
-            .arg(m_TempFile.error());
+            .arg(fileName)
+            .arg(m_File.errorString())
+            .arg(m_File.error());
 
     throw Exception(errorMsg);
   }
 }
 
-QFile* SafeWriteFile::operator->()
+QFileDevice* SafeWriteFile::operator->()
 {
-  Q_ASSERT(m_TempFile.isOpen());
-  return &m_TempFile;
+  Q_ASSERT(m_File.isOpen());
+  return &m_File;
 }
 
 void SafeWriteFile::commit()
 {
-  shellDelete({m_FileName});
-  m_TempFile.rename(m_FileName);
-  m_TempFile.setAutoRemove(false);
-  m_TempFile.close();
+  m_File.commit();
 }
 
 bool SafeWriteFile::commitIfDifferent(QByteArray& inHash)
 {
   QByteArray newHash = hash();
-  if (newHash != inHash || !QFile::exists(m_FileName)) {
+  if (newHash != inHash || !QFile::exists(m_File.fileName())) {
     commit();
     inHash = newHash;
     return true;
@@ -77,11 +74,10 @@ bool SafeWriteFile::commitIfDifferent(QByteArray& inHash)
 
 QByteArray SafeWriteFile::hash()
 {
-
-  qint64 pos = m_TempFile.pos();
-  m_TempFile.seek(0);
-  QByteArray data = m_TempFile.readAll();
-  m_TempFile.seek(pos);
+  qint64 pos = m_File.pos();
+  m_File.seek(0);
+  QByteArray data = m_File.readAll();
+  m_File.seek(pos);
   return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
