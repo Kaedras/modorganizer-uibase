@@ -21,8 +21,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define SAFEWRITEFILE_H
 
 #include "dllimport.h"
-#include <QSaveFile>
+#include "utility.h"
+#include <QList>
 #include <QString>
+#include <QTemporaryFile>
 
 namespace MOBase
 {
@@ -36,7 +38,7 @@ class QDLLEXPORT SafeWriteFile
 public:
   SafeWriteFile(const QString& fileName);
 
-  QFileDevice* operator->();
+  QFile* operator->();
 
   void commit();
 
@@ -46,7 +48,8 @@ private:
   QByteArray hash();
 
 private:
-  QSaveFile m_File;
+  QString m_FileName;
+  QTemporaryFile m_TempFile;
 };
 
 }  // namespace MOBase
