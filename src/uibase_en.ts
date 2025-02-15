@@ -4,49 +4,49 @@
 <context>
     <name>FilterWidget</name>
     <message>
-        <location filename="filterwidget.cpp" line="610"/>
+        <location filename="filterwidget.cpp" line="611"/>
         <source>Filter options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="617"/>
+        <location filename="filterwidget.cpp" line="618"/>
         <source>Use regular expressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="618"/>
+        <location filename="filterwidget.cpp" line="619"/>
         <source>Use regular expressions in filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="627"/>
+        <location filename="filterwidget.cpp" line="628"/>
         <source>Case sensitive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="629"/>
+        <location filename="filterwidget.cpp" line="630"/>
         <source>Make regular expressions case sensitive (/i)</source>
         <extracomment>leave &quot;(/i)&quot; verbatim</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="639"/>
+        <location filename="filterwidget.cpp" line="640"/>
         <source>Extended</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="641"/>
+        <location filename="filterwidget.cpp" line="642"/>
         <source>Ignores unescaped whitespace in regular expressions (/x)</source>
         <extracomment>leave &quot;(/x)&quot; verbatim</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="651"/>
+        <location filename="filterwidget.cpp" line="652"/>
         <source>Keep selection in view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="652"/>
+        <location filename="filterwidget.cpp" line="653"/>
         <source>Scroll to keep the current selection in view after filtering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -91,7 +91,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="filterwidget.cpp" line="128"/>
+        <location filename="filterwidget.cpp" line="129"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
