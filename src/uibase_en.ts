@@ -103,6 +103,13 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="linux/utility_linux.cpp" line="118"/>
+        <location filename="win32/utility_win32.cpp" line="192"/>
+        <location filename="win32/utility_win32.cpp" line="215"/>
+        <source>You have an invalid custom browser command in the settings.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="pluginrequirements.cpp" line="31"/>
         <source>One of the following plugins must be enabled: %1.</source>
         <translation type="unfinished"></translation>
@@ -180,7 +187,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="safewritefile.cpp" line="42"/>
+        <location filename="safewritefile.cpp" line="43"/>
         <source>Failed to save &apos;%1&apos;, could not create a temporary file: %2 (error %3)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -202,13 +209,6 @@
     <message>
         <location filename="utility.cpp" line="217"/>
         <source>Error %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="linux/utility_linux.cpp" line="118"/>
-        <location filename="win32/utility_win32.cpp" line="192"/>
-        <location filename="win32/utility_win32.cpp" line="215"/>
-        <source>You have an invalid custom browser command in the settings.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

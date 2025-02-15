@@ -29,6 +29,7 @@ namespace MOBase
 
 SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName)
 {
+  m_TempFile.setFileName(fileName + ".tmp");
   if (!m_TempFile.open()) {
     const auto av =
         static_cast<double>(QStorageInfo(QDir::tempPath()).bytesAvailable());
