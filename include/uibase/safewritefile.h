@@ -21,8 +21,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define SAFEWRITEFILE_H
 
 #include "dllimport.h"
-#include <QString>
 #include <QSaveFile>
+#include <QString>
 
 namespace MOBase
 {

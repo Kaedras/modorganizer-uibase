@@ -34,9 +34,9 @@ SafeWriteFile::SafeWriteFile(const QString& fileName) : m_File(fileName)
         static_cast<double>(QStorageInfo(QDir::tempPath()).bytesAvailable());
 
     log::error("failed to create temporary file for '{}', error {} ('{}'), "
-               "temp path is '{}', {:.3f}GB available",
+               "{:.3f}GiB available",
                fileName, m_File.error(), m_File.errorString(),
-               QDir::tempPath(), (av / 1024 / 1024 / 1024));
+               (av / 1024 / 1024 / 1024));
 
     QString errorMsg =
         QObject::tr(
