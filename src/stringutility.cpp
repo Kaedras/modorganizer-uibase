@@ -23,23 +23,16 @@ public:
 
 bool iequals(std::string_view lhs, std::string_view rhs)
 {
-  return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), is_iequal());
+  return std::ranges::equal(lhs, rhs, is_iequal());
 }
 
 void ireplace_all(std::string& input, std::string_view search,
                   std::string_view replace) noexcept
 {
-  const auto search_length  = static_cast<std::string::difference_type>(search.size());
-  const auto replace_length = replace.size();
-  auto it                   = input.begin();
-  while (input.end() - it >= search_length) {
-    const auto search_end = it + search_length;
-    if (iequals(std::string_view(it, search_end), search)) {
-      input.replace(it, search_end, replace);
-      it += static_cast<std::string::difference_type>(replace_length);
-    } else {
-      ++it;
-    }
+  auto result = std::ranges::search(input, search, is_iequal());
+  while (!result.empty()) {
+    input.replace(result.begin(), result.end(), replace);
+    result = std::ranges::search(input, search, is_iequal());
   }
 }
 
