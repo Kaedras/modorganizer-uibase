@@ -31,6 +31,8 @@ TEST(StringsTest, IReplaceAll)
             ireplace_all("replace some stuff with some stuff some", "some", "a"));
   ASSERT_EQ("replace a stuff with a stuff som",
             ireplace_all("replace some stuff with some stuff som", "some", "a"));
+  ASSERT_EQ("replace some stuffff with some stuffff some",
+            ireplace_all("replace some stuff with some stuff some", "f", "ff"));
   ASSERT_EQ("1YYY3YYY2", ireplace_all("1aBc3AbC2", "abC", "YYY"));
 }
 

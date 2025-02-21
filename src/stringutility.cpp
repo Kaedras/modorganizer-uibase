@@ -29,10 +29,20 @@ bool iequals(std::string_view lhs, std::string_view rhs)
 void ireplace_all(std::string& input, std::string_view search,
                   std::string_view replace) noexcept
 {
-  auto result = std::ranges::search(input, search, is_iequal());
+  if (search.empty() || search == replace) {
+    return;
+  }
+
+  auto result   = std::ranges::search(input, search, is_iequal());
+  auto startPos = std::distance(input.begin(), result.begin());
+
   while (!result.empty()) {
-    input.replace(result.begin(), result.end(), replace);
-    result = std::ranges::search(input, search, is_iequal());
+    input.replace(startPos, search.length(), replace);
+    startPos += replace.length();
+
+    result = std::ranges::search(input.begin() + startPos, input.end(), search.begin(),
+                                 search.end(), is_iequal());
+    startPos = std::distance(input.begin(), result.begin());
   }
 }
 
