@@ -79,11 +79,10 @@ namespace shell
     QDBusInterface interface(u"org.freedesktop.FileManager1"_s,
                              u"/org/freedesktop/FileManager1"_s,
                              u"org.freedesktop.FileManager1"_s);
-    interface.call(u"org.freedesktop.FileManager1.ShowItems"_s,
-                   QStringList(u"file://"_s % info.absoluteFilePath()), "");
-    auto errorType = interface.lastError().type();
-    if (errorType != QDBusError::NoError) {
-      return Result::makeFailure((int)errorType, QDBusError::errorString(errorType));
+    QDBusMessage response = interface.call(
+        u"ShowItems"_s, QStringList(u"file://"_s % info.absoluteFilePath()), "");
+    if (response.type() == QDBusMessage::ErrorMessage) {
+      return Result::makeFailure((uint32_t)response.type(), response.errorMessage());
     }
     return Result::makeSuccess();
   }
