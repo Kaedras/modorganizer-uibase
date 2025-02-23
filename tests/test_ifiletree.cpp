@@ -9,6 +9,8 @@
 
 #include <uibase/ifiletree.h>
 
+static inline const QChar seperator = QDir::separator();
+
 std::ostream& operator<<(std::ostream& os, const QString& str)
 {
   return os << str.toStdString();
@@ -343,14 +345,14 @@ TEST(IFileTreeTest, TreeIsPopulatedCorrectly)
     EXPECT_EQ(cx->path(), "c.x");
     EXPECT_EQ(dy->path(), "d.y");
     EXPECT_EQ(e->path(), "e");
-    EXPECT_EQ(e_q->path(), "e\\q");
+    EXPECT_EQ(e_q->path(), QString("e%1q").arg(seperator));
     EXPECT_EQ(e_q->pathFrom(e->astree()), "q");
     EXPECT_EQ(e_q_ct->path("/"), "e/q/c.t");
-    EXPECT_EQ(e_q_ct->pathFrom(e->astree()), "q\\c.t");
+    EXPECT_EQ(e_q_ct->pathFrom(e->astree()), QString("q%1c.t").arg(seperator));
     EXPECT_EQ(e_q_ct->pathFrom(e_q->astree(), "/"), "c.t");
-    EXPECT_EQ(e_q_p->path(), "e\\q\\p");
+    EXPECT_EQ(e_q_p->path(), QString("e%1q%1p").arg(seperator));
     EXPECT_EQ(e_q_p->path("/"), "e/q/p");
-    EXPECT_EQ(e_q_p->pathFrom(e->astree()), "q\\p");
+    EXPECT_EQ(e_q_p->pathFrom(e->astree()), QString("q%1p").arg(seperator));
     EXPECT_EQ(e_q_p->pathFrom(e_q->astree()), "p");
 
     EXPECT_EQ(a->pathFrom(b->astree()), "");
