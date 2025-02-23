@@ -223,7 +223,7 @@ namespace shell
   // check if file exists and is readable
   int CheckFile(const QFileInfo& info)
   {
-    QNtfsPermissionCheckGuard permissionGuard;
+    [[maybe_unused]] QNtfsPermissionCheckGuard permissionGuard;
     if (!info.exists()) {
       return ERROR_PATH_NOT_FOUND;
     }
