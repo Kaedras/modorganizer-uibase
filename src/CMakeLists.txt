@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.16)
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
 
+if (UNIX)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
+endif ()
+
 if (WIN32)
     set(OS_NAME win32)
 else ()
@@ -133,6 +138,7 @@ set(root_sources
         safewritefile.cpp
         scopeguard.cpp
         steamutility.cpp
+        ${OS_NAME}/steamutility_${OS_NAME}.cpp
         stringutility.cpp
         utility.cpp
         ${OS_NAME}/utility_${OS_NAME}.cpp
@@ -228,6 +234,10 @@ target_include_directories(uibase PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase/game_features>
 )
 
+if (UNIX)
+    target_include_directories(uibase PRIVATE ${LIBFLATPAK_INCLUDE_DIRS})
+endif()
+
 add_library(mo2::uibase ALIAS uibase)
 
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
@@ -238,7 +248,7 @@ set(PRIVATE_LIBS spdlog::spdlog_header_only
 )
 
 set(PRIVATE_WIN32_LIBS Version)
-set(PRIVATE_UNIX_LIBS Qt6::DBus)
+set(PRIVATE_UNIX_LIBS Qt6::DBus ${LIBFLATPAK_LIBRARIES})
 
 if (WIN32)
     target_link_libraries(uibase

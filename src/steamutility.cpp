@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QList>
 #include <QRegularExpression>
-#include <QSettings>
 #include <QString>
 #include <QTextStream>
 
@@ -34,12 +33,6 @@ namespace MOBase
 //    "1" "Path\to\library"
 static const QRegularExpression
     kSteamLibraryFilter("^\\s*\"(?<idx>[0-9]+)\"\\s*\"(?<path>.*)\"");
-
-QString findSteam()
-{
-  QSettings steamRegistry("Valve", "Steam");
-  return steamRegistry.value("SteamPath").toString();
-}
 
 QString findSteamGame(const QString& appName, const QString& validFile)
 {
