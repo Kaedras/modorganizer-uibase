@@ -57,7 +57,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
-          build-essential cmake curl git flatpak libegl1-mesa-dev libgl1-mesa-dev \
+          build-essential cmake curl git flatpak libflatpak-dev libegl1-mesa-dev libgl1-mesa-dev \
           libglvnd-dev mesa-common-dev ninja-build pkg-config tar unzip zip
 
       - name: Configure UI Base build
