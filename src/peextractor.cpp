@@ -2,6 +2,7 @@
 #include "petypes.h"
 
 #include <QDataStream>
+#include <QFile>
 #include <QIODevice>
 #include <QString>
 #include <QVector>
@@ -103,11 +104,11 @@ QDataStream& operator>>(QDataStream& s, PeResourceDataEntry& v)
 
 qint64 addressToOffset(const QVector<PeSection>& sections, quint32 rva)
 {
-  for (int i = 0; i < sections.size(); i++) {
-    auto sectionBegin = sections[i].virtualAddress;
-    auto sectionEnd   = sections[i].virtualAddress + sections[i].sizeOfRawData;
+  for (const auto& section : sections) {
+    quint32 sectionBegin = section.virtualAddress;
+    quint32 sectionEnd   = section.virtualAddress + section.sizeOfRawData;
     if (rva >= sectionBegin && rva < sectionEnd) {
-      return rva - sectionBegin + sections[i].pointerToRawData;
+      return rva - sectionBegin + section.pointerToRawData;
     }
   }
   return -1;
@@ -115,11 +116,11 @@ qint64 addressToOffset(const QVector<PeSection>& sections, quint32 rva)
 
 QVector<PeResourceDirectoryEntry> readResourceDataDirectoryEntry(QDataStream& ds)
 {
-  PeResourceDirectoryTable table;
+  PeResourceDirectoryTable table{};
   ds >> table;
   QVector<PeResourceDirectoryEntry> entries;
   for (int i = 0; i < table.numNameEntries + table.numIDEntries; i++) {
-    PeResourceDirectoryEntry entry;
+    PeResourceDirectoryEntry entry{};
     ds >> entry;
     entries.append(entry);
   }
@@ -141,7 +142,7 @@ bool PeExtractor::readPeData()
     return false;
   }
 
-  PeFileHeader fileHeader;
+  PeFileHeader fileHeader{};
   bool isPe32Plus;
 
   // Seek to + verify PE header. We're at the file header after this.
@@ -187,7 +188,7 @@ bool PeExtractor::readPeData()
   }
 
   for (int i = 0; i < fileHeader.numSections; i++) {
-    PeSection section;
+    PeSection section{};
     m_inputStream >> section;
     m_sections.append(section);
   }
@@ -204,7 +205,7 @@ bool PeExtractor::readPeData()
   if (!m_inputStream.device()->seek(dataDirOffset)) {
     return false;
   }
-  PeDataDirectory resourceDirectory;
+  PeDataDirectory resourceDirectory{};
   m_inputStream >> resourceDirectory;
 
   // Read resource tree.
@@ -217,7 +218,7 @@ bool PeExtractor::readPeData()
     return false;
   }
 
-  auto level1 = readResourceDataDirectoryEntry(m_inputStream);
+  const auto level1 = readResourceDataDirectoryEntry(m_inputStream);
 
   for (auto entry1 : level1) {
     if ((entry1.offset & PeSubdirBitMask) == 0)
@@ -227,7 +228,7 @@ bool PeExtractor::readPeData()
       return false;
     }
 
-    auto level2 = readResourceDataDirectoryEntry(m_inputStream);
+    const auto level2 = readResourceDataDirectoryEntry(m_inputStream);
 
     for (auto entry2 : level2) {
       if ((entry2.offset & PeSubdirBitMask) == 0)
@@ -238,7 +239,7 @@ bool PeExtractor::readPeData()
       }
 
       // Read subdirectory.
-      auto level3 = readResourceDataDirectoryEntry(m_inputStream);
+      const auto level3 = readResourceDataDirectoryEntry(m_inputStream);
 
       for (auto entry3 : level3) {
         if ((entry3.offset & PeSubdirBitMask) == PeSubdirBitMask)
@@ -249,7 +250,7 @@ bool PeExtractor::readPeData()
         }
 
         // Read data.
-        PeResourceDataEntry dataEntry;
+        PeResourceDataEntry dataEntry{};
         m_inputStream >> dataEntry;
 
         switch (static_cast<ResourceType>(entry1.resourceId)) {
@@ -292,20 +293,17 @@ bool PeExtractor::readIcon()
   QDataStream out{m_outputDevice};
   out.setByteOrder(QDataStream::LittleEndian);
 
-  RtGroupIconDirectory primaryIconGroup;
+  RtGroupIconDirectory primaryIconGroup{};
   ds >> primaryIconGroup;
 
-  IconDir icoFileHeader;
-  icoFileHeader.reserved = 0;
-  icoFileHeader.type     = 1;  // Always 1 for ico files.
-  icoFileHeader.count    = primaryIconGroup.count;
+  IconDir icoFileHeader{0, 1 /*Always 1 for ico files.*/, primaryIconGroup.count};
   out << icoFileHeader;
 
   quint32 dataOffset = IconDirSize + IconDirEntrySize * primaryIconGroup.count;
   QVector<QPair<qint64, quint32>> resourceOffsetSizePairs;
 
   for (int i = 0; i < primaryIconGroup.count; i++) {
-    RtGroupIconDirectoryEntry entry;
+    RtGroupIconDirectoryEntry entry{};
     ds >> entry;
 
     IconDirEntry icoFileEntry{entry, dataOffset};
@@ -331,31 +329,31 @@ bool PeExtractor::readIcon()
   return true;
 }
 
-bool PeExtractor::readVersionInfo()
+bool PeExtractor::readVersionInfo() const
 {
-  QDataStream ds{m_inputDevice};
-  ds.setByteOrder(QDataStream::LittleEndian);
-
   if (!m_versionResource.has_value()) {
     return false;
   }
+
+  QDataStream ds{m_inputDevice};
+  ds.setByteOrder(QDataStream::LittleEndian);
 
   if (!ds.device()->seek(addressToOffset(m_sections, m_versionResource->dataAddress))) {
     return false;
   }
 
-  PeVersionInfo versionInfo;
+  PeVersionInfo versionInfo{};
   ds >> versionInfo;
 
   QDataStream out{m_outputDevice};
 
-  out << QString("%1.%2.%3.%4")
+  out << QStringLiteral("%1.%2.%3.%4")
              .arg(versionInfo.FileVersion[0])
              .arg(versionInfo.FileVersion[1])
              .arg(versionInfo.FileVersion[2])
              .arg(versionInfo.FileVersion[3]);
 
-  out << QString("%1.%2.%3.%4")
+  out << QStringLiteral("%1.%2.%3.%4")
              .arg(versionInfo.ProductVersion[0])
              .arg(versionInfo.ProductVersion[1])
              .arg(versionInfo.ProductVersion[2])
@@ -379,6 +377,15 @@ bool PeExtractor::loadIconData(QIODevice* inputDevice, QIODevice* outputDevice)
   return extractor.readIcon();
 }
 
+bool PeExtractor::loadIconData(const QString& exeFile, QIODevice* outputDevice)
+{
+  QFile file(exeFile);
+  if (!file.open(QIODeviceBase::ReadOnly)) {
+    return false;
+  }
+  return loadIconData(&file, outputDevice);
+}
+
 bool PeExtractor::loadVersionData(QIODevice* inputDevice, QIODevice* outputDevice)
 {
   PeExtractor extractor(inputDevice, outputDevice);
@@ -388,4 +395,13 @@ bool PeExtractor::loadVersionData(QIODevice* inputDevice, QIODevice* outputDevic
   }
 
   return extractor.readVersionInfo();
+}
+
+bool PeExtractor::loadVersionData(const QString& exeFile, QIODevice* outputDevice)
+{
+  QFile file(exeFile);
+  if (!file.open(QIODeviceBase::ReadOnly)) {
+    return false;
+  }
+  return loadVersionData(&file, outputDevice);
 }
