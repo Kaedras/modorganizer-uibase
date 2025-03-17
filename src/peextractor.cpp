@@ -46,13 +46,15 @@ QDataStream& operator<<(QDataStream& s, const IconDirEntry& v)
 
 QDataStream& operator>>(QDataStream& s, PeVersionInfo& v)
 {
+  // FileVersion and ProductVersion order is [1] [0] [3] [2], not [0] [1] [2] [3]
+  // because they are stored as 32-bit values
   s >> v.StructLength >> v.ValueLength >> v.StructType >> v.Info[0] >> v.Info[1] >>
       v.Info[2] >> v.Info[3] >> v.Info[4] >> v.Info[5] >> v.Info[6] >> v.Info[7] >>
       v.Info[8] >> v.Info[9] >> v.Info[10] >> v.Info[11] >> v.Info[12] >> v.Info[13] >>
       v.Info[14] >> v.Info[15] >> v.Padding[0] >> v.Padding[1] >> v.Signature >>
-      v.StructVersion[0] >> v.StructVersion[1] >> v.FileVersion[0] >>
-      v.FileVersion[1] >> v.FileVersion[2] >> v.FileVersion[3] >> v.ProductVersion[0] >>
-      v.ProductVersion[1] >> v.ProductVersion[2] >> v.ProductVersion[3] >>
+      v.StructVersion[0] >> v.StructVersion[1] >> v.FileVersion[1] >>
+      v.FileVersion[0] >> v.FileVersion[3] >> v.FileVersion[2] >> v.ProductVersion[1] >>
+      v.ProductVersion[0] >> v.ProductVersion[3] >> v.ProductVersion[2] >>
       v.FileFlagsMask[0] >> v.FileFlagsMask[1] >> v.FileFlags >> v.FileOS >>
       v.FileType >> v.FileSubtype >> v.FileTimestamp;
   return s;
@@ -280,6 +282,7 @@ bool PeExtractor::readIcon()
   }
 
   QDataStream ds{m_inputDevice};
+  ds.setByteOrder(QDataStream::LittleEndian);
 
   if (!ds.device()->seek(
           addressToOffset(m_sections, m_primaryIconGroupResource->dataAddress))) {
