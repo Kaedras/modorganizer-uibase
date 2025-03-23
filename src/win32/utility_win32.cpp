@@ -235,10 +235,12 @@ namespace shell
     }
   }
 
-  HANDLE GetHandleFromPid(qint64 pid)
+  Result Execute(const QString& program, const QString& params)
   {
-    auto result = OpenProcess(PROCESS_ALL_ACCESS, false, (DWORD)pid);
-    return result ? result : INVALID_HANDLE_VALUE;
+    const auto program_ws = program.toStdWString();
+    const auto params_ws  = params.toStdWString();
+
+    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
   }
 
   QString toUNC(const QFileInfo& path)

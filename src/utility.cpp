@@ -46,7 +46,6 @@ namespace shell
 {
   extern Result ExploreFileInDirectory(const QFileInfo& info);
   extern QString toUNC(const QFileInfo& path);
-  extern HANDLE GetHandleFromPid(qint64 pid);
 }  // namespace shell
 
 QString fileErrorToString(QFileDevice::FileError error)
@@ -305,19 +304,6 @@ namespace shell
       return Result::makeFailure(e, formatError(e));
     }
     return Result::makeSuccess();
-  }
-
-  Result Execute(const QString& program, const QString& params)
-  {
-    QProcess p;
-    qint64 pid;
-    p.setProgram(program);
-    p.setArguments(QProcess::splitCommand(params));
-    bool result = p.startDetached(&pid);
-    if (!result) {
-      return Result::makeFailure(p.error(), p.errorString());
-    }
-    return Result::makeSuccess(GetHandleFromPid(pid));
   }
 
   Result Delete(const QFileInfo& path)

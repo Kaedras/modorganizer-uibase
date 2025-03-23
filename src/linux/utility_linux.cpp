@@ -60,7 +60,8 @@ namespace shell
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
     /*
-     interface specification:
+    interface specification:
+
     <interface name='org.freedesktop.FileManager1'>
     <method name='ShowFolders'>
       <arg type='as' name='URIs' direction='in'/>
@@ -74,17 +75,113 @@ namespace shell
       <arg type='as' name='URIs' direction='in'/>
       <arg type='s' name='StartupId' direction='in'/>
     </method>
-  </interface>
-  */
+    </interface>
+    */
     QDBusInterface interface(u"org.freedesktop.FileManager1"_s,
                              u"/org/freedesktop/FileManager1"_s,
                              u"org.freedesktop.FileManager1"_s);
     QDBusMessage response = interface.call(
         u"ShowItems"_s, QStringList(u"file://"_s % info.absoluteFilePath()), "");
     if (response.type() == QDBusMessage::ErrorMessage) {
-      return Result::makeFailure((uint32_t)response.type(), response.errorMessage());
+      return Result::makeFailure(static_cast<uint32_t>(response.type()),
+                                 response.errorMessage());
     }
     return Result::makeSuccess();
+  }
+
+  Result Execute(const QString& program, const QString& params)
+  {
+    // create argument array for execvp
+    vector<const char*> args;
+    // split arguments
+    QStringList argList = QProcess::splitCommand(params);
+    // first argument is executable
+    args.reserve(argList.size() + 1);
+    args.push_back(program.toLocal8Bit());
+    for (const auto& arg : argList) {
+      args.push_back(arg.toLocal8Bit());
+    }
+    // array must be terminated by a null pointer
+    args.push_back(nullptr);
+
+    /*
+    source: https://stackoverflow.com/a/3703179
+    1. Before forking, open a pipe in the parent process.
+    2. After forking, the parent closes the writing end of the pipe and reads from the
+    reading end.
+    3. The child closes the reading end and sets the close-on-exec flag for the writing
+    end.
+    4. The child calls exec.
+    5. If exec fails, the child writes the error code back to the parent using the pipe,
+    then exits.
+    6. The parent reads eof (a zero-length read) if the child successfully performed
+    exec, since close-on-exec made successful exec close the writing end of the pipe.
+    Or, if exec failed, the parent reads the error code and can proceed accordingly.
+    Either way, the parent blocks until the child calls exec.
+    7. The parent closes the reading end of the pipe.
+    */
+
+    // pipefd[0] refers to the read end of the pipe. pipefd[1] refers to the write end
+    // of the pipe.
+    int pipefd[2];
+
+    int result = pipe(pipefd);
+    if (result == -1) {
+      return Result::makeFailure(EPIPE, "Could not open pipe");
+    }
+
+    pid_t pid = fork();
+
+    switch (pid) {
+    case 0:  // child
+    {
+      // close read end
+      close(pipefd[0]);
+      // set CLOEXEC on write end
+      fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+
+      // from man 3 exec: If the specified filename includes a slash character, then
+      // PATH is ignored, and the file at the specified pathname is executed.
+      execvp(args[0], const_cast<char* const*>(args.data()));
+
+      // The exec() functions return only if an error has occurred. The return value is
+      // -1, and errno is set to indicate the error.
+      const int error = errno;
+
+      ssize_t bytesWritten = write(pipefd[1], &error, sizeof(int));
+      if (bytesWritten == -1) {
+        const int writeError = errno;
+        log::warn("Error writing exec error to pipe, {}.\nExec error was {}",
+                  strerror(writeError), strerror(error));
+      }
+
+      exit(error);
+    }
+    case -1:  // error
+    {
+      const int error = errno;
+      return Result::makeFailure(
+          error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
+    }
+    default:  // parent
+    {
+      // close write end
+      close(pipefd[1]);
+
+      int buf;
+
+      size_t count = read(pipefd[0], &buf, sizeof(int));
+
+      // close read end
+      close(pipefd[0]);
+      if (count == 0) {
+        // success
+        return Result::makeSuccess(pidfd_open(pid, 0));
+      }
+
+      return Result::makeFailure(buf, QString::fromStdString(strerror(buf)));
+    }
+    }
   }
 
   extern Result OpenURL(const QUrl& url);
@@ -103,21 +200,18 @@ namespace shell
 
     log::debug("running '{}'", cmd);
 
-    auto cmdList = QProcess::splitCommand(cmd);
+    // split cmd into program and arguments
+    QString program, args;
+    if (cmd.contains(' ')) {
+      auto pos = cmd.indexOf(' ');
 
-    QProcess p;
-    qint64 pid;
-    p.setProgram(cmdList.takeFirst());
-    p.setArguments(cmdList);
-    if (!p.startDetached(&pid)) {
-      log::error("failed to run '{}'", cmd);
-      log::error("{}", p.errorString());
-      log::error(
-          "{}",
-          QObject::tr("You have an invalid custom browser command in the settings."));
-      return Result::makeFailure(p.error(), p.errorString());
+      program = cmd.mid(0, pos);
+      args    = cmd.sliced(pos);
+    } else {
+      program = cmd;
     }
-    return Result::makeSuccess(pidfd_open(static_cast<pid_t>(pid), 0));
+
+    return Execute(program, args);
   }
 
   Result Open(const QUrl& url)
