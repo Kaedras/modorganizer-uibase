@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
+find_package(vdf-parser CONFIG REQUIRED)
 
 if (UNIX)
     find_package(PkgConfig REQUIRED)
@@ -244,7 +245,7 @@ target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 set(PUBLIC_LIBS Qt6::Widgets Qt6::Network Qt6::QuickWidgets)
 set(PRIVATE_LIBS spdlog::spdlog_header_only
-        Qt6::Qml Qt6::Quick
+        Qt6::Qml Qt6::Quick vdf-parser
 )
 
 set(PRIVATE_WIN32_LIBS Version)
