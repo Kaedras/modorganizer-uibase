@@ -147,17 +147,16 @@ set(root_sources
         versioninfo.cpp
 )
 
-# potentially add platform specific files here
-#if (UNIX)
+if (UNIX)
 #    set(root_sources
 #            ${root_sources}
 #
 #    )
-#    set(root_headers
-#            ${root_headers}
-#
-#    )
-#endif()
+    set(root_headers
+            ${root_headers}
+            ../include/uibase/linux/compatibility.h
+    )
+endif()
 
 
 mo2_target_sources(uibase

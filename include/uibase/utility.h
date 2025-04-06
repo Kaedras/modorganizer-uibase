@@ -33,6 +33,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef __unix__
 #include "linux/utility_linux.h"
+#include "linux/compatibility.h"
+namespace MOBase::details
+{
+using HandlePtr = FdCloser;
+}
 #else
 #include "win32/utility_win32.h"
 #endif
