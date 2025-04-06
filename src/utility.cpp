@@ -35,7 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QStringEncoder>
 
 #ifdef __unix__
-#define QNtfsPermissionCheckGuard void*
+#define QNtfsPermissionCheckGuard [[maybe_unused]] void*
 #endif
 
 namespace MOBase
