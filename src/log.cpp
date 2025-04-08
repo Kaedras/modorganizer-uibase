@@ -6,11 +6,15 @@
 #include <algorithm>
 #include <locale>
 
+#ifdef __unix__
+static constexpr int newLineSize = 1;
+#else
 #pragma warning(push)
 #pragma warning(disable : 4365)
-#ifdef _WIN32
 #define SPDLOG_WCHAR_FILENAMES 1
+static constexpr int newLineSize = 2;
 #endif
+
 #include <spdlog/logger.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -101,9 +105,10 @@ protected:
       spdlog::memory_buf_t formatted;
       base_sink::formatter_->format(m, formatted);
 
-      if (formatted.size() >= 2) {
-        // remove \r\n
-        e.formattedMessage.assign(formatted.begin(), formatted.end() - 2);
+      if (formatted.size() >= newLineSize) {
+        // remove \n on unix
+        // remove \r\n on windows
+        e.formattedMessage.assign(formatted.begin(), formatted.end() - newLineSize);
       } else {
         e.formattedMessage = std::string(formatted);
       }

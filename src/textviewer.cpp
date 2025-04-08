@@ -196,7 +196,10 @@ void TextViewer::saveFile(const QTextEdit* editor)
   }
 
   if (write) {
+#ifdef _WIN32
+    // replace \n with \r\n on windows
     file.write(editor->toPlainText().toUtf8().replace('\n', "\r\n"));
+#endif
     file.close();
   }
 
