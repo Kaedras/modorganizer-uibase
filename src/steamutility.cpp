@@ -50,7 +50,7 @@ static const QRegularExpression
 
 QString findSteamGame(const QString& appName, const QString& validFile)
 {
-  QStringList libraryFolders;  // list of Steam libraries to search
+  QStringList libraryFolders;        // list of Steam libraries to search
   QDir steamDir(findSteamCached());  // Steam installation directory
 
   // Can do nothing if Steam doesn't exist
@@ -98,7 +98,8 @@ std::vector<Steam::Library> getAllSteamLibraries()
 
   std::vector<Steam::Library> libraries;
 
-  std::ifstream libraryFoldersFile(steamDir.filesystemAbsolutePath() / "config/libraryfolders.vdf");
+  std::ifstream libraryFoldersFile(steamDir.filesystemAbsolutePath() /
+                                   "config/libraryfolders.vdf");
   if (!libraryFoldersFile.is_open()) {
     log::error("Error opening libraryfolders.vdf");
     return {};
@@ -109,7 +110,8 @@ std::vector<Steam::Library> getAllSteamLibraries()
   // iterate over libraries
   for (const auto& library : root.childs | std::views::values) {
     // skip empty libraries
-    if (library->childs["apps"] == nullptr || library->childs["apps"]->attribs.empty()) {
+    if (library->childs["apps"] == nullptr ||
+        library->childs["apps"]->attribs.empty()) {
       continue;
     }
 
@@ -139,7 +141,8 @@ std::vector<Steam::Library> getAllSteamLibraries()
         game.name       = manifest.attribs.at("name");
         game.installDir = manifest.attribs.at("installdir");
       } catch (const std::out_of_range& ex) {
-        log::error("out_of_range exception while parsing manifest file {}, key {} does not exist",
+        log::error("out_of_range exception while parsing manifest file {}, key {} does "
+                   "not exist",
                    manifestPath.generic_string(),
                    !manifest.attribs.contains("name") ? "name" : "installdir");
         return {};
@@ -205,8 +208,7 @@ QString appIdByGamePath(const QString& gameLocation)
     std::ifstream file(item.toStdString());
     if (!file.is_open()) {
       const int e = errno;
-      log::warn("Error opening manifest file {}, {}", item.toStdString(),
-                strerror(e));
+      log::warn("Error opening manifest file {}, {}", item.toStdString(), strerror(e));
       return {};
     }
 

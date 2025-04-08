@@ -32,8 +32,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <vector>
 
 #ifdef __unix__
-#include "linux/utility_linux.h"
 #include "linux/compatibility.h"
+#include "linux/utility_linux.h"
 namespace MOBase::details
 {
 using HandlePtr = FdCloser;
