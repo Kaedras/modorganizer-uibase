@@ -176,7 +176,6 @@ void TutorialControl::finish()
     m_TutorialView->deleteLater();
   }
   m_TutorialView = nullptr;
-  m_TutorialView = nullptr;
 }
 
 QRect TutorialControl::getRect(const QString& widgetName)
