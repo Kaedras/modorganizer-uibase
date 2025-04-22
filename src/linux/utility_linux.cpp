@@ -177,6 +177,7 @@ namespace shell
 
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
+    // clang-format off
     /*
     interface specification:
 
@@ -195,6 +196,7 @@ namespace shell
     </method>
     </interface>
     */
+    // clang-format on
     QDBusInterface interface(u"org.freedesktop.FileManager1"_s,
                              u"/org/freedesktop/FileManager1"_s,
                              u"org.freedesktop.FileManager1"_s);
