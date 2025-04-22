@@ -46,6 +46,128 @@ namespace shell
 
   static QString g_urlHandler;
 
+  static bool shellOp(const QStringList& sourceNames,
+                      const QStringList& destinationNames, QWidget* dialog,
+                      UINT operation, bool yesToAll, bool silent = false)
+  {
+    std::vector<wchar_t> fromBuffer;
+    std::vector<wchar_t> toBuffer;
+
+    foreach (const QString& from, sourceNames) {
+      // SHFileOperation has to be used with absolute maths, err paths ("It cannot be
+      // overstated" they say)
+      std::wstring tempFrom =
+          ToWString(QDir::toNativeSeparators(QFileInfo(from).absoluteFilePath()));
+      fromBuffer.insert(fromBuffer.end(), tempFrom.begin(), tempFrom.end());
+      fromBuffer.push_back(L'\0');
+    }
+
+    bool recycle = operation == FO_RECYCLE;
+
+    if (recycle) {
+      operation = FO_DELETE;
+    }
+
+    if ((destinationNames.count() == sourceNames.count()) ||
+        (destinationNames.count() == 1)) {
+      foreach (const QString& to, destinationNames) {
+        std::wstring tempTo =
+            ToWString(QDir::toNativeSeparators(QFileInfo(to).absoluteFilePath()));
+        toBuffer.insert(toBuffer.end(), tempTo.begin(), tempTo.end());
+        toBuffer.push_back(L'\0');
+      }
+    } else if ((operation == FO_DELETE) && (destinationNames.count() == 0)) {
+      // pTo is not used but as I understand the documentation it should still be
+      // double-null terminated
+      toBuffer.push_back(L'\0');
+    } else {
+      ::SetLastError(ERROR_INVALID_PARAMETER);
+      return false;
+    }
+
+    // both buffers have to be double-null terminated
+    fromBuffer.push_back(L'\0');
+    toBuffer.push_back(L'\0');
+
+    SHFILEOPSTRUCTW op;
+    memset(&op, 0, sizeof(SHFILEOPSTRUCTW));
+    if (dialog != nullptr) {
+      op.hwnd = (HWND)dialog->winId();
+    } else {
+      op.hwnd = nullptr;
+    }
+    op.wFunc = operation;
+    op.pFrom = &fromBuffer[0];
+    op.pTo   = &toBuffer[0];
+
+    if ((operation == FO_DELETE) || yesToAll) {
+      op.fFlags = FOF_NOCONFIRMATION;
+      if (recycle) {
+        op.fFlags |= FOF_ALLOWUNDO;
+      }
+    } else {
+      op.fFlags =
+          FOF_NOCOPYSECURITYATTRIBS |  // always use security of target directory
+          FOF_SILENT |                 // don't show a progress bar
+          FOF_NOCONFIRMMKDIR;          // silently create directories
+
+      if (destinationNames.count() == sourceNames.count()) {
+        op.fFlags |= FOF_MULTIDESTFILES;
+      }
+    }
+
+    if (silent) {
+      op.fFlags |= FOF_NO_UI;
+    }
+
+    int res = ::SHFileOperationW(&op);
+    if (res == 0) {
+      return true;
+    } else {
+      ::SetLastError(TranslateError(res));
+      return false;
+    }
+  }
+
+  bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
+                 QWidget* dialog)
+  {
+    return shellOp(sourceNames, destinationNames, dialog, FO_COPY, false);
+  }
+
+  bool shellCopy(const QString& sourceNames, const QString& destinationNames,
+                 bool yesToAll, QWidget* dialog)
+  {
+    return shellOp(QStringList() << sourceNames, QStringList() << destinationNames,
+                   dialog, FO_COPY, yesToAll);
+  }
+
+  bool shellMove(const QStringList& sourceNames, const QStringList& destinationNames,
+                 QWidget* dialog)
+  {
+    return shellOp(sourceNames, destinationNames, dialog, FO_MOVE, false);
+  }
+
+  bool shellMove(const QString& sourceNames, const QString& destinationNames,
+                 bool yesToAll, QWidget* dialog)
+  {
+    return shellOp(QStringList() << sourceNames, QStringList() << destinationNames,
+                   dialog, FO_MOVE, yesToAll);
+  }
+
+  bool shellRename(const QString& oldName, const QString& newName, bool yesToAll,
+                   QWidget* dialog)
+  {
+    return shellOp(QStringList(oldName), QStringList(newName), dialog, FO_RENAME,
+                   yesToAll);
+  }
+
+  bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
+  {
+    const UINT op = static_cast<UINT>(recycle ? FO_RECYCLE : FO_DELETE);
+    return shellOp(fileNames, QStringList(), dialog, op, false);
+  }
+
   void SetUrlHandler(const QString& cmd)
   {
     g_urlHandler = cmd;

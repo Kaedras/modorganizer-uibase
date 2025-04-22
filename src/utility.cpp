@@ -427,153 +427,12 @@ int promptUserForOverwrite(const QString& file, QWidget* dialog = nullptr)
   return msgBox.exec();
 }
 
-enum class fileOperation
+bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
 {
-  copy,
-  move,
-  rename
-};
-
-OperationResult doOperation(const QStringList& sourceNames,
-                            const QStringList& destinationNames,
-                            fileOperation operation, bool yesToAll, QWidget* dialog)
-{
-  if (sourceNames.length() != destinationNames.length() &&
-      destinationNames.length() != 1) {
-    return {QFileDevice::UnspecifiedError,
-            QObject::tr("source and destination lists have different sizes")};
+  if (!QFile::remove(fileName)) {
+    return shellDelete(QStringList(fileName), false, dialog);
   }
-
-  QStringList destinations;
-  for (qsizetype i = 0; i < sourceNames.length(); i++) {
-    if (destinationNames.length() == 1) {
-      destinations.append(QFileInfo(destinationNames[0]).absolutePath() + "/" +
-                          QFileInfo(sourceNames[i]).fileName());
-    } else {
-      destinations.append(QFileInfo(destinationNames[i]).absolutePath());
-    }
-  }
-
-  for (qsizetype i = 0; i < sourceNames.length(); i++) {
-    QFile src = sourceNames[i];
-    QFile dst = destinations[i];
-    // prompt user if file already exists
-    if (dst.exists()) {
-      if (yesToAll) {
-        dst.remove();
-      } else {
-        QMessageBox msgBox;
-        msgBox.setText(QObject::tr("Target file already exists"));
-        msgBox.setDetailedText(
-            QObject::tr("\"%1\" already exists. Would you like to overwrite it?")
-                .arg(sourceNames[i]));
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll |
-                                  QMessageBox::No | QMessageBox::Cancel);
-        msgBox.setDefaultButton(QMessageBox::Cancel);
-        msgBox.setParent(dialog);
-        int result = msgBox.exec();
-
-        switch (result) {
-        case QMessageBox::YesToAll:
-          yesToAll = true;
-          [[fallthrough]];
-        case QMessageBox::Yes:
-          // delete destination file, QFile::copy cannot directly overwrite files
-          if (!dst.remove()) {
-            if (dst.error() == QFileDevice::RemoveError) {
-              // RemoveError could be misleading in this context
-              QErrorMessage().showMessage(
-                  QObject::tr("Destination file could not be overwritten."));
-            } else {
-              QErrorMessage().showMessage(dst.errorString());
-            }
-            return {dst.error(), dst.errorString()};
-          }
-          break;
-        case QMessageBox::No:
-          continue;
-        case QMessageBox::Cancel:
-          return {QFileDevice::AbortError, QObject::tr("Aborted by user")};
-        default:
-          return {dst.error(), dst.errorString()};
-        }
-      }
-    }
-
-    bool result;
-
-    switch (operation) {
-    case fileOperation::copy:
-      result = src.copy(destinations[i]);
-      break;
-    case fileOperation::move:
-    case fileOperation::rename:
-    default:
-      result = src.rename(destinations[i]);
-      break;
-    }
-
-    if (!result) {
-      QErrorMessage().showMessage(src.errorString());
-      return {dst.error(), dst.errorString()};
-    }
-  }
-
-  return {};
-}
-
-OperationResult shellCopy(const QStringList& sourceNames,
-                          const QStringList& destinationNames, QWidget* dialog)
-{
-  return doOperation(sourceNames, destinationNames, fileOperation::copy, false, dialog);
-}
-
-OperationResult shellCopy(const QString& sourceNames, const QString& destinationNames,
-                          bool yesToAll, QWidget* dialog)
-{
-  return doOperation({sourceNames}, {destinationNames}, fileOperation::copy, yesToAll,
-                     dialog);
-}
-
-OperationResult shellMove(const QStringList& sourceNames,
-                          const QStringList& destinationNames, QWidget* dialog)
-{
-  return doOperation(sourceNames, destinationNames, fileOperation::move, false, dialog);
-}
-
-OperationResult shellMove(const QString& sourceNames, const QString& destinationNames,
-                          bool yesToAll, QWidget* dialog)
-{
-  return doOperation({sourceNames}, {destinationNames}, fileOperation::move, yesToAll,
-                     dialog);
-}
-
-OperationResult shellRename(const QString& oldName, const QString& newName,
-                            bool yesToAll, QWidget* dialog)
-{
-  return doOperation({oldName}, {newName}, fileOperation::rename, yesToAll, dialog);
-}
-
-OperationResult shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
-{
-  for (const auto& fileName : fileNames) {
-    QFile file(fileName);
-    bool result;
-    if (recycle) {
-      result = file.moveToTrash();
-    } else {
-      result = file.remove();
-    }
-    if (!result) {
-      QErrorMessage msg;
-      msg.setParent(dialog);
-      msg.showMessage(QString("Could not delete '%1': %2")
-                          .arg(file.fileName(), file.errorString()));
-      return {file.error(), file.errorString()};
-    }
-  }
-
-  return {};
+  return true;
 }
 
 std::wstring ToWString(const QString& source)
@@ -716,8 +575,9 @@ void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
 
     auto result = shellDelete(deleteFiles);
 
-    if (result.error != 0) {
-      log::warn("failed to remove log files: {}", result.message);
+    if (!result) {
+      const int error = errno;
+      log::warn("failed to remove log files: {}", strerror(error));
     }
   }
 }

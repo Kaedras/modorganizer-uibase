@@ -7,6 +7,7 @@ find_package(vdf-parser CONFIG REQUIRED)
 if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
+    find_package(KF6KIO)
 endif ()
 
 if (WIN32)
@@ -248,7 +249,9 @@ set(PRIVATE_LIBS spdlog::spdlog_header_only
 )
 
 set(PRIVATE_WIN32_LIBS Version)
-set(PRIVATE_UNIX_LIBS Qt6::DBus ${LIBFLATPAK_LIBRARIES})
+set(PRIVATE_UNIX_LIBS Qt6::DBus ${LIBFLATPAK_LIBRARIES}
+        KF6::KIOCore KF6::KIOFileWidgets KF6::KIOWidgets
+)
 
 if (WIN32)
     target_link_libraries(uibase

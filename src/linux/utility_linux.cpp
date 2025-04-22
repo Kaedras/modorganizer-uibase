@@ -22,6 +22,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "report.h"
 #include "utility.h"
 
+#include <KIO/CopyJob>
+#include <KIO/DeleteJob>
+#include <KIO/DeleteOrTrashJob>
+#include <KIO/JobUiDelegateFactory>
+#include <KJobWidgets>
 #include <QApplication>
 #include <QDBusInterface>
 #include <QDBusMessage>
@@ -42,6 +47,119 @@ namespace fs = std::filesystem;
 
 namespace MOBase
 {
+
+QList<QUrl> stringListToUrlList(const QStringList& list)
+{
+  QList<QUrl> urls;
+  urls.reserve(list.size());
+  for (const auto& string : list) {
+    urls.push_back(QUrl::fromLocalFile(string));
+  }
+  return urls;
+}
+
+bool runJob(KIO::Job* job, QWidget* dialog = nullptr)
+{
+  KJobWidgets::setWindow(job, dialog);
+
+  // event loop is required to process input in confirmation dialogs
+  QEventLoop eventLoop;
+  QObject::connect(job, &KIO::Job::result, &eventLoop, &QEventLoop::quit);
+
+  job->start();
+  eventLoop.exec();
+
+  if (job->error() != 0) {
+    errno = job->error();
+    return false;
+  }
+  return true;
+}
+
+bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
+               QWidget* dialog)
+{
+  if (sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) {
+    errno = EINVAL;
+    return false;
+  }
+
+  if (destinationNames.size() == 1) {
+    KIO::CopyJob* job = KIO::copy(stringListToUrlList(sourceNames),
+                                  QUrl::fromLocalFile(destinationNames[0]));
+    return runJob(job, dialog);
+  }
+
+  for (qsizetype i = 0; i < sourceNames.size(); i++) {
+    auto* job = KIO::copy(QUrl::fromLocalFile(sourceNames[i]),
+                          QUrl::fromLocalFile(destinationNames[i]));
+    if (!runJob(job, dialog)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool shellCopy(const QString& sourceNames, const QString& destinationNames,
+               bool yesToAll, QWidget* dialog)
+{
+  KIO::CopyJob* job =
+      KIO::copy(QUrl::fromLocalFile(sourceNames), QUrl::fromLocalFile(destinationNames),
+                yesToAll ? KIO::Overwrite : KIO::DefaultFlags);
+  return runJob(job, dialog);
+}
+
+bool shellMove(const QStringList& sourceNames, const QStringList& destinationNames,
+               QWidget* dialog)
+{
+  if (sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) {
+    errno = EINVAL;
+    return false;
+  }
+  if (destinationNames.size() == 1) {
+    auto* job = KIO::move(stringListToUrlList(sourceNames),
+                          QUrl::fromLocalFile(destinationNames[0]));
+    return runJob(job);
+  }
+  for (qsizetype i = 0; i < sourceNames.size(); i++) {
+    auto* job = KIO::move(QUrl::fromLocalFile(sourceNames[i]),
+                          QUrl::fromLocalFile(destinationNames[i]));
+    if (!runJob(job, dialog)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool shellMove(const QString& sourceNames, const QString& destinationNames,
+               bool yesToAll, QWidget* dialog)
+{
+  auto* job =
+      KIO::move(QUrl::fromLocalFile(sourceNames), QUrl::fromLocalFile(destinationNames),
+                yesToAll ? KIO::Overwrite : KIO::DefaultFlags);
+  return runJob(job, dialog);
+}
+
+bool shellRename(const QString& oldName, const QString& newName, bool yesToAll,
+                 QWidget* dialog)
+{
+  return shellMove(oldName, newName, yesToAll, dialog);
+}
+
+bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
+{
+  KIO::Job* job     = nullptr;
+  QList<QUrl> files = stringListToUrlList(fileNames);
+
+  if (recycle) {
+    job = KIO::trash(files);
+  } else {
+    job = KIO::del(files);
+  }
+
+  return runJob(job, dialog);
+}
 
 std::string formatSystemMessage(int id)
 {
