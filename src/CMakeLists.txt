@@ -8,6 +8,22 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
     find_package(KF6KIO CONFIG REQUIRED)
+
+    # fix cmake error
+    # IMPORTED_LOCATION or IMPORTED_IMPLIB not set for imported target "KF6::Core" configuration "Release"
+    get_property(KIO_CORE_LOCATION TARGET KF6::KIOCore PROPERTY LOCATION)
+    set_target_properties(KF6::KIOCore PROPERTIES
+            IMPORTED_LOCATION ${KIO_CORE_LOCATION}
+            IMPORTED_LOCATION_RELEASE ${KIO_CORE_LOCATION}
+            IMPORTED_LOCATION_RELWITHDEBINFO ${KIO_CORE_LOCATION}
+    )
+
+    get_property(KIO_COREADDONS_LOCATION TARGET KF6::CoreAddons PROPERTY LOCATION)
+    set_target_properties(KF6::CoreAddons PROPERTIES
+            IMPORTED_LOCATION ${KIO_COREADDONS_LOCATION}
+            IMPORTED_LOCATION_RELEASE ${KIO_COREADDONS_LOCATION}
+            IMPORTED_LOCATION_RELWITHDEBINFO ${KIO_COREADDONS_LOCATION}
+    )
 endif ()
 
 if (WIN32)
