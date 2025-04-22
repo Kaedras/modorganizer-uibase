@@ -55,7 +55,10 @@ jobs:
       - if: ${{ matrix.linux }}
         name: Install build dependencies
         run: |
-          sudo apt update
+          curl -s http://archive.neon.kde.org/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/neon-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/neon-archive-keyring.gpg] http://archive.neon.kde.org/user noble main" | sudo tee /etc/apt/sources.list.d/neon.list
+          sudo apt update && sudo apt upgrade -y
+
           sudo apt install -y \
           build-essential cmake curl git flatpak libflatpak-dev libegl1-mesa-dev libgl1-mesa-dev \
           libglvnd-dev libkf6kio-dev mesa-common-dev ninja-build pkg-config tar unzip zip
