@@ -29,6 +29,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QPushButton>
 #include <QSettings>
 #include <QStyle>
+#include <utility>
+
+using namespace Qt::StringLiterals;
 
 namespace MOBase
 {
@@ -79,9 +82,9 @@ void QuestionBoxMemory::setCallbacks(GetButton get, SetWindowButton setWindow,
 {
   QMutexLocker locker(&g_mutex);
 
-  g_get       = get;
-  g_setWindow = setWindow;
-  g_setFile   = setFile;
+  g_get       = std::move(get);
+  g_setWindow = std::move(setWindow);
+  g_setFile   = std::move(setFile);
 }
 
 void QuestionBoxMemory::buttonClicked(QAbstractButton* button)
@@ -119,7 +122,7 @@ QuestionBoxMemory::queryImpl(QWidget* parent, const QString& windowName,
   const auto button = getMemory(windowName, (fileName ? *fileName : ""));
   if (button != NoButton) {
     log::debug("{}: not asking because user always wants response {}",
-               windowName + (fileName ? QString("/") + *fileName : ""),
+               QString(windowName % (fileName ? '/' % *fileName : u""_s)),
                buttonToString(button));
 
     return button;
@@ -152,7 +155,7 @@ void QuestionBoxMemory::setFileMemory(const QString& windowName,
                                       const QString& filename, Button b)
 {
   log::debug("remembering choice {} for file {}", buttonToString(b),
-             windowName + "/" + filename);
+             QString(windowName % '/' % filename));
 
   g_setFile(windowName, filename, b);
 }
@@ -168,32 +171,34 @@ QString QuestionBoxMemory::buttonToString(Button b)
   using BB = QDialogButtonBox;
 
   static const std::map<Button, QString> map = {
-      {BB::NoButton, "none"},
-      {BB::Ok, "ok"},
-      {BB::Save, "save"},
-      {BB::SaveAll, "saveall"},
-      {BB::Open, "open"},
-      {BB::Yes, "yes"},
-      {BB::YesToAll, "yestoall"},
-      {BB::No, "no"},
-      {BB::NoToAll, "notoall"},
-      {BB::Abort, "abort"},
-      {BB::Retry, "retry"},
-      {BB::Ignore, "ignore"},
-      {BB::Close, "close"},
-      {BB::Cancel, "cancel"},
-      {BB::Discard, "discard"},
-      {BB::Help, "help"},
-      {BB::Apply, "apply"},
-      {BB::Reset, "reset"},
-      {BB::RestoreDefaults, "restoredefaults"}};
+      {BB::NoButton, u"none"_s},
+      {BB::Ok, u"ok"_s},
+      {BB::Save, u"save"_s},
+      {BB::SaveAll, u"saveall"_s},
+      {BB::Open, u"open"_s},
+      {BB::Yes, u"yes"_s},
+      {BB::YesToAll, u"yestoall"_s},
+      {BB::No, u"no"_s},
+      {BB::NoToAll, u"notoall"_s},
+      {BB::Abort, u"abort"_s},
+      {BB::Retry, u"retry"_s},
+      {BB::Ignore, u"ignore"_s},
+      {BB::Close, u"close"_s},
+      {BB::Cancel, u"cancel"_s},
+      {BB::Discard, u"discard"_s},
+      {BB::Help, u"help"_s},
+      {BB::Apply, u"apply"_s},
+      {BB::Reset, u"reset"_s},
+      {BB::RestoreDefaults, u"restoredefaults"_s}};
 
   auto itor = map.find(b);
 
   if (itor == map.end()) {
-    return QString("0x%1").arg(static_cast<int>(b), 0, 16);
+    return QStringLiteral("0x%1").arg(static_cast<int>(b), 0, 16);
   } else {
-    return QString("'%1' (0x%2)").arg(itor->second).arg(static_cast<int>(b), 0, 16);
+    return QStringLiteral("'%1' (0x%2)")
+        .arg(itor->second)
+        .arg(static_cast<int>(b), 0, 16);
   }
 }
 

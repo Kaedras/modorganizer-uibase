@@ -6,22 +6,24 @@
 
 #include "formatters.h"
 
+using namespace Qt::StringLiterals;
+
 // official semver regex
 static const QRegularExpression s_SemVerStrictRegEx{
-    R"(^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
+    uR"(^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"_s};
 
 // for MO2, to match stuff like 1.2.3rc1 or v1.2.3a1+XXX
 static const QRegularExpression s_SemVerMO2RegEx{
-    R"(^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:\.(?P<subpatch>0|[1-9]\d*))?(?:(?P<type>dev|a|alpha|b|beta|rc)(?P<prerelease>0|[1-9](?:[.0-9])*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"};
+    uR"(^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:\.(?P<subpatch>0|[1-9]\d*))?(?:(?P<type>dev|a|alpha|b|beta|rc)(?P<prerelease>0|[1-9](?:[.0-9])*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$)"_s};
 
 // match from value to release type
 static const std::unordered_map<QString, MOBase::Version::ReleaseType>
-    s_StringToRelease{{"dev", MOBase::Version::Development},
-                      {"alpha", MOBase::Version::Alpha},
-                      {"a", MOBase::Version::Alpha},
-                      {"beta", MOBase::Version::Beta},
-                      {"b", MOBase::Version::Beta},
-                      {"rc", MOBase::Version::ReleaseCandidate}};
+    s_StringToRelease{{u"dev"_s, MOBase::Version::Development},
+                      {u"alpha"_s, MOBase::Version::Alpha},
+                      {u"a"_s, MOBase::Version::Alpha},
+                      {u"beta"_s, MOBase::Version::Beta},
+                      {u"b"_s, MOBase::Version::Beta},
+                      {u"rc"_s, MOBase::Version::ReleaseCandidate}};
 
 namespace MOBase
 {
@@ -38,13 +40,13 @@ namespace
           QString::fromStdString(std::format("invalid version string: '{}'", value)));
     }
 
-    const auto major = match.captured("major").toInt();
-    const auto minor = match.captured("minor").toInt();
-    const auto patch = match.captured("patch").toInt();
+    const auto major = match.captured(u"major"_s).toInt();
+    const auto minor = match.captured(u"minor"_s).toInt();
+    const auto patch = match.captured(u"patch"_s).toInt();
 
     std::vector<std::variant<int, Version::ReleaseType>> prereleases;
-    for (auto& part : match.captured("prerelease")
-                          .split(".", Qt::SplitBehaviorFlags::SkipEmptyParts)) {
+    for (auto& part : match.captured(u"prerelease"_s)
+                          .split('.', Qt::SplitBehaviorFlags::SkipEmptyParts)) {
       // try to extract an int
       bool ok             = true;
       const auto intValue = part.toInt(&ok);
@@ -63,7 +65,7 @@ namespace
       prereleases.push_back(it->second);
     }
 
-    const auto buildMetadata = match.captured("buildmetadata").trimmed();
+    const auto buildMetadata = match.captured(u"buildmetadata"_s).trimmed();
 
     return Version(major, minor, patch, 0, prereleases, buildMetadata);
   }
@@ -77,28 +79,28 @@ namespace
           QString::fromStdString(std::format("invalid version string: '{}'", value)));
     }
 
-    const auto major = match.captured("major").toInt();
-    const auto minor = match.captured("minor").toInt();
-    const auto patch = match.captured("patch").toInt();
+    const auto major = match.captured(u"major"_s).toInt();
+    const auto minor = match.captured(u"minor"_s).toInt();
+    const auto patch = match.captured(u"patch"_s).toInt();
 
-    const auto subpatch = match.captured("subpatch").toInt();
+    const auto subpatch = match.captured(u"subpatch"_s).toInt();
 
     // unlike semver, the regex will only match valid values
     std::vector<std::variant<int, Version::ReleaseType>> prereleases;
-    if (match.hasCaptured("type")) {
-      prereleases.push_back(s_StringToRelease.at(match.captured("type")));
+    if (match.hasCaptured(u"type"_s)) {
+      prereleases.push_back(s_StringToRelease.at(match.captured(u"type"_s)));
 
       // for version with decimal point, e.g., 2.4.1rc1.1, we split the components into
       // pre-release components to get {rc, 1, 1} - this works fine since {rc, 1} < {rc,
       // 1, 1}
       //
       for (const auto& preVersion :
-           match.captured("prerelease").split(".", Qt::SkipEmptyParts)) {
+           match.captured(u"prerelease"_s).split('.', Qt::SkipEmptyParts)) {
         prereleases.push_back(preVersion.toInt());
       }
     }
 
-    const auto buildMetadata = match.captured("buildmetadata").trimmed();
+    const auto buildMetadata = match.captured(u"buildmetadata"_s).trimmed();
 
     return Version(major, minor, patch, subpatch, prereleases, buildMetadata);
   }

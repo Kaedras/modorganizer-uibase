@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QRegularExpression>
 #include <QVersionNumber>
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 
@@ -76,23 +78,23 @@ QString VersionInfo::canonicalString() const
 
   QString result;
   if (m_Scheme == SCHEME_REGULAR) {
-    result = QString("%1.%2.%3.%4")
+    result = QStringLiteral("%1.%2.%3.%4")
                  .arg(m_Major)
                  .arg(m_Minor)
                  .arg(m_SubMinor)
                  .arg(m_SubSubMinor);
   } else if (m_Scheme == SCHEME_DECIMALMARK) {
-    result = QString("f%1.%2").arg(m_Major).arg(
-        QString("%1").arg(m_Minor).rightJustified(m_DecimalPositions, '0'));
+    result = QStringLiteral("f%1.%2").arg(m_Major).arg(
+        QStringLiteral("%1").arg(m_Minor).rightJustified(m_DecimalPositions, '0'));
   } else if (m_Scheme == SCHEME_NUMBERSANDLETTERS) {
-    result = QString("n%1.%2.%3.%4")
+    result = QStringLiteral("n%1.%2.%3.%4")
                  .arg(m_Major)
                  .arg(m_Minor)
                  .arg(m_SubMinor)
                  .arg(m_SubSubMinor);
   } else if (m_Scheme == SCHEME_DATE) {
     // year.month.day was stored in the version fields
-    result = QString("d%1.%2.%3.%4")
+    result = QStringLiteral("d%1.%2.%3.%4")
                  .arg(m_Major)
                  .arg(m_Minor)
                  .arg(m_SubMinor)
@@ -100,16 +102,16 @@ QString VersionInfo::canonicalString() const
   }
   switch (m_ReleaseType) {
   case RELEASE_PREALPHA: {
-    result.append(" pre-alpha");
+    result.append(" pre-alpha"_L1);
   } break;
   case RELEASE_ALPHA: {
-    result.append("a");
+    result.append("a"_L1);
   } break;
   case RELEASE_BETA: {
-    result.append("b");
+    result.append("b"_L1);
   } break;
   case RELEASE_CANDIDATE: {
-    result.append("rc");
+    result.append("rc"_L1);
   } break;
   case RELEASE_FINAL:  // fall-through
   default: {
@@ -118,7 +120,7 @@ QString VersionInfo::canonicalString() const
   }
 
   if (!m_Rest.isEmpty()) {
-    result.append(QString("%1").arg(m_Rest));
+    result.append(QStringLiteral("%1").arg(m_Rest));
   }
 
   return result;
@@ -133,21 +135,21 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
   QString result;
   if (m_Scheme == SCHEME_REGULAR) {
     if (forcedVersionSegments >= 4 || m_SubSubMinor != 0) {
-      result = QString("%1.%2.%3.%4")
+      result = QStringLiteral("%1.%2.%3.%4")
                    .arg(m_Major)
                    .arg(m_Minor)
                    .arg(m_SubMinor)
                    .arg(m_SubSubMinor);
     } else if (forcedVersionSegments == 3 || m_SubMinor != 0) {
-      result = QString("%1.%2.%3").arg(m_Major).arg(m_Minor).arg(m_SubMinor);
+      result = QStringLiteral("%1.%2.%3").arg(m_Major).arg(m_Minor).arg(m_SubMinor);
     } else {
-      result = QString("%1.%2").arg(m_Major).arg(m_Minor);
+      result = QStringLiteral("%1.%2").arg(m_Major).arg(m_Minor);
     }
   } else if (m_Scheme == SCHEME_DECIMALMARK) {
-    result = QString("%1.%2").arg(m_Major).arg(
-        QString("%1").arg(m_Minor).rightJustified(m_DecimalPositions, '0'));
+    result = QStringLiteral("%1.%2").arg(m_Major).arg(
+        QStringLiteral("%1").arg(m_Minor).rightJustified(m_DecimalPositions, '0'));
   } else if (m_Scheme == SCHEME_NUMBERSANDLETTERS) {
-    result = QString("%1.%2.%3.%4")
+    result = QStringLiteral("%1.%2.%3.%4")
                  .arg(m_Major)
                  .arg(m_Minor)
                  .arg(m_SubMinor)
@@ -163,16 +165,16 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
   }
   switch (m_ReleaseType) {
   case RELEASE_PREALPHA: {
-    result.append(" pre-alpha");
+    result.append(" pre-alpha"_L1);
   } break;
   case RELEASE_ALPHA: {
-    result.append("alpha");
+    result.append("alpha"_L1);
   } break;
   case RELEASE_BETA: {
-    result.append("beta");
+    result.append("beta"_L1);
   } break;
   case RELEASE_CANDIDATE: {
-    result.append("rc");
+    result.append("rc"_L1);
   } break;
   case RELEASE_FINAL:  // fall-through
   default: {
@@ -181,7 +183,7 @@ QString VersionInfo::displayString(int forcedVersionSegments) const
   }
 
   if (!m_Rest.isEmpty()) {
-    result.append(QString("%1").arg(m_Rest));
+    result.append(QStringLiteral("%1").arg(m_Rest));
   }
 
   return result;
@@ -198,10 +200,11 @@ QString VersionInfo::parseReleaseType(QString versionString)
   // extracted now, otherwise the outer parser will think it's the subminor version and
   // then 1.0.0rc1 would be interpreted as newer than 1.0.0
 
-  static std::map<QString, ReleaseType> typeStrings = {{"prealpha", RELEASE_PREALPHA},
-                                                       {"alpha", RELEASE_ALPHA},
-                                                       {"beta", RELEASE_BETA},
-                                                       {"rc", RELEASE_CANDIDATE}};
+  static std::map<QString, ReleaseType> typeStrings = {
+      {u"prealpha"_s, RELEASE_PREALPHA},
+      {u"alpha"_s, RELEASE_ALPHA},
+      {u"beta"_s, RELEASE_BETA},
+      {u"rc"_s, RELEASE_CANDIDATE}};
 
   m_ReleaseType = RELEASE_FINAL;
 
@@ -258,7 +261,7 @@ void VersionInfo::parse(const QString& versionString, VersionScheme scheme,
     return;
   }
 
-  if (QString::compare(versionString, "final", Qt::CaseInsensitive) == 0) {
+  if (QString::compare(versionString, "final"_L1, Qt::CaseInsensitive) == 0) {
     m_Major = 1;
     m_Valid = true;
     return;
@@ -289,7 +292,7 @@ void VersionInfo::parse(const QString& versionString, VersionScheme scheme,
     temp.remove(0, 1);
   }
 
-  QRegularExpression exp("^(\\d+)(\\.(\\d+))?(\\.(\\d+))?(\\.(\\d+))?");
+  static const QRegularExpression exp(u"^(\\d+)(\\.(\\d+))?(\\.(\\d+))?(\\.(\\d+))?"_s);
   auto match = exp.match(temp);
   if (match.hasMatch()) {
     m_Major             = match.captured(1).toInt();
@@ -346,15 +349,15 @@ QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS)
     // versions as regular if in doubt so if the scheme is "decimal" it is definitively
     // a decimal version number whereas SCHEME_REGULAR means "probably regular"
 
-    float leftVal = QString("%1.%2")
+    float leftVal = QStringLiteral("%1.%2")
                         .arg(LHS.m_Major)
-                        .arg(QString("%1")
+                        .arg(QStringLiteral("%1")
                                  .arg(LHS.m_Minor)
                                  .rightJustified(LHS.m_DecimalPositions, '0'))
                         .toFloat();
-    float rightVal = QString("%1.%2")
+    float rightVal = QStringLiteral("%1.%2")
                          .arg(RHS.m_Major)
-                         .arg(QString("%1")
+                         .arg(QStringLiteral("%1")
                                   .arg(RHS.m_Minor)
                                   .rightJustified(RHS.m_DecimalPositions, '0'))
                          .toFloat();

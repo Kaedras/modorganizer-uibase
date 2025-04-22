@@ -4,6 +4,9 @@
 #include <QEvent>
 #include <QSortFilterProxyModel>
 #include <memory>
+#include <utility>
+
+using namespace Qt::StringLiterals;
 
 namespace MOBase
 {
@@ -191,7 +194,7 @@ bool FilterWidget::useSourceSort() const
 
 void FilterWidget::setSortPredicate(sortFun f)
 {
-  m_lt = f;
+  m_lt = std::move(f);
 }
 
 const FilterWidget::sortFun& FilterWidget::sortPredicate() const
@@ -305,13 +308,15 @@ void FilterWidget::compile()
   } else {
     const QStringList ORList = [&] {
       QString filterCopy = QString(m_text);
-      filterCopy.replace("||", ";").replace("OR", ";").replace("|", ";");
-      return filterCopy.split(";", Qt::SkipEmptyParts);
+      filterCopy.replace("||"_L1, ";"_L1)
+          .replace("OR"_L1, ";"_L1)
+          .replace("|"_L1, ";"_L1);
+      return filterCopy.split(';', Qt::SkipEmptyParts);
     }();
 
     // split in ORSegments that internally use AND logic
     for (const auto& ORSegment : ORList) {
-      const auto keywords = ORSegment.split(" ", Qt::SkipEmptyParts);
+      const auto keywords = ORSegment.split(' ', Qt::SkipEmptyParts);
       QList<QRegularExpression> regexes;
 
       for (const auto& keyword : keywords) {
@@ -530,11 +535,11 @@ void FilterWidget::createClear()
 {
   m_clear = new QToolButton(m_edit);
 
-  QPixmap pixmap(":/MO/gui/edit_clear");
+  QPixmap pixmap(u":/MO/gui/edit_clear"_s);
   m_clear->setIcon(QIcon(pixmap));
   m_clear->setIconSize(pixmap.size());
   m_clear->setCursor(Qt::ArrowCursor);
-  m_clear->setStyleSheet("QToolButton { border: none; padding: 0px; }");
+  m_clear->setStyleSheet(u"QToolButton { border: none; padding: 0px; }"_s);
   m_clear->hide();
 
   QObject::connect(m_clear, &QToolButton::clicked, [&] {

@@ -33,6 +33,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextEdit>
 #include <QVBoxLayout>
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 
@@ -41,7 +43,7 @@ TextViewer::TextViewer(const QString& title, QWidget* parent)
 {
   ui->setupUi(this);
   setWindowTitle(title);
-  m_EditorTabs = findChild<QTabWidget*>("editorTabs");
+  m_EditorTabs = findChild<QTabWidget*>(u"editorTabs"_s);
   connect(ui->showWhitespace, SIGNAL(stateChanged(int)), this,
           SLOT(showWhitespaceChanged(int)));
 }
@@ -96,7 +98,7 @@ void TextViewer::findNext()
   }
 
   QWidget* currentPage = m_EditorTabs->currentWidget();
-  QTextEdit* editor    = currentPage->findChild<QTextEdit*>("editorView");
+  QTextEdit* editor    = currentPage->findChild<QTextEdit*>(u"editorView"_s);
 
   if (editor->find(m_FindPattern)) {
     // found text
@@ -156,7 +158,7 @@ bool TextViewer::eventFilter(QObject* object, QEvent* event)
 
 void TextViewer::setDescription(const QString& description)
 {
-  QLabel* descriptionLabel = findChild<QLabel*>("descriptionLabel");
+  QLabel* descriptionLabel = findChild<QLabel*>(u"descriptionLabel"_s);
   descriptionLabel->setText(description);
 }
 
@@ -198,7 +200,7 @@ void TextViewer::saveFile(const QTextEdit* editor)
   if (write) {
 #ifdef _WIN32
     // replace \n with \r\n on windows
-    file.write(editor->toPlainText().toUtf8().replace('\n', "\r\n"));
+    file.write(editor->toPlainText().toUtf8().replace('\n', QByteArrayLiteral("\r\n")));
 #endif
     file.close();
   }
@@ -211,7 +213,7 @@ void TextViewer::saveFile(const QTextEdit* editor)
 void TextViewer::saveFile()
 {
   QWidget* currentPage = m_EditorTabs->currentWidget();
-  QTextEdit* editor    = currentPage->findChild<QTextEdit*>("editorView");
+  QTextEdit* editor    = currentPage->findChild<QTextEdit*>(u"editorView"_s);
   saveFile(editor);
 
   m_Modified.erase(editor);
@@ -220,7 +222,7 @@ void TextViewer::saveFile()
 void TextViewer::modified()
 {
   QWidget* currentPage = m_EditorTabs->currentWidget();
-  QTextEdit* editor    = currentPage->findChild<QTextEdit*>("editorView");
+  QTextEdit* editor    = currentPage->findChild<QTextEdit*>(u"editorView"_s);
 
   m_Modified.insert(editor);
 }
@@ -246,7 +248,7 @@ void TextViewer::addFile(const QString& fileName, bool writable)
   editor->setAcceptRichText(false);
   editor->setPlainText(QString(temp));
   editor->setLineWrapMode(QTextEdit::NoWrap);
-  editor->setObjectName("editorView");
+  editor->setObjectName(u"editorView"_s);
   editor->setDocumentTitle(fileName);
   editor->installEventFilter(this);
   editor->setReadOnly(!writable);
@@ -261,10 +263,10 @@ void TextViewer::addFile(const QString& fileName, bool writable)
   editor->setPalette(palette);
 
   // add hotkeys for searching through the document
-  QAction* findAction = new QAction(QString("&Find"), editor);
+  QAction* findAction = new QAction(u"&Find"_s, editor);
   findAction->setShortcut(QKeySequence::Find);
   editor->addAction(findAction);
-  QAction* findNextAction = new QAction(QString("Find &Next"), editor);
+  QAction* findNextAction = new QAction(u"Find &Next"_s, editor);
   findAction->setShortcut(QKeySequence::FindNext);
   editor->addAction(findNextAction);
 

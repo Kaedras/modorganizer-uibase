@@ -120,7 +120,7 @@ namespace shell
       s << QString::fromWCharArray(params);
     }
 
-    log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
+    log::error("failed to invoke '{}': {}", s.join(' '), formatSystemMessage(error));
   }
 
   Result ShellExecuteWrapper(const wchar_t* operation, const wchar_t* file,
@@ -151,7 +151,7 @@ namespace shell
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
     const auto path      = QDir::toNativeSeparators(info.absoluteFilePath());
-    const auto params    = "/select,\"" + path + "\"";
+    const QString params = u"/select,\""_s % path % '\"';
     const auto ws_params = params.toStdWString();
 
     return ShellExecuteWrapper(nullptr, L"explorer", ws_params.c_str());
@@ -264,7 +264,7 @@ QString ToString(const SYSTEMTIME& time)
                  size);
   GetTimeFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, timeBuffer,
                  size);
-  return QString::fromLocal8Bit(dateBuffer) + " " + QString::fromLocal8Bit(timeBuffer);
+  return QString::fromLocal8Bit(dateBuffer) % ' ' % QString::fromLocal8Bit(timeBuffer);
 }
 
 std::wstring formatMessage(DWORD id, const std::wstring& message)

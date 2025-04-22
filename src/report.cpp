@@ -27,6 +27,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QComboBox>
 #include <QRadioButton>
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 
@@ -47,7 +49,7 @@ QWidget* topLevelWindow()
 
 void criticalOnTop(const QString& message)
 {
-  QMessageBox mb(QMessageBox::Critical, "Mod Organizer", message);
+  QMessageBox mb(QMessageBox::Critical, u"Mod Organizer"_s, message);
 
   mb.show();
   mb.activateWindow();
@@ -173,8 +175,8 @@ QMessageBox::StandardButton TaskDialog::checkMemory() const
 
   const auto b = QuestionBoxMemory::getMemory(m_rememberAction, m_rememberFile);
 
-  const auto logName = m_rememberAction +
-                       (m_rememberFile.isEmpty() ? "" : QString("/") + m_rememberFile);
+  const QString logName =
+      m_rememberAction % (m_rememberFile.isEmpty() ? u""_s : '/' % m_rememberFile);
 
   if (b == QDialogButtonBox::NoButton) {
     log::debug("{}: asking because the user has not set a choice before", logName);
@@ -276,7 +278,7 @@ void TaskDialog::setDetails()
 
   const QColor bg = detailsColor();
 
-  ui->detailsPanel->setStyleSheet(QString("background-color: rgb(%1, %2, %3)")
+  ui->detailsPanel->setStyleSheet(QStringLiteral("background-color: rgb(%1, %2, %3)")
                                       .arg(bg.redF() * 255)
                                       .arg(bg.greenF() * 255)
                                       .arg(bg.blueF() * 255));

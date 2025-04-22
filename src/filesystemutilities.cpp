@@ -3,6 +3,8 @@
 #include <QRegularExpression>
 #include <QString>
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 
@@ -12,11 +14,13 @@ bool fixDirectoryName(QString& name)
   while (temp.endsWith('.'))
     temp.chop(1);
 
-  temp.replace(QRegularExpression(R"([<>:"/\\|?*])"), "");
-  static QString invalidNames[] = {"CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2",
-                                   "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
-                                   "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5",
-                                   "LPT6", "LPT7", "LPT8", "LPT9"};
+  static QRegularExpression exp(uR"([<>:"/\\|?*])"_s);
+  temp.replace(exp, "");
+  static QString invalidNames[] = {
+      u"CON"_s,  u"PRN"_s,  u"AUX"_s,  u"NUL"_s,  u"COM1"_s, u"COM2"_s,
+      u"COM3"_s, u"COM4"_s, u"COM5"_s, u"COM6"_s, u"COM7"_s, u"COM8"_s,
+      u"COM9"_s, u"LPT1"_s, u"LPT2"_s, u"LPT3"_s, u"LPT4"_s, u"LPT5"_s,
+      u"LPT6"_s, u"LPT7"_s, u"LPT8"_s, u"LPT9"_s};
   for (unsigned int i = 0; i < sizeof(invalidNames) / sizeof(QString); ++i) {
     if (temp == invalidNames[i]) {
       temp = "";
@@ -39,12 +43,13 @@ QString sanitizeFileName(const QString& name, const QString& replacement)
   QString new_name = name;
 
   // Remove characters not allowed by Windows
-  new_name.replace(QRegularExpression("[\\x{00}-\\x{1f}\\\\/:\\*\\?\"<>|]"),
-                   replacement);
+  static QRegularExpression invalidCharacters(uR"([\x{00}-\x{1f}\\/:\*\?"<>|])"_s);
+  new_name.replace(invalidCharacters, replacement);
 
   // Don't end with a period or a space
   // Don't be "." or ".."
-  new_name.remove(QRegularExpression("[\\. ]*$"));
+  static QRegularExpression exp(uR"([\. ]*$)"_s);
+  new_name.remove(exp);
 
   // Recurse until stuff stops changing
   if (new_name != name) {
@@ -58,7 +63,7 @@ bool validFileName(const QString& name)
   if (name.isEmpty()) {
     return false;
   }
-  if (name == "." || name == "..") {
+  if (name == "."_L1 || name == ".."_L1) {
     return false;
   }
 

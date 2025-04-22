@@ -7,6 +7,7 @@
 #include "iplugingame.h"
 
 using namespace MOBase;
+using namespace Qt::StringLiterals;
 
 // Plugin and Game dependencies
 
@@ -29,7 +30,7 @@ QString PluginDependencyRequirement::message() const
 {
   if (m_PluginNames.size() > 1) {
     return QObject::tr("One of the following plugins must be enabled: %1.")
-        .arg(m_PluginNames.join(", "));
+        .arg(m_PluginNames.join(u", "_s));
   } else {
     return QObject::tr("This plugin can only be enabled if the '%1' plugin is "
                        "installed and enabled.")
@@ -62,7 +63,7 @@ QString GameDependencyRequirement::message() const
 {
   return QObject::tr("This plugin can only be enabled for the following game(s): %1.",
                      "", static_cast<int>(m_GameNames.size()))
-      .arg(m_GameNames.join(", "));
+      .arg(m_GameNames.join(u", "_s));
 }
 
 // Diagnose requirements
@@ -85,7 +86,7 @@ std::optional<IPluginRequirement::Problem> DiagnoseRequirement::check(IOrganizer
     longDescriptions.append(m_Diagnose->fullDescription(i));
   }
 
-  return Problem(shortDescriptions.join("\n"), longDescriptions.join("\n"));
+  return Problem(shortDescriptions.join('\n'), longDescriptions.join('\n'));
 }
 
 // Basic requirements

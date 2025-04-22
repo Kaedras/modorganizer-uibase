@@ -22,12 +22,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QString>
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 bool WriteRegistryValue(const QString& appName, const QString& keyName,
                         const QString& value, const QString& fileName)
 {
-  return WriteRegistryValue(QString("%1/%2").arg(appName, keyName), value, fileName);
+  return WriteRegistryValue(QStringLiteral("%1/%2").arg(appName, keyName), value,
+                            fileName);
 }
 
 bool WriteRegistryValue(const QString& key, const QString& value,
@@ -57,7 +60,7 @@ bool WriteRegistryValue(const QString& key, const QString& value,
                          QObject::tr("The file will be set to read-only again."),
                          QMessageBox::Ignore})
                 .button({QObject::tr("Skip this file"), QMessageBox::No})
-                .remember("clearReadOnly", file.fileName())
+                .remember(u"clearReadOnly"_s, file.fileName())
                 .exec();
 
         auto oldPermissions = file.permissions();

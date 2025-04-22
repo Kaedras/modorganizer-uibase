@@ -46,7 +46,7 @@ QString findSteamCached()
 // Lines that contains libraries are in the format:
 //    "1" "Path\to\library"
 static const QRegularExpression
-    kSteamLibraryFilter("^\\s*\"(?<idx>[0-9]+)\"\\s*\"(?<path>.*)\"");
+    kSteamLibraryFilter(u"^\\s*\"(?<idx>[0-9]+)\"\\s*\"(?<path>.*)\""_s);
 
 QString findSteamGame(const QString& appName, const QString& validFile)
 {
@@ -61,24 +61,25 @@ QString findSteamGame(const QString& appName, const QString& validFile)
   libraryFolders << steamDir.absolutePath();
 
   // Search libraryfolders.vdf for additional libraries
-  QFile libraryFoldersFile(steamDir.absoluteFilePath("steamapps/libraryfolders.vdf"));
+  QFile libraryFoldersFile(
+      steamDir.absoluteFilePath(u"steamapps/libraryfolders.vdf"_s));
   if (libraryFoldersFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
     QTextStream in(&libraryFoldersFile);
     while (!in.atEnd()) {
       QString line                  = in.readLine();
       QRegularExpressionMatch match = kSteamLibraryFilter.match(line);
       if (match.hasMatch()) {
-        QString folder = match.captured("path");
-        folder.replace("\\", "/").replace("\\\\", "/");
+        QString folder = match.captured(u"path"_s);
+        folder.replace('\\', '/').replace(u"\\\\"_s, u"/"_s);
         libraryFolders << folder;
       }
     }
   }
 
   // Search the Steam libraries for the game directory
-  for (auto library : libraryFolders) {
+  for (const auto& library : libraryFolders) {
     QDir libraryDir(library);
-    if (!libraryDir.cd("steamapps/common/" + appName))
+    if (!libraryDir.cd(u"steamapps/common/"_s % appName))
       continue;
     if (validFile.isEmpty() || libraryDir.exists(validFile))
       return libraryDir.absolutePath();

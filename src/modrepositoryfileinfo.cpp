@@ -1,5 +1,7 @@
 #include "modrepositoryfileinfo.h"
+
 #include "json.h"
+#include <utility>
 
 MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(
     const ModRepositoryFileInfo& reference)
@@ -14,7 +16,7 @@ MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(
 MOBase::ModRepositoryFileInfo::ModRepositoryFileInfo(QString gameName, int modID,
                                                      int fileID)
     : name(), uri(), description(), version(), categoryID(0), modName(),
-      gameName(gameName), modID(modID), fileID(fileID), fileSize(0),
+      gameName(std::move(gameName)), modID(modID), fileID(fileID), fileSize(0),
       fileCategory(TYPE_UNKNOWN), repository(), userData()
 
 {}
@@ -51,22 +53,17 @@ MOBase::ModRepositoryFileInfo::createFromJson(const QString& data)
 
 QString MOBase::ModRepositoryFileInfo::toString() const
 {
-  return QString("[ "
-                 "\"%1\",%2,\"%3\",\"%4\",\"%5\",\"%6\",%7,%8,%9,\"%10\",\"%11\",\"%"
-                 "12\",%13,\"%14\",%15 ]")
+  return QStringLiteral(
+             "[ "
+             "\"%1\",%2,\"%3\",\"%4\",\"%5\",\"%6\",%7,%8,%9,\"%10\",\"%11\",\"%"
+             "12\",%13,\"%14\",%15 ]")
       .arg(gameName)
       .arg(fileID)
-      .arg(name)
-      .arg(uri)
-      .arg(version.canonicalString())
-      .arg(description.mid(0).replace("\"", "'"))
+      .arg(name, uri, version.canonicalString(), description.mid(0).replace('\"', '\''))
       .arg(categoryID)
       .arg(fileSize)
       .arg(modID)
-      .arg(modName)
-      .arg(newestVersion.canonicalString())
-      .arg(fileName)
+      .arg(modName, newestVersion.canonicalString(), fileName)
       .arg(fileCategory)
-      .arg(repository)
-      .arg(QString(QtJson::serialize(userData)));
+      .arg(repository, QString(QtJson::serialize(userData)));
 }

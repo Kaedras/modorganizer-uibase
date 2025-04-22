@@ -127,7 +127,7 @@ namespace shell
 
     int result = pipe(pipefd);
     if (result == -1) {
-      return Result::makeFailure(EPIPE, "Could not open pipe");
+      return Result::makeFailure(EPIPE, u"Could not open pipe"_s);
     }
 
     pid_t pid = fork();

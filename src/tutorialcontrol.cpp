@@ -45,6 +45,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMetaObject>
 #include <qmetaobject.h>
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 
@@ -97,22 +99,22 @@ void TutorialControl::startTutorial(const QString& tutorial)
     m_TutorialView->setAttribute(Qt::WA_TranslucentBackground);
     m_TutorialView->setAttribute(Qt::WA_AlwaysStackOnTop);
     m_TutorialView->setClearColor(Qt::transparent);
-    m_TutorialView->setStyleSheet("background: transparent");
-    m_TutorialView->setObjectName("tutorialView");
-    m_TutorialView->rootContext()->setContextProperty("manager", &m_Manager);
+    m_TutorialView->setStyleSheet(u"background: transparent"_s);
+    m_TutorialView->setObjectName(u"tutorialView"_s);
+    m_TutorialView->rootContext()->setContextProperty(u"manager"_s, &m_Manager);
 
     QString qmlName =
-        canonicalPath(QCoreApplication::applicationDirPath() + "/tutorials") +
-        "/tutorials_" + m_Name.toLower() + ".qml";
+        canonicalPath(QCoreApplication::applicationDirPath() % "/tutorials"_L1) %
+        "/tutorials_"_L1 % m_Name.toLower() % ".qml"_L1;
     QUrl qmlSource = QUrl::fromLocalFile(qmlName);
 
     m_TutorialView->setSource(qmlSource);
     m_TutorialView->resize(m_TargetControl->width(), m_TargetControl->height());
-    m_TutorialView->rootContext()->setContextProperty("scriptName", tutorial);
-    m_TutorialView->rootContext()->setContextProperty("tutorialControl", this);
-    m_TutorialView->rootContext()->setContextProperty("applicationWindow",
+    m_TutorialView->rootContext()->setContextProperty(u"scriptName"_s, tutorial);
+    m_TutorialView->rootContext()->setContextProperty(u"tutorialControl"_s, this);
+    m_TutorialView->rootContext()->setContextProperty(u"applicationWindow"_s,
                                                       m_TargetControl);
-    m_TutorialView->rootContext()->setContextProperty("organizer",
+    m_TutorialView->rootContext()->setContextProperty(u"organizer"_s,
                                                       m_Manager.organizerCore());
 
     for (std::vector<std::pair<QString, QObject*>>::const_iterator iter =
@@ -199,7 +201,7 @@ QRect TutorialControl::getRect(const QString& widgetName)
 QRect TutorialControl::getActionRect(const QString& widgetName)
 {
   if (m_TargetControl != nullptr) {
-    QToolBar* toolBar = m_TargetControl->findChild<QToolBar*>("toolBar");
+    QToolBar* toolBar = m_TargetControl->findChild<QToolBar*>(u"toolBar"_s);
     foreach (QAction* action, toolBar->actions()) {
       if (action->objectName() == widgetName) {
         return toolBar->actionGeometry(action);
@@ -212,7 +214,7 @@ QRect TutorialControl::getActionRect(const QString& widgetName)
 QRect TutorialControl::getMenuRect(const QString&)
 {
   if (m_TargetControl != nullptr) {
-    QMenuBar* menuBar = m_TargetControl->findChild<QMenuBar*>("menuBar");
+    QMenuBar* menuBar = m_TargetControl->findChild<QMenuBar*>(u"menuBar"_s);
     return menuBar->geometry();
   }
   return QRect();

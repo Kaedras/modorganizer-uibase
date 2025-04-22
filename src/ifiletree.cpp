@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stack>
+#include <utility>
 
 // FileTreeEntry:
 namespace MOBase
@@ -17,12 +18,12 @@ constexpr InputIt FindIf(InputIt first, InputIt last, UnaryPred p)
 }
 
 FileTreeEntry::FileTreeEntry(std::shared_ptr<const IFileTree> parent, QString name)
-    : m_Parent(parent), m_Name(name)
+    : m_Parent(parent), m_Name(std::move(name))
 {}
 
 QString FileTreeEntry::suffix() const
 {
-  const qsizetype idx = m_Name.lastIndexOf(".");
+  const qsizetype idx = m_Name.lastIndexOf('.');
   return (isDir() || idx == -1) ? "" : m_Name.mid(idx + 1);
 }
 

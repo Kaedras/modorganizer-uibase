@@ -22,6 +22,8 @@
 
 #include "json.h"
 
+using namespace Qt::StringLiterals;
+
 namespace QtJson
 {
 static QString sanitizeString(QString str);
@@ -451,7 +453,7 @@ static int lastIndexOfNumber(const QString& json, int index)
   int lastIndex;
 
   for (lastIndex = index; lastIndex < json.size(); lastIndex++) {
-    if (QString("0123456789+-.eE").indexOf(json[lastIndex]) == -1) {
+    if (QStringLiteral("0123456789+-.eE").indexOf(json[lastIndex]) == -1) {
       break;
     }
   }
@@ -465,7 +467,7 @@ static int lastIndexOfNumber(const QString& json, int index)
 static void eatWhitespace(const QString& json, int& index)
 {
   for (; index < json.size(); index++) {
-    if (QString(" \t\n\r").indexOf(json[index]) == -1) {
+    if (QStringLiteral(" \t\n\r").indexOf(json[index]) == -1) {
       break;
     }
   }

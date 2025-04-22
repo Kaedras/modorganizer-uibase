@@ -1,5 +1,7 @@
 #include "delayedfilewriter.h"
+
 #include "log.h"
+#include <utility>
 
 using namespace MOBase;
 
@@ -40,7 +42,7 @@ void DelayedFileWriterBase::timerExpired()
 }
 
 DelayedFileWriter::DelayedFileWriter(DelayedFileWriter::WriterFunc func, int delay)
-    : DelayedFileWriterBase(delay), m_Func(func)
+    : DelayedFileWriterBase(delay), m_Func(std::move(func))
 {}
 
 void DelayedFileWriter::doWrite()

@@ -38,6 +38,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define QNtfsPermissionCheckGuard [[maybe_unused]] void*
 #endif
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 
@@ -335,7 +337,7 @@ namespace shell
 
   Result CreateDirectories(const QDir& dir)
   {
-    if (!dir.mkpath(".")) {
+    if (!dir.mkpath(u"."_s)) {
       const auto e = GetLastError();
       return Result::makeFailure(e, ToQString(formatSystemMessage(e)));
     }
@@ -364,14 +366,14 @@ bool moveFileRecursive(const QString& source, const QString& baseDir,
   QString path               = baseDir;
   for (QStringList::Iterator iter = pathComponents.begin();
        iter != pathComponents.end() - 1; ++iter) {
-    path.append("/").append(*iter);
+    path.append('/' % *iter);
     if (!QDir(path).exists() && !QDir().mkdir(path)) {
       reportError(QObject::tr("failed to create directory \"%1\"").arg(path));
       return false;
     }
   }
 
-  QString destinationAbsolute = baseDir.mid(0).append("/").append(destination);
+  QString destinationAbsolute = baseDir.mid(0).append('/' % destination);
   if (!QFile::rename(source, destinationAbsolute)) {
     // move failed, try copy & delete
     if (!QFile::copy(source, destinationAbsolute)) {
@@ -389,11 +391,11 @@ bool moveFileRecursive(const QString& source, const QString& baseDir,
 bool copyFileRecursive(const QString& source, const QString& baseDir,
                        const QString& destination)
 {
-  QStringList pathComponents = destination.split("/");
+  QStringList pathComponents = destination.split('/');
   QString path               = baseDir;
   for (QStringList::Iterator iter = pathComponents.begin();
        iter != pathComponents.end() - 1; ++iter) {
-    path.append("/").append(*iter);
+    path.append('/' % *iter);
     if (!QDir(path).exists() && !QDir().mkdir(path)) {
       reportError(QObject::tr("failed to create directory \"%1\"").arg(path));
       return false;
@@ -413,9 +415,10 @@ bool copyFileRecursive(const QString& source, const QString& baseDir,
 int promptUserForOverwrite(const QString& file, QWidget* dialog = nullptr)
 {
   QMessageBox msgBox;
-  msgBox.setText("Target file already exists");
+  msgBox.setText(u"Target file already exists"_s);
   msgBox.setDetailedText(
-      QString("\"%1\" already exists. Would you like to overwrite it?").arg(file));
+      QStringLiteral("\"%1\" already exists. Would you like to overwrite it?")
+          .arg(file));
   msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No |
                             QMessageBox::Cancel);
   msgBox.setDefaultButton(QMessageBox::Cancel);
@@ -802,13 +805,13 @@ void deleteChildWidgets(QWidget* w)
 
 QString formatMessage(DWORD id, const QString& message)
 {
-  QString s = QString("0x%1").arg(id, 0, 16);
+  QString s = QStringLiteral("0x%1").arg(id, 0, 16);
 
   if (message.isEmpty()) {
     return s;
   }
 
-  return QString("%1 (%2)").arg(message, s);
+  return QStringLiteral("%1 (%2)").arg(message, s);
 }
 
 QString localizedSize(unsigned long long bytes, const QString& B, const QString& KB,
@@ -896,7 +899,7 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
       sprintf_s(buffer, "0%lld", hours);
     else
       sprintf_s(buffer, "%lld", hours);
-    Result.append(QString("%1:").arg(buffer));
+    Result.append(QStringLiteral("%1:").arg(buffer));
   }
 
   if (minutes > 0 || hours > 0) {
@@ -904,14 +907,14 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
       sprintf_s(buffer, "0%lld", minutes);
     else
       sprintf_s(buffer, "%lld", minutes);
-    Result.append(QString("%1:").arg(buffer));
+    Result.append(QStringLiteral("%1:").arg(buffer));
   }
 
   if (seconds < 10 && (minutes > 0 || hours > 0))
     sprintf_s(buffer, "0%lld", seconds);
   else
     sprintf_s(buffer, "%lld", seconds);
-  Result.append(QString("%1").arg(buffer));
+  Result.append(QStringLiteral("%1").arg(buffer));
 
   if (hours > 0)
     //: Time remaining hours
