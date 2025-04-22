@@ -7,7 +7,7 @@ find_package(vdf-parser CONFIG REQUIRED)
 if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
-    find_package(KF6KIO)
+    find_package(KF6KIO CONFIG REQUIRED)
 endif ()
 
 if (WIN32)
