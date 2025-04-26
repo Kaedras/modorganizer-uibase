@@ -1,8 +1,6 @@
 #ifndef UIBASE_GAMEFEATURES_SCRIPTEXTENDER
 #define UIBASE_GAMEFEATURES_SCRIPTEXTENDER
 
-#include <windows.h>
-
 #include <QString>
 #include <QStringList>
 
@@ -39,7 +37,7 @@ public:
   virtual QString getExtenderVersion() const = 0;
 
   /** Get CPU platform of extender */
-  virtual WORD getArch() const = 0;
+  virtual uint16_t getArch() const = 0;
 };
 
 }  // namespace MOBase

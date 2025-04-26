@@ -1,12 +1,23 @@
 cmake_minimum_required(VERSION 3.16)
 
 add_library(uibase SHARED)
+
+if (UNIX)
+	# add unix dependencies
+	set(PRIVATE_OS_DEPS Qt::DBus flatpak KF6KIO)
+
+	# workaround
+	find_package(Qt6 REQUIRED COMPONENTS Widgets)
+else()
+	set(PRIVATE_OS_DEPS)
+endif()
+
 mo2_configure_uibase(uibase
 	WARNINGS ON
 	EXTERNAL_WARNINGS ON
 	TRANSLATIONS OFF
 	PUBLIC_DEPENDS Qt::Widgets Qt::Network Qt::QuickWidgets
-	PRIVATE_DEPENDS boost boost::thread Qt::Qml Qt::Quick spdlog)
+	PRIVATE_DEPENDS boost boost::thread Qt::Qml Qt::Quick spdlog ValveFileVDF ${PRIVATE_OS_DEPS})
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT)
 mo2_install_target(uibase)
 

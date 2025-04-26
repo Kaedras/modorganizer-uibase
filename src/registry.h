@@ -19,13 +19,24 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define REGISTRY_H
 
 #include "dllimport.h"
+#include <QString>
+#ifdef __unix__
+using LPCWSTR = const char*;
+#else
 #include <Windows.h>
+#endif
 
 namespace MOBase
 {
 
 QDLLEXPORT bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
                                    LPCWSTR fileName);
+
+QDLLEXPORT bool WriteRegistryValue(const QString& appName, const QString& keyName,
+                                   const QString& value, const QString& fileName);
+
+QDLLEXPORT bool WriteRegistryValue(const QString& key, const QString& value,
+                                   const QString& fileName);
 
 }  // namespace MOBase
 

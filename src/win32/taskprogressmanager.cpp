@@ -1,6 +1,6 @@
 #include "taskprogressmanager.h"
-#include "log.h"
-#include "utility.h"
+#include "../log.h"
+#include "../utility.h"
 #include <QApplication>
 #include <QMainWindow>
 #include <QWidget>

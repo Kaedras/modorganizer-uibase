@@ -26,7 +26,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "utility.h"
 #include <QComboBox>
 #include <QRadioButton>
-#include <Windows.h>
 
 namespace MOBase
 {
@@ -54,22 +53,6 @@ void criticalOnTop(const QString& message)
   mb.activateWindow();
   mb.raise();
   mb.exec();
-}
-
-void reportError(const QString& message)
-{
-  log::error("{}", message);
-
-  if (QApplication::topLevelWidgets().count() != 0) {
-    if (auto* mw = topLevelWindow()) {
-      QMessageBox::warning(mw, QObject::tr("Error"), message, QMessageBox::Ok);
-    } else {
-      criticalOnTop(message);
-    }
-  } else {
-    ::MessageBoxW(0, message.toStdWString().c_str(),
-                  QObject::tr("Error").toStdWString().c_str(), MB_ICONERROR | MB_OK);
-  }
 }
 
 TaskDialogButton::TaskDialogButton(QString t, QString d, QMessageBox::StandardButton b)
