@@ -33,8 +33,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace MOBase
 {
 
-bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
-                        LPCWSTR fileName)
+bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
+                        const char* fileName)
 {
   return WriteRegistryValue(
       QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
