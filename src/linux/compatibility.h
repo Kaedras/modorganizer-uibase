@@ -25,6 +25,13 @@ typedef struct _SYSTEMTIME {
 } SYSTEMTIME,
  *PSYSTEMTIME;
 
+// https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+typedef struct _FILETIME {
+  DWORD dwLowDateTime;
+  DWORD dwHighDateTime;
+} FILETIME, *PFILETIME, *LPFILETIME;
+
+
 static inline constexpr int INVALID_HANDLE_VALUE = -1;
 
 // error codes
