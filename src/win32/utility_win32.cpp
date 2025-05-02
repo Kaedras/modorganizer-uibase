@@ -742,18 +742,6 @@ QString ToQString(const std::wstring& source)
   return QString::fromStdWString(source);
 }
 
-QString ToString(const SYSTEMTIME& time)
-{
-  char dateBuffer[100];
-  char timeBuffer[100];
-  int size = 100;
-  GetDateFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, dateBuffer,
-                 size);
-  GetTimeFormatA(LOCALE_USER_DEFAULT, LOCALE_USE_CP_ACP, &time, nullptr, timeBuffer,
-                 size);
-  return QString::fromLocal8Bit(dateBuffer) + " " + QString::fromLocal8Bit(timeBuffer);
-}
-
 static int naturalCompareI(const QString& a, const QString& b)
 {
   static QCollator c = [] {

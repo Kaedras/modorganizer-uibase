@@ -357,6 +357,16 @@ QString ToQString(const std::wstring& source)
   return QString::fromStdWString(source);
 }
 
+QString ToString(const SYSTEMTIME& time)
+{
+  QDate d(time.wYear, time.wMonth, time.wDay);
+  QTime t(time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+
+  QDateTime dt(d, t);
+
+  return dt.toString(QLocale::system().dateFormat());
+}
+
 static int naturalCompareI(const QString& a, const QString& b)
 {
   static QCollator c = [] {

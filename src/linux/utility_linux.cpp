@@ -397,11 +397,4 @@ namespace shell
 
 }  // namespace shell
 
-QString ToString(const SYSTEMTIME& time)
-{
-  QDateTime t = QDateTime::fromSecsSinceEpoch(time.tv_sec);
-
-  return t.toString(QLocale::system().dateFormat());
-}
-
 }  // namespace MOBase
