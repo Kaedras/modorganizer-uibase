@@ -2,8 +2,8 @@
 
 #include "../dllimport.h"
 #include <cstdint>
-#include <unistd.h>
 #include <poll.h>
+#include <unistd.h>
 extern "C"
 {
 #include <sys/pidfd.h>
@@ -11,14 +11,15 @@ extern "C"
 
 // windows types
 
-using WORD       = uint16_t;
-using DWORD      = uint32_t;
-using LPDWORD    = uint32_t*;
-using HANDLE     = int;
-using LPCWSTR    = const wchar_t*;
+using WORD    = uint16_t;
+using DWORD   = uint32_t;
+using LPDWORD = uint32_t*;
+using HANDLE  = int;
+using LPCWSTR = const wchar_t*;
 
 // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2fefe8dd-ab48-4e33-a7d5-7171455a9289
-typedef struct _SYSTEMTIME {
+typedef struct _SYSTEMTIME
+{
   WORD wYear;
   WORD wMonth;
   WORD wDayOfWeek;
@@ -27,15 +28,14 @@ typedef struct _SYSTEMTIME {
   WORD wMinute;
   WORD wSecond;
   WORD wMilliseconds;
-} SYSTEMTIME,
- *PSYSTEMTIME;
+} SYSTEMTIME, *PSYSTEMTIME;
 
 // https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
-typedef struct _FILETIME {
+typedef struct _FILETIME
+{
   DWORD dwLowDateTime;
   DWORD dwHighDateTime;
 } FILETIME, *PFILETIME, *LPFILETIME;
-
 
 static inline constexpr int INVALID_HANDLE_VALUE = -1;
 
@@ -98,8 +98,8 @@ inline int NtClose(HANDLE fd)
   return close(fd);
 }
 
-/* Poll the file descriptors. If TIMEOUT is nonzero and not -1, allow TIMEOUT milliseconds for
-   an event to occur; if TIMEOUT is -1, block until an event occurs.
+/* Poll the file descriptors. If TIMEOUT is nonzero and not -1, allow TIMEOUT
+   milliseconds for an event to occur; if TIMEOUT is -1, block until an event occurs.
    Returns the number of file descriptors with events, zero if timed out,
    or -1 for errors.
 
