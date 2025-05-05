@@ -30,8 +30,8 @@ using nativeStr = LPCWSTR;
 namespace MOBase
 {
 
-QDLLEXPORT bool WriteRegistryValue(nativeStr appName, nativeStr keyName, nativeStr value,
-                                   nativeStr fileName);
+QDLLEXPORT bool WriteRegistryValue(nativeStr appName, nativeStr keyName,
+                                   nativeStr value, nativeStr fileName);
 
 QDLLEXPORT bool WriteRegistryValue(const QString& appName, const QString& keyName,
                                    const QString& value, const QString& fileName);
