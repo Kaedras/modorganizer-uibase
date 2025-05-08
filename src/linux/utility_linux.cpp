@@ -252,32 +252,24 @@ namespace shell
     // array must be terminated by a null pointer
     args.push_back(nullptr);
 
+    // clang-format off
     /*
     source: https://stackoverflow.com/a/3703179
-    1. Before forking, open a
-     * pipe in the parent process.
-    2. After forking, the parent closes the writing
-     * end of the pipe and reads from the
-    reading end.
-    3. The child closes the
-     * reading end and sets the close-on-exec flag for the writing
-    end.
-    4. The
-     * child calls exec.
-    5. If exec fails, the child writes the error code back to
-     * the parent using the pipe,
-    then exits.
-    6. The parent reads eof (a
-     * zero-length read) if the child successfully performed
-    exec, since
-     * close-on-exec made successful exec close the writing end of the pipe.
-    Or, if
-     * exec failed, the parent reads the error code and can proceed accordingly.
- Either
-     * way, the parent blocks until the child calls exec.
-    7. The parent closes the
-     * reading end of the pipe.
+    1. Before forking, open a pipe in the parent process.
+    2. After forking, the parent closes the writing end of the pipe
+       and reads from the reading end.
+    3. The child closes the reading end and sets the close-on-exec flag
+       for the writing end.
+    4. The child calls exec.
+    5. If exec fails, the child writes the error code back to the parent using the pipe,
+       then exits.
+    6. The parent reads eof (a zero-length read) if the child successfully performed exec,
+       since close-on-exec made successful exec close the writing end of the pipe.
+       Or, if exec failed, the parent reads the error code and can proceed accordingly.
+       Either way, the parent blocks until the child calls exec.
+    7. The parent closes the reading end of the pipe.
     */
+    // clang-format on
 
     // pipefd[0] refers to the read end of the pipe. pipefd[1] refers to the write end
     // of the pipe.
@@ -290,9 +282,16 @@ namespace shell
 
     pid_t pid = fork();
 
-    switch (pid) {
-    case 0:  // child
-    {
+    if (pid == -1) { // error
+      close(pipefd[0]);
+      close(pipefd[1]);
+
+      const int error = errno;
+      return Result::makeFailure(
+          error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
+    }
+
+    if (pid == 0) { // child
       // close read end
       close(pipefd[0]);
       // set CLOEXEC on write end
@@ -315,31 +314,23 @@ namespace shell
 
       exit(error);
     }
-    case -1:  // error
-    {
-      const int error = errno;
-      return Result::makeFailure(
-          error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
+
+    // parent
+
+    // close write end
+    close(pipefd[1]);
+
+    int buf;
+    size_t count = read(pipefd[0], &buf, sizeof(int));
+
+    // close read end
+    close(pipefd[0]);
+    if (count == 0) {
+      // success
+      return Result::makeSuccess(pidfd_open(pid, 0));
     }
-    default:  // parent
-    {
-      // close write end
-      close(pipefd[1]);
 
-      int buf;
-
-      size_t count = read(pipefd[0], &buf, sizeof(int));
-
-      // close read end
-      close(pipefd[0]);
-      if (count == 0) {
-        // success
-        return Result::makeSuccess(pidfd_open(pid, 0));
-      }
-
-      return Result::makeFailure(buf, QString::fromStdString(strerror(buf)));
-    }
-    }
+    return Result::makeFailure(buf, QString::fromStdString(strerror(buf)));
   }
 
   extern Result OpenURL(const QUrl& url);
