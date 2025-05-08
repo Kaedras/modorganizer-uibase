@@ -79,6 +79,10 @@ QList<QUrl> stringListToUrlList(const QStringList& list)
 
 bool runJob(KIO::Job* job, QWidget* dialog = nullptr)
 {
+  // set some defaults for copy jobs
+  if (dynamic_cast<KIO::CopyJob*>(job)) {
+    dynamic_cast<KIO::CopyJob*>(job)->setWriteIntoExistingDirectories(true);
+  }
   KJobWidgets::setWindow(job, dialog);
 
   // event loop is required to process input in confirmation dialogs
