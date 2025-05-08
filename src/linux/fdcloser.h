@@ -7,8 +7,8 @@
 class QDLLEXPORT FdCloser
 {
 public:
-  constexpr FdCloser() noexcept;
-  constexpr FdCloser(std::nullptr_t) noexcept;
+  FdCloser() noexcept;
+  FdCloser(std::nullptr_t) noexcept;
   explicit FdCloser(int fd) noexcept;
 
   FdCloser(FdCloser&&)      = default;

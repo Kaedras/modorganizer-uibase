@@ -1,8 +1,8 @@
 #include "fdcloser.h"
 
-constexpr FdCloser::FdCloser() noexcept : m_fd(-1) {}
+FdCloser::FdCloser() noexcept : m_fd(-1) {}
 
-constexpr FdCloser::FdCloser(std::nullptr_t) noexcept : m_fd(-1) {}
+FdCloser::FdCloser(std::nullptr_t) noexcept : m_fd(-1) {}
 
 FdCloser::FdCloser(int fd) noexcept : m_fd(fd) {}
 
