@@ -34,7 +34,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef __unix__
 #include "linux/compatibility.h"
+#include "linux/utility_linux.h"
 #else
+#include "win32/utility_win32.h"
 #include <ShlObj.h>
 #include <Windows.h>
 #endif
@@ -175,29 +177,6 @@ QDLLEXPORT bool shellDeleteQuiet(const QString& fileName, QWidget* dialog = null
 
 namespace shell
 {
-  namespace details
-  {
-#ifdef __unix__
-    using HandlePtr = FdCloser;
-#else
-    // used by HandlePtr, calls CloseHandle() as the deleter
-    //
-    struct HandleCloser
-    {
-      using pointer = HANDLE;
-
-      void operator()(HANDLE h)
-      {
-        if (h != INVALID_HANDLE_VALUE) {
-          ::CloseHandle(h);
-        }
-      }
-    };
-
-    using HandlePtr = std::unique_ptr<HANDLE, HandleCloser>;
-#endif
-  }  // namespace details
-
   // returned by the various shell functions; note that the process handle is
   // closed in the destructor, unless stealProcessHandle() was called
   //
