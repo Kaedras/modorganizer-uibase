@@ -237,7 +237,7 @@ namespace shell
     return Result::makeSuccess();
   }
 
-  Result Execute(const QString& program, const QString& params)
+  Result Execute(const QString& program, const QString& params, const QString& workdir)
   {
     // create argument array for execvp
     vector<const char*> args;
@@ -296,6 +296,10 @@ namespace shell
       close(pipefd[0]);
       // set CLOEXEC on write end
       fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+
+      if (!workdir.isEmpty()) {
+        chdir(workdir.toLocal8Bit());
+      }
 
       // from man 3 exec: If the specified filename includes a slash character, then
       // PATH is ignored, and the file at the specified pathname is executed.

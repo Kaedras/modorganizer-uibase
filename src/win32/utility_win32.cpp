@@ -424,7 +424,7 @@ namespace shell
   }
 
   Result ShellExecuteWrapper(const wchar_t* operation, const wchar_t* file,
-                             const wchar_t* params)
+                             const wchar_t* params, const wchar_t* workdir = nullptr)
   {
     SHELLEXECUTEINFOW info = {};
 
@@ -433,6 +433,7 @@ namespace shell
     info.lpVerb       = operation;
     info.lpFile       = file;
     info.lpParameters = params;
+    info.lpDirectory  = workdir;
     info.nShow        = SW_SHOWNORMAL;
 
     const auto r = ::ShellExecuteExW(&info);
@@ -577,12 +578,14 @@ namespace shell
     }
   }
 
-  Result Execute(const QString& program, const QString& params)
+  Result Execute(const QString& program, const QString& params, const QString& workdir)
   {
     const auto program_ws = program.toStdWString();
     const auto params_ws  = params.toStdWString();
+    const auto workdir_ws = workdir.toStdWString();
 
-    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
+    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str(),
+                               workdir_ws.c_str());
   }
 
   void SetUrlHandler(const QString& cmd)
