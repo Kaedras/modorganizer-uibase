@@ -271,8 +271,8 @@ namespace shell
     */
     // clang-format on
 
-    // pipefd[0] refers to the read end of the pipe. pipefd[1] refers to the write end
-    // of the pipe.
+    // pipefd[0] refers to the read end of the pipe.
+    // pipefd[1] refers to the write end of the pipe.
     int pipefd[2];
 
     int result = pipe(pipefd);
@@ -282,7 +282,7 @@ namespace shell
 
     pid_t pid = fork();
 
-    if (pid == -1) { // error
+    if (pid == -1) {  // error
       close(pipefd[0]);
       close(pipefd[1]);
 
@@ -291,7 +291,7 @@ namespace shell
           error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
     }
 
-    if (pid == 0) { // child
+    if (pid == 0) {  // child
       // close read end
       close(pipefd[0]);
       // set CLOEXEC on write end
