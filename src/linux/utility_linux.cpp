@@ -307,9 +307,11 @@ namespace shell
         }
       }
 
-      QString command = program % u" "_s % params;
+      QString command = u"\""_s % program % u"\""_s % u" "_s % params;
+      // store the temporary QByteArray object
+      QByteArray utf8Data = command.toUtf8();
 
-      execl("/bin/sh", "sh", "-c", command.toLocal8Bit(), nullptr);
+      execl("/bin/sh", "sh", "-c", utf8Data.constData(), nullptr);
 
       // The exec() functions return only if an error has occurred. The return value is
       // -1, and errno is set to indicate the error.
