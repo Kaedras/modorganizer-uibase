@@ -237,6 +237,16 @@ namespace shell
     return Result::makeSuccess();
   }
 
+  void writeErrorToPipe(int pipeFd, int error)
+  {
+    ssize_t bytesWritten = write(pipeFd, &error, sizeof(int));
+    if (bytesWritten == -1) {
+      const int writeError = errno;
+      log::warn("Error writing error to pipe, {}.\nError was {} ({})",
+                strerror(writeError), strerror(error), strerrorname_np(error));
+    }
+  }
+
   Result Execute(const QString& program, const QString& params, const QString& workdir)
   {
     // clang-format off
@@ -285,7 +295,16 @@ namespace shell
       fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
 
       if (!workdir.isEmpty()) {
-        chdir(workdir.toLocal8Bit());
+        int r = chdir(workdir.toLocal8Bit());
+        if (r == -1) {
+          const int error = errno;
+          log::error(
+              "Error changing directory to '{}', {}.\nWorking directory was '{}'",
+              workdir, strerror(error), QDir::currentPath());
+
+          writeErrorToPipe(pipefd[1], error);
+          exit(error);
+        }
       }
 
       QString command = program % u" "_s % params;
@@ -296,12 +315,7 @@ namespace shell
       // -1, and errno is set to indicate the error.
       const int error = errno;
 
-      ssize_t bytesWritten = write(pipefd[1], &error, sizeof(int));
-      if (bytesWritten == -1) {
-        const int writeError = errno;
-        log::warn("Error writing exec error to pipe, {}.\nExec error was {}",
-                  strerror(writeError), strerror(error));
-      }
+      writeErrorToPipe(pipefd[1], error);
 
       exit(error);
     }
