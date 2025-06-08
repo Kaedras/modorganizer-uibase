@@ -272,11 +272,11 @@ namespace shell
     */
     // clang-format on
 
-    // pipefd[0] refers to the read end of the pipe.
-    // pipefd[1] refers to the write end of the pipe.
-    int pipefd[2];
+    // pipeFd[0] refers to the read end of the pipe.
+    // pipeFd[1] refers to the write end of the pipe.
+    int pipeFd[2];
 
-    int result = pipe(pipefd);
+    int result = pipe(pipeFd);
     if (result == -1) {
       return Result::makeFailure(EPIPE, u"Could not open pipe"_s);
     }
@@ -284,8 +284,8 @@ namespace shell
     pid_t pid = fork();
 
     if (pid == -1) {  // error
-      close(pipefd[0]);
-      close(pipefd[1]);
+      close(pipeFd[0]);
+      close(pipeFd[1]);
 
       const int error = errno;
       return Result::makeFailure(
@@ -294,9 +294,9 @@ namespace shell
 
     if (pid == 0) {  // child
       // close read end
-      close(pipefd[0]);
+      close(pipeFd[0]);
       // set CLOEXEC on write end
-      fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+      fcntl(pipeFd[1], F_SETFD, FD_CLOEXEC);
 
       if (!workdir.isEmpty()) {
         int r = chdir(workdir.toLocal8Bit());
@@ -306,7 +306,7 @@ namespace shell
               "Error changing directory to '{}', {}.\nWorking directory was '{}'",
               workdir, strerror(error), QDir::currentPath());
 
-          writeErrorToPipe(pipefd[1], error);
+          writeErrorToPipe(pipeFd[1], error);
           exit(error);
         }
       }
@@ -321,7 +321,7 @@ namespace shell
       // -1, and errno is set to indicate the error.
       const int error = errno;
 
-      writeErrorToPipe(pipefd[1], error);
+      writeErrorToPipe(pipeFd[1], error);
 
       exit(error);
     }
@@ -329,13 +329,13 @@ namespace shell
     // parent
 
     // close write end
-    close(pipefd[1]);
+    close(pipeFd[1]);
 
     int buf;
-    size_t count = read(pipefd[0], &buf, sizeof(int));
+    size_t count = read(pipeFd[0], &buf, sizeof(int));
 
     // close read end
-    close(pipefd[0]);
+    close(pipeFd[0]);
     if (count == 0) {
       // success
       return Result::makeSuccess(pidfd_open(pid, 0));
