@@ -3,10 +3,8 @@
 #include "utility.h"
 #include <iostream>
 
-#pragma warning(push)
-#pragma warning(disable : 4668)
-#include <boost/algorithm/string.hpp>
-#pragma warning(pop)
+#include <algorithm>
+#include <locale>
 
 #pragma warning(push)
 #pragma warning(disable : 4365)
@@ -268,7 +266,7 @@ void Logger::addToBlacklist(const std::string& filter, const std::string& replac
 
   bool present = false;
   for (BlacklistEntry& e : m_conf.blacklist) {
-    if (boost::algorithm::iequals(e.filter, filter)) {
+    if (iequals(e.filter, filter)) {
       e.replacement = replacement;
       present       = true;
       break;
@@ -287,7 +285,7 @@ void Logger::removeFromBlacklist(const std::string& filter)
   }
 
   for (auto it = m_conf.blacklist.begin(); it != m_conf.blacklist.end();) {
-    if (boost::algorithm::iequals(it->filter, filter)) {
+    if (iequals(it->filter, filter)) {
       it = m_conf.blacklist.erase(it);
     } else {
       ++it;
@@ -378,13 +376,6 @@ void doLogImpl(spdlog::logger& lg, Levels lv, const std::string& s) noexcept
   } catch (...) {
     // eat it
   }
-}
-
-void ireplace_all(std::string& input, std::string const& search,
-                  std::string const& replace) noexcept
-{
-  // call boost here to avoid bringing the boost include in the header
-  boost::algorithm::ireplace_all(input, search, replace);
 }
 
 }  // namespace MOBase::log::details

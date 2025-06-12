@@ -603,7 +603,7 @@ public:  // Access methods:
   QString pathTo(std::shared_ptr<const FileTreeEntry> entry,
                  QString sep = seperator) const
   {
-    return entry->pathFrom(astree());
+    return entry->pathFrom(astree(), sep);
   }
 
 public:  // Walk operations
