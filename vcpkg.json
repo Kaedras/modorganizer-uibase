@@ -25,8 +25,8 @@
     "registries": [
       {
         "kind": "git",
-        "repository": "https://github.com/ModOrganizer2/vcpkg-registry",
-        "baseline": "8beb2e0efa9c17dd6d17bb05288dd1e40727f673",
+        "repository": "https://github.com/Kaedras/vcpkg-registry",
+        "baseline": "12b698ed10b5644487b4eb5f7c8aaaaa5004aa26",
         "packages": ["mo2-cmake", "spdlog"]
       }
     ]
