@@ -5,8 +5,10 @@ find_package(spdlog CONFIG REQUIRED)
 
 if (UNIX)
     set(PRIVATE_OS_SPECIFIC_DEPS Qt::DBus flatpak KF6KIO)
+	set(OS_NAME linux)
 else()
     set(PRIVATE_OS_SPECIFIC_DEPS Version)
+	set(OS_NAME win32)
 endif()
 
 set(root_headers
@@ -27,6 +29,8 @@ set(root_headers
 	../include/uibase/moassert.h
 	../include/uibase/modrepositoryfileinfo.h
 	../include/uibase/nxmurl.h
+	../include/uibase/peextractor.h
+	../include/uibase/petypes.h
 	../include/uibase/pluginrequirements.h
 	../include/uibase/pluginsetting.h
 	../include/uibase/registry.h
@@ -36,6 +40,7 @@ set(root_headers
 	../include/uibase/steamutility.h
 	../include/uibase/strings.h
 	../include/uibase/utility.h
+	../include/uibase/${OS_NAME}/utility_${OS_NAME}.h
 	../include/uibase/versioning.h
 	../include/uibase/versioninfo.h
 )
@@ -77,6 +82,7 @@ set(widget_headers
 	../include/uibase/questionboxmemory.h
 	../include/uibase/sortabletreewidget.h
 	../include/uibase/taskprogressmanager.h
+	../include/uibase/${OS_NAME}/taskprogressmanager.h
 	../include/uibase/textviewer.h
 	../include/uibase/widgetutility.h
 )
@@ -100,6 +106,18 @@ set(formatters_header
 	../include/uibase/formatters/strings.h
 	../include/uibase/formatters.h
 )
+if (UNIX)
+	set(os_specific_headers
+		../include/uibase/linux/compatibility.h
+		../include/uibase/linux/fdcloser.h
+	)
+	set(os_specific_sources
+		linux/fdcloser.cpp
+	)
+else()
+	set(os_specific_headers)
+	set(os_specific_sources)
+endif()
 
 add_library(uibase SHARED)
 mo2_configure_target(uibase NO_SOURCES WARNINGS ON EXTERNAL_WARNINGS ON)
@@ -109,26 +127,31 @@ mo2_target_sources(uibase
 	FOLDER src
 	PRIVATE
 	${root_headers}
+	${os_specific_headers}
+	${os_specific_sources}
 	delayedfilewriter.cpp
 	diagnosisreport.cpp
-	errorcodes.cpp
+	${OS_NAME}/errorcodes.cpp
 	eventfilter.cpp
 	executableinfo.cpp
 	filesystemutilities.cpp
 	guessedvalue.cpp
 	json.cpp
 	log.cpp
+	${OS_NAME}/log_${OS_NAME}.cpp
 	modrepositoryfileinfo.cpp
 	nxmurl.cpp
 	pch.cpp
 	pluginrequirements.cpp
-	registry.cpp
+	${OS_NAME}/registry.cpp
 	report.cpp
 	safewritefile.cpp
 	scopeguard.cpp
 	steamutility.cpp
+	${OS_NAME}/steamutility_${OS_NAME}.cpp
 	strings.cpp
 	utility.cpp
+	${OS_NAME}/utility_${OS_NAME}.cpp
 	versioning.cpp
 	versioninfo.cpp
 )
@@ -161,7 +184,7 @@ mo2_target_sources(uibase
 	linklabel.cpp
 	questionboxmemory.cpp
 	sortabletreewidget.cpp
-	taskprogressmanager.cpp
+	${OS_NAME}/taskprogressmanager.cpp
 	textviewer.cpp
 	widgetutility.cpp
 	filterwidget.cpp
@@ -208,11 +231,13 @@ target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
+	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick ${PRIVATE_OS_SPECIFIC_DEPS})
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
-install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
+if (WIN32)
+	install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
+endif()
 install(EXPORT uibaseTargets
 	FILE mo2-uibase-targets.cmake
 	NAMESPACE mo2::
