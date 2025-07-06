@@ -211,19 +211,6 @@ namespace shell
 
   Result Execute(const QString& program, const QString& params)
   {
-    // create argument array for execvp
-    vector<const char*> args;
-    // split arguments
-    QStringList argList = QProcess::splitCommand(params);
-    // first argument is executable
-    args.reserve(argList.size() + 1);
-    args.push_back(program.toLocal8Bit());
-    for (const auto& arg : argList) {
-      args.push_back(arg.toLocal8Bit());
-    }
-    // array must be terminated by a null pointer
-    args.push_back(nullptr);
-
     /*
     source: https://stackoverflow.com/a/3703179
     1. Before forking, open a pipe in the parent process.
@@ -260,9 +247,11 @@ namespace shell
       // set CLOEXEC on write end
       fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
 
-      // from man 3 exec: If the specified filename includes a slash character, then
-      // PATH is ignored, and the file at the specified pathname is executed.
-      execvp(args[0], const_cast<char* const*>(args.data()));
+      QString command = u"\""_s % program % u"\""_s % u" "_s % params;
+      // store the temporary QByteArray object
+      QByteArray utf8Data = command.toUtf8();
+
+      execl("/bin/sh", "sh", "-c", utf8Data.constData(), nullptr);
 
       // The exec() functions return only if an error has occurred. The return value is
       // -1, and errno is set to indicate the error.
