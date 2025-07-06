@@ -45,6 +45,46 @@ using namespace std;
 using namespace Qt::Literals::StringLiterals;
 namespace fs = std::filesystem;
 
+int jobErrorToErrno(int error)
+{
+  using namespace KIO;
+  switch (error) {
+  case ERR_CANNOT_OPEN_FOR_READING:
+  case ERR_CANNOT_OPEN_FOR_WRITING:
+    return EIO;
+  case ERR_MALFORMED_URL:
+  case ERR_NO_SOURCE_PROTOCOL:
+    return EINVAL;
+  case ERR_UNSUPPORTED_PROTOCOL:
+    return EPROTONOSUPPORT;
+  case ERR_UNSUPPORTED_ACTION:
+    return ENOTSUP;
+  case ERR_IS_DIRECTORY:
+    return EISDIR;
+  case ERR_DOES_NOT_EXIST:
+    return ENOENT;
+  case ERR_FILE_ALREADY_EXIST:
+  case ERR_DIR_ALREADY_EXIST:
+    return EEXIST;
+  case ERR_ACCESS_DENIED:
+  case ERR_WRITE_ACCESS_DENIED:
+  case ERR_CANNOT_ENTER_DIRECTORY:
+    return EACCES;
+  case ERR_PROTOCOL_IS_NOT_A_FILESYSTEM:
+    return EPROTO;
+  case ERR_USER_CANCELED:
+  case ERR_ABORTED:
+    return ECANCELED;
+  case ERR_DISK_FULL:
+    return ENOSPC;
+  case ERR_OUT_OF_MEMORY:
+    return ENOMEM;
+
+  default:
+    return EIO;
+  }
+}
+
 namespace MOBase
 {
 
@@ -76,7 +116,7 @@ bool runJob(KIO::Job* job, QWidget* dialog = nullptr)
   eventLoop.exec();
 
   if (error != 0) {
-    errno = error;
+    errno = jobErrorToErrno(error);
     return false;
   }
   return true;
