@@ -4,6 +4,7 @@
 #include "log.h"
 
 #ifndef _MSC_VER
+#define __FUNCSIG__ __PRETTY_FUNCTION__
 #ifdef __cpp_lib_debugging
 // These functions are part of C++26
 #include <debugging>
@@ -16,7 +17,6 @@ inline void DebugBreak()
   std::breakpoint();
 }
 #else
-#define __FUNCSIG__ __PRETTY_FUNCTION__
 #include <csignal>
 #include <fstream>
 
