@@ -268,6 +268,9 @@ namespace shell
     }
     case -1:  // error
     {
+      close(pipefd[0]);
+      close(pipefd[1]);
+
       const int error = errno;
       return Result::makeFailure(
           error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
