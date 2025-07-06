@@ -62,6 +62,12 @@ bool runJob(KIO::Job* job, QWidget* dialog = nullptr)
 {
   KJobWidgets::setWindow(job, dialog);
 
+  int error;
+  // KJob::error() should only be called from the slot connected to result()
+  QObject::connect(job, &KIO::Job::result, [&error, job]() {
+    error = job->error();
+  });
+
   // event loop is required to process input in confirmation dialogs
   QEventLoop eventLoop;
   QObject::connect(job, &KIO::Job::result, &eventLoop, &QEventLoop::quit);
@@ -69,8 +75,8 @@ bool runJob(KIO::Job* job, QWidget* dialog = nullptr)
   job->start();
   eventLoop.exec();
 
-  if (job->error() != 0) {
-    errno = job->error();
+  if (error != 0) {
+    errno = error;
     return false;
   }
   return true;
