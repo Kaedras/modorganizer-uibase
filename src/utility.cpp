@@ -751,30 +751,29 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
 
   // Whatever is left over is milliseconds
 
-  char buffer[25];
-  memset(buffer, 0, 25);
+  std::string buffer;
 
   if (hours > 0) {
     if (hours < 10)
-      sprintf_s(buffer, "0%lld", hours);
+      buffer = "0" + std::to_string(hours);
     else
-      sprintf_s(buffer, "%lld", hours);
+      buffer = std::to_string(hours);
     Result.append(QStringLiteral("%1:").arg(buffer));
   }
 
   if (minutes > 0 || hours > 0) {
     if (minutes < 10 && hours > 0)
-      sprintf_s(buffer, "0%lld", minutes);
+      buffer = "0" + std::to_string(minutes);
     else
-      sprintf_s(buffer, "%lld", minutes);
+      buffer = std::to_string(minutes);
     Result.append(QStringLiteral("%1:").arg(buffer));
   }
 
   if (seconds < 10 && (minutes > 0 || hours > 0))
-    sprintf_s(buffer, "0%lld", seconds);
+    buffer = "0" + std::to_string(seconds);
   else
-    sprintf_s(buffer, "%lld", seconds);
-  Result.append(QStringLiteral("%1").arg(buffer));
+    buffer = std::to_string(seconds);
+  Result.append(QString::fromStdString(buffer));
 
   if (hours > 0)
     //: Time remaining hours
