@@ -51,7 +51,6 @@ QDLLEXPORT QString findSteam();
 /**
  * @brief Gets the installation path to Steam according to the registy and caches it
  * for faster subsequent calls.
- * @return
  */
 QDLLEXPORT QString findSteamCached();
 
