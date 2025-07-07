@@ -11,10 +11,10 @@ public:
   FdCloser(std::nullptr_t) noexcept;
   FdCloser(int fd) noexcept;
 
-  FdCloser(FdCloser&&)      = default;
-  FdCloser(const FdCloser&) = delete;
+  FdCloser(FdCloser&&) noexcept = default;
+  FdCloser(const FdCloser&)     = delete;
 
-  ~FdCloser();
+  ~FdCloser() noexcept;
 
   FdCloser& operator=(FdCloser&& other) noexcept;
   FdCloser& operator=(int fd) noexcept;
