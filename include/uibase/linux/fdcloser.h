@@ -4,6 +4,10 @@
 
 #include <cstddef>
 
+/**
+ * @brief RAII wrapper for file descriptors that automatically closes them on
+ * destruction
+ */
 class QDLLEXPORT FdCloser
 {
 public:
