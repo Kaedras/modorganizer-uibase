@@ -20,12 +20,20 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "report.h"
 #include <QApplication>
 #include <QMessageBox>
+#include <QSettings>
 #include <QString>
-
-using namespace Qt::StringLiterals;
 
 namespace MOBase
 {
+
+bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
+                        const char* fileName)
+{
+  return WriteRegistryValue(
+      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
+      QString::fromLocal8Bit(value), QString::fromLocal8Bit(fileName));
+}
+
 bool WriteRegistryValue(const QString& appName, const QString& keyName,
                         const QString& value, const QString& fileName)
 {
@@ -46,6 +54,7 @@ bool WriteRegistryValue(const QString& key, const QString& value,
     switch (settings.status()) {
     case QSettings::AccessError: {
       QFile file(fileName);
+      // todo: also check for immutable attribute
       if (!file.isWritable() && file.isReadable()) {
         QMessageBox::StandardButton result =
             MOBase::TaskDialog(qApp->activeModalWidget(),
@@ -60,7 +69,7 @@ bool WriteRegistryValue(const QString& key, const QString& value,
                          QObject::tr("The file will be set to read-only again."),
                          QMessageBox::Ignore})
                 .button({QObject::tr("Skip this file"), QMessageBox::No})
-                .remember(u"clearReadOnly"_s, file.fileName())
+                .remember(QStringLiteral("clearReadOnly"), file.fileName())
                 .exec();
 
         auto oldPermissions = file.permissions();
@@ -68,6 +77,7 @@ bool WriteRegistryValue(const QString& key, const QString& value,
         if (result & (QMessageBox::Yes | QMessageBox::Ignore)) {
           if (file.setPermissions(oldPermissions | QFile::Permission::WriteOwner)) {
             settings.setValue(key, value);
+            settings.sync();
             if (settings.status() == QSettings::NoError) {
               success = true;
             }
