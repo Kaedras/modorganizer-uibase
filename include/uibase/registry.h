@@ -20,9 +20,18 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dllimport.h"
 #include <QString>
+#ifdef __unix__
+using nativeStr = const char*;
+#else
+#include <Windows.h>
+using nativeStr = LPCWSTR;
+#endif
 
 namespace MOBase
 {
+
+QDLLEXPORT bool WriteRegistryValue(nativeStr appName, nativeStr keyName,
+                                   nativeStr value, nativeStr fileName);
 
 QDLLEXPORT bool WriteRegistryValue(const QString& appName, const QString& keyName,
                                    const QString& value, const QString& fileName);
