@@ -63,7 +63,7 @@ bool validFileName(const QString& name)
   if (name.isEmpty()) {
     return false;
   }
-  if (name == "."_L1 || name == ".."_L1) {
+  if (name == '.' || name == ".."_L1) {
     return false;
   }
 
