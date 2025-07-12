@@ -49,45 +49,6 @@ namespace shell
   extern QString toUNC(const QFileInfo& path);
 }  // namespace shell
 
-QString fileErrorToString(QFileDevice::FileError error)
-{
-  switch (error) {
-
-  case QFileDevice::NoError:
-    return QStringLiteral("No error occurred.");
-  case QFileDevice::ReadError:
-    return QStringLiteral("An error occurred when reading from the file.");
-  case QFileDevice::WriteError:
-    return QStringLiteral("An error occurred when writing to the file.");
-  case QFileDevice::FatalError:
-    return QStringLiteral("A fatal error occurred.");
-  case QFileDevice::ResourceError:
-    return QStringLiteral(
-        "Out of resources (e.g., too many open files, out of memory, etc.)");
-  case QFileDevice::OpenError:
-    return QStringLiteral("The file could not be opened.");
-  case QFileDevice::AbortError:
-    return QStringLiteral("The operation was aborted.");
-  case QFileDevice::TimeOutError:
-    return QStringLiteral("A timeout occurred.");
-  case QFileDevice::RemoveError:
-    return QStringLiteral("The file could not be removed.");
-  case QFileDevice::RenameError:
-    return QStringLiteral("The file could not be renamed.");
-  case QFileDevice::PositionError:
-    return QStringLiteral("The position in the file could not be changed.");
-  case QFileDevice::ResizeError:
-    return QStringLiteral("The file could not be resized.");
-  case QFileDevice::PermissionsError:
-    return QStringLiteral("The file could not be accessed.");
-  case QFileDevice::CopyError:
-    return QStringLiteral("The file could not be copied.");
-  case QFileDevice::UnspecifiedError:
-  default:
-    return QStringLiteral("An unspecified error occurred.");
-  }
-}
-
 bool removeDir(const QString& dirName)
 {
   QDir dir(dirName);
