@@ -435,7 +435,6 @@ IFileTree::iterator IFileTree::erase(std::shared_ptr<FileTreeEntry> entry)
   }
   entry->m_Parent.reset();
   return entries().erase(it);
-  ;
 }
 
 /**
