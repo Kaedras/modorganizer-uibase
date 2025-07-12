@@ -24,20 +24,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase
 {
 
-// source: https://gcc.gnu.org/wiki/Visibility
+#if defined(UIBASE_EXPORT)
 #if defined _WIN32 || defined __CYGWIN__
-#ifdef UIBASE_EXPORT
 #define QDLLEXPORT __declspec(dllexport)
 #else
-#define QDLLEXPORT __declspec(dllimport)
-#endif
-#else  // defined _WIN32 || defined __CYGWIN__
-#if __GNUC__ >= 4
 #define QDLLEXPORT __attribute__((visibility("default")))
+#endif
+#elif defined(_NODLL)
+#define QDLLEXPORT
+#else
+#undef DLLEXPORT
+#if defined _WIN32 || defined __CYGWIN__
+#define QDLLEXPORT __declspec(dllimport)
 #else
 #define QDLLEXPORT
 #endif
-#endif  // defined _WIN32 || defined __CYGWIN__
+#endif
 
 }  // namespace MOBase
 
