@@ -70,7 +70,7 @@ QString findSteamGame(const QString& appName, const QString& validFile)
       QRegularExpressionMatch match = kSteamLibraryFilter.match(line);
       if (match.hasMatch()) {
         QString folder = match.captured(u"path"_s);
-        folder.replace('\\', '/').replace(u"\\\\"_s, u"/"_s);
+        folder.replace(u"\\\\"_s, u"/"_s).replace('\\', '/');
         libraryFolders << folder;
       }
     }
