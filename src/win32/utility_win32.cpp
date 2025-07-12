@@ -462,7 +462,7 @@ namespace shell
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
     const auto path      = QDir::toNativeSeparators(info.absoluteFilePath());
-    const QString params = u"/select,\""_s % path % '\"';
+    const auto params    = u"/select,\""_s % path % '\"';
     const auto ws_params = params.toStdWString();
 
     return ShellExecuteWrapper(nullptr, L"explorer", ws_params.c_str());
