@@ -8,7 +8,7 @@
     {
       "kind": "git",
       "repository": "https://github.com/Kaedras/vcpkg-registry",
-      "baseline": "ad9123ae15ef3f916d7f88cbbc330c0d2162e3e7",
+      "baseline": "69572e0523b9c01930e2620770dae752d500eac8",
       "packages": ["mo2-cmake", "spdlog", "vdf-parser"]
     }
   ]
