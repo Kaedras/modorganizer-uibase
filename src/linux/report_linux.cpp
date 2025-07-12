@@ -8,7 +8,7 @@
 namespace MOBase
 {
 
-QWidget* topLevelWindow();
+extern QWidget* topLevelWindow();
 
 void reportError(const QString& message)
 {
@@ -20,6 +20,8 @@ void reportError(const QString& message)
     } else {
       criticalOnTop(message);
     }
+  } else {
+    QMessageBox::warning(nullptr, QObject::tr("Error"), message, QMessageBox::Ok);
   }
 }
 
