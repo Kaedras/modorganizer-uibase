@@ -265,9 +265,10 @@ namespace shell
   QDLLEXPORT Result Open(const QUrl& url);
 
   // @brief asks the shell to execute the given program, with optional
-  // parameters
+  // parameters and working directory
   //
-  QDLLEXPORT Result Execute(const QString& program, const QString& params = {});
+  QDLLEXPORT Result Execute(const QString& program, const QString& params = {},
+                            const QString& workdir = {});
 
   // asks the shell to delete the given file (not directory)
   //

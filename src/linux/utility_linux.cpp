@@ -259,8 +259,12 @@ namespace shell
     return Result::makeSuccess();
   }
 
-  Result Execute(const QString& program, const QString& params)
+  Result Execute(const QString& program, const QString& params, const QString& workdir)
   {
+    if (!QFile::exists(workdir)) {
+      return Result::makeFailure(ENOENT, u"Workdir does not exist"_s);
+    }
+
     /*
     source: https://stackoverflow.com/a/3703179
     1. Before forking, open a pipe in the parent process.
@@ -301,6 +305,7 @@ namespace shell
       // store the temporary QByteArray object
       QByteArray utf8Data = command.toUtf8();
 
+      chdir(workdir.toUtf8().constData());
       execl("/bin/sh", "sh", "-c", utf8Data.constData(), nullptr);
 
       // The exec() functions return only if an error has occurred. The return value is
