@@ -48,6 +48,12 @@ SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName)
 
     throw Exception(errorMsg);
   }
+  // from https://doc.qt.io/qt-6/qtemporaryfile.html#setAutoRemove
+  // On some systems, if fileName() is not called before closing the file,
+  // the temporary file may be removed regardless of the state of this property.
+  // This behavior should not be relied upon, so application code should either call
+  // fileName() or leave the auto removal functionality enabled.
+  (void)m_TempFile.fileName();
 }
 
 QFile* SafeWriteFile::operator->()
