@@ -309,53 +309,9 @@ namespace shell
     return Result::makeSuccess();
   }
 
-  Result Delete(const QFileInfo& path)
-  {
-    QFile file(toUNC(path));
-
-    if (!file.remove()) {
-      return Result::makeFailure(file.error(), file.errorString());
-    }
-    return Result::makeSuccess();
-  }
-
   Result Rename(const QFileInfo& src, const QFileInfo& dest)
   {
-    QFile source(toUNC(src));
-    QFile destination(toUNC(dest));
-
-    if (!source.rename(destination.fileName())) {
-      return Result::makeFailure(source.error(), source.errorString());
-    }
-
-    return Result::makeSuccess();
-  }
-
-  Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
-  {
-    return Rename(src, dest);
-  }
-
-  Result CreateDirectories(const QDir& dir)
-  {
-    if (!dir.mkpath(u"."_s)) {
-      const auto e = GetLastError();
-      return Result::makeFailure(e, ToQString(formatSystemMessage(e)));
-    }
-
-    return Result::makeSuccess();
-  }
-
-  Result DeleteDirectoryRecursive(const QDir& dir)
-  {
-    std::error_code ec;
-    std::filesystem::remove_all(dir.filesystemPath(), ec);
-
-    if (ec) {
-      return Result::makeFailure(ec.value(), ToQString(ec.message()));
-    }
-
-    return Result::makeSuccess();
+    return Rename(src, dest, true);
   }
 
 }  // namespace shell
@@ -413,29 +369,6 @@ bool copyFileRecursive(const QString& source, const QString& baseDir,
   return true;
 }
 
-int promptUserForOverwrite(const QString& file, QWidget* dialog = nullptr)
-{
-  QMessageBox msgBox;
-  msgBox.setText(u"Target file already exists"_s);
-  msgBox.setDetailedText(
-      QStringLiteral("\"%1\" already exists. Would you like to overwrite it?")
-          .arg(file));
-  msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::YesToAll | QMessageBox::No |
-                            QMessageBox::Cancel);
-  msgBox.setDefaultButton(QMessageBox::Cancel);
-  msgBox.setParent(dialog);
-
-  return msgBox.exec();
-}
-
-bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
-{
-  if (!QFile::remove(fileName)) {
-    return shellDelete(QStringList(fileName), false, dialog);
-  }
-  return true;
-}
-
 std::wstring ToWString(const QString& source)
 {
   return source.toStdWString();
@@ -462,6 +395,16 @@ QString ToQString(const std::wstring& source)
 {
   // return QString::fromWCharArray(source.c_str());
   return QString::fromStdWString(source);
+}
+
+QString ToString(const SYSTEMTIME& time)
+{
+  QDate d(time.wYear, time.wMonth, time.wDay);
+  QTime t(time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
+
+  QDateTime dt(d, t);
+
+  return dt.toString(QLocale::system().dateFormat());
 }
 
 QDateTime fileTimeToQDateTime(const FILETIME& fileTime, const QTimeZone& timeZone)
@@ -525,13 +468,20 @@ QString getOptionalKnownFolder(QStandardPaths::StandardLocation location)
 
 QString getDesktopDirectory()
 {
-  return QStandardPaths::standardLocations(QStandardPaths::DesktopLocation).first();
+  return getKnownFolder(QStandardPaths::DesktopLocation).absolutePath();
 }
 
 QString getStartMenuDirectory()
 {
-  return QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation)
-      .first();
+  return getKnownFolder(QStandardPaths::ApplicationsLocation).absolutePath();
+}
+
+bool shellDeleteQuiet(const QString& fileName, QWidget* dialog)
+{
+  if (!QFile::remove(fileName)) {
+    return shellDelete(QStringList(fileName), false, dialog);
+  }
+  return true;
 }
 
 QString readFileText(const QString& fileName, QString* encoding)
@@ -586,11 +536,9 @@ void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
       deleteFiles.append(files.at(i).absoluteFilePath());
     }
 
-    auto result = shellDelete(deleteFiles);
-
-    if (!result) {
-      const int error = errno;
-      log::warn("failed to remove log files: {}", strerror(error));
+    if (!shellDelete(deleteFiles)) {
+      const auto e = ::GetLastError();
+      log::warn("failed to remove log files: {}", formatSystemMessage(e));
     }
   }
 }
@@ -676,15 +624,13 @@ void deleteChildWidgets(QWidget* w)
   }
 }
 
-QString formatMessage(DWORD id, const QString& message)
+void trimWString(std::wstring& s)
 {
-  QString s = QStringLiteral("0x%1").arg(id, 0, 16);
-
-  if (message.isEmpty()) {
-    return s;
-  }
-
-  return QStringLiteral("%1 (%2)").arg(message, s);
+  s.erase(std::remove_if(s.begin(), s.end(),
+                         [](wint_t ch) {
+                           return std::iswspace(ch);
+                         }),
+          s.end());
 }
 
 QString localizedSize(unsigned long long bytes, const QString& B, const QString& KB,

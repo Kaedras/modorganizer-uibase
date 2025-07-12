@@ -384,11 +384,6 @@ namespace shell
     return OpenCustomURL(g_urlHandler, url.toString(QUrl::FullyEncoded));
   }
 
-  HANDLE GetHandleFromPid(qint64 pid)
-  {
-    return pidfd_open(static_cast<pid_t>(pid), 0);
-  }
-
   QString toUNC(const QFileInfo& path)
   {
     return path.absoluteFilePath();
@@ -399,13 +394,56 @@ namespace shell
     return strerror(i);
   }
 
+  Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
+  {
+    (void)copyAllowed;
+
+    std::error_code ec;
+    std::filesystem::rename(src.filesystemAbsoluteFilePath(),
+                            dest.filesystemAbsoluteFilePath(), ec);
+
+    if (ec) {
+      return Result::makeFailure(ec.value());
+    }
+    return Result::makeSuccess();
+  }
+
+  Result Delete(const QFileInfo& path)
+  {
+    std::error_code ec;
+    std::filesystem::remove(path.filesystemAbsoluteFilePath(), ec);
+
+    if (ec) {
+      return Result::makeFailure(ec.value());
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result CreateDirectories(const QDir& dir)
+  {
+    std::error_code ec;
+    std::filesystem::create_directories(dir.filesystemAbsolutePath(), ec);
+
+    if (ec) {
+      return Result::makeFailure(ec.value());
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result DeleteDirectoryRecursive(const QDir& dir)
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(dir.filesystemPath(), ec);
+
+    if (ec) {
+      return Result::makeFailure(ec.value(), ToQString(ec.message()));
+    }
+
+    return Result::makeSuccess();
+  }
+
 }  // namespace shell
-
-QString ToString(const SYSTEMTIME& time)
-{
-  QDateTime t = QDateTime::fromSecsSinceEpoch(time.tv_sec);
-
-  return t.toString(QLocale::system().dateFormat());
-}
 
 }  // namespace MOBase
