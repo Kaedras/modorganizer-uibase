@@ -15,15 +15,15 @@ bool fixDirectoryName(QString& name)
     temp.chop(1);
 
   static QRegularExpression exp(uR"([<>:"/\\|?*])"_s);
-  temp.replace(exp, "");
-  static QString invalidNames[] = {
+  temp.remove(exp);
+  static std::array invalidNames = {
       u"CON"_s,  u"PRN"_s,  u"AUX"_s,  u"NUL"_s,  u"COM1"_s, u"COM2"_s,
       u"COM3"_s, u"COM4"_s, u"COM5"_s, u"COM6"_s, u"COM7"_s, u"COM8"_s,
       u"COM9"_s, u"LPT1"_s, u"LPT2"_s, u"LPT3"_s, u"LPT4"_s, u"LPT5"_s,
       u"LPT6"_s, u"LPT7"_s, u"LPT8"_s, u"LPT9"_s};
-  for (unsigned int i = 0; i < sizeof(invalidNames) / sizeof(QString); ++i) {
-    if (temp == invalidNames[i]) {
-      temp = "";
+  for (const QString& invalidName : invalidNames) {
+    if (temp == invalidName) {
+      temp.clear();
       break;
     }
   }
