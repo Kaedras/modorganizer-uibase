@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QIcon>
 #include <QList>
+#include <QStandardPaths>
 #include <QString>
 #include <QTextStream>
 #include <QVariant>
@@ -33,6 +34,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef __unix__
 #include "linux/compatibility.h"
+#include "linux/fdcloser.h"
 #include "linux/utility_linux.h"
 namespace MOBase::details
 {
@@ -44,8 +46,6 @@ using HandlePtr = FdCloser;
 
 #include "dllimport.h"
 #include "exceptions.h"
-
-#include <QStandardPaths>
 
 class QProcess;
 namespace MOBase
