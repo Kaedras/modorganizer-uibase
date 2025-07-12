@@ -610,66 +610,66 @@ void FilterWidget::onResized()
 
 void FilterWidget::onContextMenu(QObject*, QContextMenuEvent* e)
 {
-  auto m = std::make_unique<QMenu>(m_edit->createStandardContextMenu());
+  std::unique_ptr<QMenu> m(m_edit->createStandardContextMenu());
   m->setParent(m_edit);
 
-  auto title = std::make_unique<QAction>(tr("Filter options"), m_edit);
+  auto* title = new QAction(tr("Filter options"), m_edit);
   title->setEnabled(false);
 
   auto f = title->font();
   f.setBold(true);
   title->setFont(f);
 
-  auto regex = std::make_unique<QAction>(tr("Use regular expressions"), m_edit);
+  auto* regex = new QAction(tr("Use regular expressions"), m_edit);
   regex->setStatusTip(tr("Use regular expressions in filters"));
   regex->setCheckable(true);
   regex->setChecked(s_options.useRegex);
 
-  connect(regex.get(), &QAction::triggered, [&] {
+  connect(regex, &QAction::triggered, [&] {
     s_options.useRegex = regex->isChecked();
     update();
   });
 
-  auto cs = std::make_unique<QAction>(tr("Case sensitive"), m_edit);
+  auto* cs = new QAction(tr("Case sensitive"), m_edit);
   //: leave "(/i)" verbatim
   cs->setStatusTip(tr("Make regular expressions case sensitive (/i)"));
   cs->setCheckable(true);
   cs->setChecked(s_options.regexCaseSensitive);
   cs->setEnabled(s_options.useRegex);
 
-  connect(cs.get(), &QAction::triggered, [&] {
+  connect(cs, &QAction::triggered, [&] {
     s_options.regexCaseSensitive = cs->isChecked();
     update();
   });
 
-  auto x = std::make_unique<QAction>(tr("Extended"), m_edit);
+  auto* x = new QAction(tr("Extended"), m_edit);
   //: leave "(/x)" verbatim
   x->setStatusTip(tr("Ignores unescaped whitespace in regular expressions (/x)"));
   x->setCheckable(true);
   x->setChecked(s_options.regexExtended);
   x->setEnabled(s_options.useRegex);
 
-  connect(x.get(), &QAction::triggered, [&] {
+  connect(x, &QAction::triggered, [&] {
     s_options.regexExtended = x->isChecked();
     update();
   });
 
-  auto sts = std::make_unique<QAction>(tr("Keep selection in view"), m_edit);
+  auto* sts = new QAction(tr("Keep selection in view"), m_edit);
   sts->setStatusTip(tr("Scroll to keep the current selection in view after filtering"));
   sts->setCheckable(true);
   sts->setChecked(s_options.scrollToSelection);
 
-  connect(sts.get(), &QAction::triggered, [&] {
+  connect(sts, &QAction::triggered, [&] {
     s_options.scrollToSelection = sts->isChecked();
     update();
   });
 
   m->insertSeparator(m->actions().first());
-  m->insertAction(m->actions().first(), x.get());
-  m->insertAction(m->actions().first(), cs.get());
-  m->insertAction(m->actions().first(), regex.get());
-  m->insertAction(m->actions().first(), sts.get());
-  m->insertAction(m->actions().first(), title.get());
+  m->insertAction(m->actions().first(), x);
+  m->insertAction(m->actions().first(), cs);
+  m->insertAction(m->actions().first(), regex);
+  m->insertAction(m->actions().first(), sts);
+  m->insertAction(m->actions().first(), title);
 
   m->exec(e->globalPos());
 }
