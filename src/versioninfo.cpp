@@ -329,20 +329,23 @@ void VersionInfo::parse(const QString& versionString, VersionScheme scheme,
   m_Valid = true;
 }
 
-QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS)
+QDLLEXPORT std::partial_ordering operator<=>(const VersionInfo& LHS,
+                                             const VersionInfo& RHS)
 {
   if (!LHS.isValid() && RHS.isValid())
-    return true;
+    return std::partial_ordering::less;
   if (!RHS.isValid() && LHS.isValid())
-    return false;
+    return std::partial_ordering::greater;
+  if (!LHS.isValid() && !RHS.isValid())
+    return std::partial_ordering::equivalent;
 
   // date-releases are lower than regular versions
   if ((LHS.m_Scheme == VersionInfo::SCHEME_DATE) &&
       (RHS.m_Scheme != VersionInfo::SCHEME_DATE)) {
-    return true;
+    return std::partial_ordering::less;
   } else if ((LHS.m_Scheme != VersionInfo::SCHEME_DATE) &&
              (RHS.m_Scheme == VersionInfo::SCHEME_DATE)) {
-    return false;
+    return std::partial_ordering::greater;
   } else if ((LHS.m_Scheme == VersionInfo::SCHEME_DECIMALMARK) ||
              (RHS.m_Scheme == VersionInfo::SCHEME_DECIMALMARK)) {
     // use decimal versioning if either version is a decimal. The parser interprets
@@ -362,26 +365,26 @@ QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS)
                                   .rightJustified(RHS.m_DecimalPositions, '0'))
                          .toFloat();
     if (fabs(leftVal - rightVal) > 0.001f) {
-      return leftVal < rightVal;
+      return leftVal <=> rightVal;
     }
   } else {
     // if in doubt, use the sane choice. regular and numbers+letters can be treated the
     // same way
     if (LHS.m_Major != RHS.m_Major)
-      return LHS.m_Major < RHS.m_Major;
+      return LHS.m_Major <=> RHS.m_Major;
     if (LHS.m_Minor != RHS.m_Minor)
-      return LHS.m_Minor < RHS.m_Minor;
+      return LHS.m_Minor <=> RHS.m_Minor;
     if (LHS.m_SubMinor != RHS.m_SubMinor)
-      return LHS.m_SubMinor < RHS.m_SubMinor;
+      return LHS.m_SubMinor <=> RHS.m_SubMinor;
     if (LHS.m_SubSubMinor != RHS.m_SubSubMinor)
-      return LHS.m_SubSubMinor < RHS.m_SubSubMinor;
+      return LHS.m_SubSubMinor <=> RHS.m_SubSubMinor;
   }
 
   // subminor, release-type and rest are treated the same for all versioning schemes,
   // but on parsing they may still differ, i.e. a b-suffix is only interpreted to mean
   // "beta" in the regular scheme
   if (LHS.m_ReleaseType != RHS.m_ReleaseType)
-    return LHS.m_ReleaseType < RHS.m_ReleaseType;
+    return LHS.m_ReleaseType <=> RHS.m_ReleaseType;
 
   // if the rest contains only integers, compare them numerically
   bool LHS_ok, RHS_ok;
@@ -389,41 +392,11 @@ QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS)
   LHS_int = LHS.m_Rest.toInt(&LHS_ok);
   RHS_int = RHS.m_Rest.toInt(&RHS_ok);
   if (LHS_ok && RHS_ok) {
-    return LHS_int < RHS_int;
+    return LHS_int <=> RHS_int;
   }
 
   // give up and compare lexically
-  return LHS.m_Rest < RHS.m_Rest;
-}
-
-QDLLEXPORT bool operator>(const VersionInfo& LHS, const VersionInfo& RHS)
-{
-  return !(LHS <= RHS);
-}
-
-QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS)
-{
-  // TODO not exactly optimized...
-  if (LHS < RHS) {
-    return true;
-  } else {
-    return !(RHS < LHS);
-  }
-}
-
-QDLLEXPORT bool operator>=(const VersionInfo& LHS, const VersionInfo& RHS)
-{
-  return RHS <= LHS;
-}
-
-QDLLEXPORT bool operator!=(const VersionInfo& LHS, const VersionInfo& RHS)
-{
-  return (LHS < RHS) || (RHS < LHS);
-}
-
-QDLLEXPORT bool operator==(const VersionInfo& LHS, const VersionInfo& RHS)
-{
-  return !(LHS < RHS) && !(RHS < LHS);
+  return LHS.m_Rest <=> RHS.m_Rest;
 }
 
 }  // namespace MOBase

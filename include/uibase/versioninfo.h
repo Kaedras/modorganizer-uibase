@@ -38,12 +38,8 @@ namespace MOBase
 class QDLLEXPORT VersionInfo
 {
 
-  friend QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS);
-  friend QDLLEXPORT bool operator>(const VersionInfo& LHS, const VersionInfo& RHS);
-  friend QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS);
-  friend QDLLEXPORT bool operator>=(const VersionInfo& LHS, const VersionInfo& RHS);
-  friend QDLLEXPORT bool operator!=(const VersionInfo& LHS, const VersionInfo& RHS);
-  friend QDLLEXPORT bool operator==(const VersionInfo& LHS, const VersionInfo& RHS);
+  friend QDLLEXPORT std::partial_ordering operator<=>(const VersionInfo& LHS,
+                                                      const VersionInfo& RHS);
 
 public:
   enum ReleaseType
