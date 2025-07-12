@@ -281,7 +281,7 @@ namespace shell
       // set CLOEXEC on write end
       fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
 
-      QString command = u"\""_s % program % u"\""_s % u" "_s % params;
+      QString command = '\"' % program % u"\" "_s % params;
       // store the temporary QByteArray object
       QByteArray utf8Data = command.toUtf8();
 
