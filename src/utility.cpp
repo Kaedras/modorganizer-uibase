@@ -29,13 +29,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QErrorMessage>
 #include <QImage>
-#include <QNtfsPermissionCheckGuard>
 #include <QProcess>
 #include <QStandardPaths>
 #include <QStringEncoder>
 
-#ifdef __unix__
-#define QNtfsPermissionCheckGuard [[maybe_unused]] void*
+#ifdef _WIN32
+#include <QNtfsPermissionCheckGuard>
 #endif
 
 using namespace Qt::StringLiterals;
@@ -224,7 +223,9 @@ namespace shell
   // check if file exists and is readable
   int CheckFile(const QFileInfo& info)
   {
-    [[maybe_unused]] QNtfsPermissionCheckGuard permissionGuard;
+#ifdef _WIN32
+    QNtfsPermissionCheckGuard permissionGuard;
+#endif
     if (!info.exists()) {
       return ERROR_PATH_NOT_FOUND;
     }
