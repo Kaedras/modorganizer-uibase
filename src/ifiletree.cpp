@@ -4,6 +4,8 @@
 #include <stack>
 #include <utility>
 
+using namespace Qt::StringLiterals;
+
 // FileTreeEntry:
 namespace MOBase
 {
@@ -39,7 +41,7 @@ QString FileTreeEntry::pathFrom(std::shared_ptr<const IFileTree> tree,
     // We need to check the parent, otherwize we are going to prepend the name
     // and a / for the base, which we do not want.
     if (p->parent() != nullptr) {
-      path = p->name() + sep + path;
+      path = p->name() % sep % path;
     }
     p = p->parent();
   }
@@ -171,7 +173,7 @@ void IFileTree::walk(
     if (entry->isDir() && res != WalkReturn::SKIP) {
       auto tree = entry->astree();
       for (auto rit = tree->rbegin(); rit != tree->rend(); ++rit) {
-        stack.push({path + tree->name() + sep, *rit});
+        stack.push({path % tree->name() % sep, *rit});
       }
     }
   }
@@ -340,7 +342,7 @@ bool IFileTree::move(std::shared_ptr<FileTreeEntry> entry, QString path,
   }
 
   // Insert in folder or replace:
-  const bool insertFolder = path.isEmpty() || path.endsWith("/") || path.endsWith("\\");
+  const bool insertFolder = path.isEmpty() || path.endsWith('/') || path.endsWith('\\');
 
   // Retrieve the path:
   QStringList parts = splitPath(path);
@@ -512,7 +514,7 @@ QStringList IFileTree::splitPath(QString path)
   // Using raw \\ instead of QDir::separator() since we are replacing by /
   // anyway, and this avoid pulling an extra header (like QDir) only
   // for the separator.
-  return path.replace("\\", "/").split("/", Qt::SkipEmptyParts);
+  return path.replace('\\', '/').split('/', Qt::SkipEmptyParts);
 }
 
 /**
@@ -684,7 +686,7 @@ std::shared_ptr<const FileTreeEntry> IFileTree::fetchEntry(QStringList const& pa
   }
 
   // Early check:
-  if (path[path.size() - 1].startsWith("*")) {
+  if (path[path.size() - 1].startsWith('*')) {
     return nullptr;
   }
 
@@ -692,9 +694,9 @@ std::shared_ptr<const FileTreeEntry> IFileTree::fetchEntry(QStringList const& pa
   auto it               = std::begin(path);
   for (; tree != nullptr && it != std::end(path) - 1; ++it) {
     // Special cases:
-    if (*it == ".") {
+    if (*it == '.') {
       continue;
-    } else if (*it == "..") {
+    } else if (*it == ".."_L1) {
       tree = tree->parent().get();
     } else {
       // Find the entry at the current level:
@@ -751,7 +753,7 @@ std::shared_ptr<FileTreeEntry> IFileTree::clone() const
   if (m_Populated) {
     tree->m_Populated = true;
     auto& tentries    = tree->m_Entries;
-    for (auto e : entries()) {
+    for (const auto& e : entries()) {
       auto ce      = e->clone();
       ce->m_Parent = tree;
       tentries.push_back(ce);
@@ -771,9 +773,9 @@ std::shared_ptr<IFileTree> IFileTree::createTree(QStringList::const_iterator beg
   std::shared_ptr<IFileTree> tree = astree();
   for (auto it = begin; tree != nullptr && it != end; ++it) {
     // Special cases:
-    if (*it == ".") {
+    if (*it == '.') {
       continue;
-    } else if (*it == "..") {
+    } else if (*it == ".."_L1) {
       // parent() returns nullptr if it does not exist, so no
       // check required:
       tree = parent();
