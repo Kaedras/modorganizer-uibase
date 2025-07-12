@@ -5,23 +5,38 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(vdf-parser CONFIG REQUIRED)
 
 if (UNIX)
+    set(os_name linux)
+
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
     find_package(KF6KIO CONFIG REQUIRED)
-endif ()
 
-if (WIN32)
-    set(OS_NAME win32)
-else ()
-    set(OS_NAME linux)
-endif ()
+    set(os_specific_private_deps Qt::DBus flatpak KF6::KIOCore KF6::KIOFileWidgets KF6::KIOWidgets ${LIBFLATPAK_LIBRARIES})
+    set(os_specific_private_include_dirs ${LIBFLATPAK_INCLUDE_DIRS})
+
+	set(os_specific_headers
+			../include/uibase/linux/compatibility.h
+			../include/uibase/linux/fdcloser.h
+	)
+	set(os_specific_sources
+			linux/fdcloser.cpp
+	)
+else()
+    set(os_name win32)
+
+    set(os_specific_private_deps Version)
+    set(os_specific_private_include_dirs)
+
+	set(os_specific_headers)
+	set(os_specific_sources)
+endif()
 
 set(root_headers
         ../include/uibase/delayedfilewriter.h
         ../include/uibase/diagnosisreport.h
         ../include/uibase/dllimport.h
         ../include/uibase/errorcodes.h
-        ../include/uibase/${OS_NAME}/errorcodes.h
+        ../include/uibase/${os_name}/errorcodes.h
         ../include/uibase/eventfilter.h
         ../include/uibase/exceptions.h
         ../include/uibase/executableinfo.h
@@ -46,7 +61,7 @@ set(root_headers
         ../include/uibase/steamutility.h
         ../include/uibase/stringutility.h
         ../include/uibase/utility.h
-        ../include/uibase/${OS_NAME}/utility_${OS_NAME}.h
+        ../include/uibase/${os_name}/utility_${os_name}.h
         ../include/uibase/versioning.h
         ../include/uibase/versioninfo.h
 )
@@ -88,7 +103,7 @@ set(widget_headers
         ../include/uibase/questionboxmemory.h
         ../include/uibase/sortabletreewidget.h
         ../include/uibase/taskprogressmanager.h
-        ../include/uibase/${OS_NAME}/taskprogressmanager.h
+        ../include/uibase/${os_name}/taskprogressmanager.h
         ../include/uibase/textviewer.h
         ../include/uibase/widgetutility.h
 )
@@ -119,46 +134,36 @@ mo2_default_source_group()
 
 set(root_sources
         ${root_headers}
+        ${os_specific_headers}
+        ${os_specific_sources}
         delayedfilewriter.cpp
         diagnosisreport.cpp
-        ${OS_NAME}/errorcodes.cpp
+        ${os_name}/errorcodes.cpp
         eventfilter.cpp
         executableinfo.cpp
         filesystemutilities.cpp
         guessedvalue.cpp
         json.cpp
         log.cpp
-        ${OS_NAME}/log_${OS_NAME}.cpp
+        ${os_name}/log_${os_name}.cpp
         modrepositoryfileinfo.cpp
         nxmurl.cpp
         peextractor.cpp
         pch.cpp
         pluginrequirements.cpp
-        registry.cpp
+        ${os_name}/registry.cpp
         report.cpp
-        ${OS_NAME}/report_${OS_NAME}.cpp
+        ${os_name}/report_${os_name}.cpp
         safewritefile.cpp
         scopeguard.cpp
         steamutility.cpp
-        ${OS_NAME}/steamutility_${OS_NAME}.cpp
+        ${os_name}/steamutility_${os_name}.cpp
         stringutility.cpp
         utility.cpp
-        ${OS_NAME}/utility_${OS_NAME}.cpp
+        ${os_name}/utility_${os_name}.cpp
         versioning.cpp
         versioninfo.cpp
 )
-
-if (UNIX)
-#    set(root_sources
-#            ${root_sources}
-#
-#    )
-    set(root_headers
-            ${root_headers}
-            ../include/uibase/linux/compatibility.h
-    )
-endif()
-
 
 mo2_target_sources(uibase
         FOLDER src
@@ -194,7 +199,7 @@ mo2_target_sources(uibase
         linklabel.cpp
         questionboxmemory.cpp
         sortabletreewidget.cpp
-        ${OS_NAME}/taskprogressmanager.cpp
+        ${os_name}/taskprogressmanager.cpp
         textviewer.cpp
         widgetutility.cpp
         filterwidget.cpp
@@ -235,33 +240,15 @@ target_include_directories(uibase PRIVATE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/uibase/game_features>
 )
 
-if (UNIX)
-    target_include_directories(uibase PRIVATE ${LIBFLATPAK_INCLUDE_DIRS})
-endif()
-
 add_library(mo2::uibase ALIAS uibase)
 
 target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
-set(PUBLIC_LIBS Qt6::Widgets Qt6::Network Qt6::QuickWidgets)
-set(PRIVATE_LIBS spdlog::spdlog_header_only
-        Qt6::Qml Qt6::Quick vdf-parser
-)
+target_link_libraries(uibase
+    PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
+    PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick vdf-parser ${os_specific_private_deps})
 
-set(PRIVATE_WIN32_LIBS Version)
-set(PRIVATE_UNIX_LIBS Qt6::DBus ${LIBFLATPAK_LIBRARIES}
-        KF6::KIOCore KF6::KIOFileWidgets KF6::KIOWidgets
-)
-
-if (WIN32)
-    target_link_libraries(uibase
-            PUBLIC ${PUBLIC_LIBS}
-            PRIVATE ${PRIVATE_LIBS} ${PRIVATE_WIN32_LIBS})
-else ()
-    target_link_libraries(uibase
-            PUBLIC ${PUBLIC_LIBS}
-            PRIVATE ${PRIVATE_LIBS} ${PRIVATE_UNIX_LIBS})
-endif ()
+target_include_directories(uibase PRIVATE ${os_specific_private_include_dirs})
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
