@@ -29,6 +29,7 @@ namespace MOBase
 
 SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName)
 {
+  // required when fileName and temp directory are on different file systems
   m_TempFile.setFileName(fileName + ".tmp");
   if (!m_TempFile.open()) {
     const auto av =
