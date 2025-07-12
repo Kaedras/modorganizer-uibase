@@ -95,7 +95,10 @@ void TaskProgressManager::showProgress()
 
   message << QStringLiteral("application://") + QGuiApplication::desktopFileName()
           << properties;
-  QDBusConnection::sessionBus().send(message);
+  bool result = QDBusConnection::sessionBus().send(message);
+  if (!result) {
+    log::warn("failed to set progress");
+  }
 }
 
 TaskProgressManager::TaskProgressManager() : m_NextId(1)
