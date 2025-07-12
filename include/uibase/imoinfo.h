@@ -37,11 +37,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "versioninfo.h"
 #include "versioning.h"
 
-#ifdef _WIN32
-#include <Windows.h>
+#ifdef __unix__
+#include "linux/compatibility.h"
 #else
-using HANDLE  = pid_t;
-using LPDWORD = int*;
+#include <Windows.h>
 #endif
 
 namespace MOBase
