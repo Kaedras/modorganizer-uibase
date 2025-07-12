@@ -88,7 +88,7 @@ bool SortableTreeWidget::moveSelection(QTreeWidgetItem* parent, int idx)
     QTreeWidgetItem* item = itemFromIndex(*iter);
     if (item == nullptr)
       continue;
-    if ((item == nullptr) || (item->parent() == nullptr)) {
+    if (item->parent() == nullptr) {
       temp.append(takeTopLevelItem(iter->row()));
     } else {
       temp.append(item->parent()->takeChild(iter->row()));
