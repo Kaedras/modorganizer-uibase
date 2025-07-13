@@ -105,7 +105,7 @@ void TaskProgressManager::showProgress()
 TaskProgressManager::TaskProgressManager() : m_NextId(1)
 {
   if (QGuiApplication::desktopFileName().isEmpty()) {
-    log::warn("MO2 has no desktop file name");
+    log::warn("MO2 has no desktop file name, task bar progress not available");
     m_successful = false;
     return;
   }
