@@ -676,7 +676,7 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
       buffer = "0" + std::to_string(hours);
     else
       buffer = std::to_string(hours);
-    Result.append(QStringLiteral("%1:").arg(buffer));
+    Result.append(QStringLiteral("%1:").arg(buffer.c_str()));
   }
 
   if (minutes > 0 || hours > 0) {
@@ -684,7 +684,7 @@ QDLLEXPORT QString localizedTimeRemaining(unsigned int remaining)
       buffer = "0" + std::to_string(minutes);
     else
       buffer = std::to_string(minutes);
-    Result.append(QStringLiteral("%1:").arg(buffer));
+    Result.append(QStringLiteral("%1:").arg(buffer.c_str()));
   }
 
   if (seconds < 10 && (minutes > 0 || hours > 0))
