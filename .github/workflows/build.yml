@@ -27,7 +27,7 @@ jobs:
             test_prefix_path: "${env:QT_ROOT_DIR}\\msvc2019_64;..\\..\\install\\lib\\cmake\\"
           - os: ubuntu-24.04
             preset: linux-standalone
-            build_dir: linux-build
+            build_dir: build
             prefix_path: ""
             test_prefix_path: ../../install/lib/cmake/
             linux: 1
