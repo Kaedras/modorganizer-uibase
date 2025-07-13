@@ -54,13 +54,13 @@ jobs:
 
       - if: ${{ matrix.linux }}
         # ubuntu 24.04 causes cmake errors
-        name: Upgrade release to 24.10 (oracular)
+        name: Upgrade release to 25.04 (plucky)
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
           sudo apt-get install update-manager-core -y
           sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
-          sudo sed -i 's/noble/oracular/g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo sed -i 's/noble/plucky/g' /etc/apt/sources.list.d/ubuntu.sources
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
 
