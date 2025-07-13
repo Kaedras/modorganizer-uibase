@@ -585,13 +585,6 @@ void deleteChildWidgets(QWidget* w)
   }
 }
 
-void trimWString(std::wstring& s)
-{
-  std::erase_if(s, [](wint_t ch) {
-    return std::iswspace(ch);
-  });
-}
-
 QString localizedSize(unsigned long long bytes, const QString& B, const QString& KB,
                       const QString& MB, const QString& GB, const QString& TB)
 {

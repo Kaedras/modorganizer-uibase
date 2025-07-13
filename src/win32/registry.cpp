@@ -103,7 +103,8 @@ bool WriteRegistryValue(const QString& key, const QString& value,
   settings.sync();
 
   if (settings.status() != QSettings::NoError) {
-    success = false;
+    success                  = false;
+    const wchar_t* wFileName = fileName.toStdWString().c_str();
     switch (::GetLastError()) {
     case ERROR_ACCESS_DENIED: {
       DWORD attrs = ::GetFileAttributes(wFileName);
