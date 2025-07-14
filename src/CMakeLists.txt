@@ -230,6 +230,7 @@ target_sources(uibase
         ${widget_headers}
         ${game_features_header}
         ${formatters_header}
+        ${os_specific_headers}
 )
 
 set_target_properties(uibase PROPERTIES DEBUG_POSTFIX d)
