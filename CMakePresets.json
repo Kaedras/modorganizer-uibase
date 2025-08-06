@@ -60,6 +60,29 @@
       },
       "inherits": "vs2022-windows",
       "name": "vs2022-windows-standalone"
+    },
+    {
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -Wno-unknown-pragmas -fvisibility-ms-compat -Wl,--no-undefined",
+        "VCPKG_TARGET_TRIPLET": {
+          "type": "STRING",
+          "value": "x64-linux"
+        }
+      },
+      "generator": "Ninja Multi-Config",
+      "inherits": ["cmake-dev", "vcpkg-dev"],
+      "name": "linux"
+    },
+    {
+      "cacheVariables": {
+        "VCPKG_MANIFEST_FEATURES": {
+          "type": "STRING",
+          "value": "standalone;testing"
+        }
+      },
+      "inherits": "linux",
+      "name": "linux-standalone"
     }
   ],
   "buildPresets": [
@@ -67,6 +90,11 @@
       "name": "vs2022-windows",
       "resolvePackageReferences": "on",
       "configurePreset": "vs2022-windows"
+    },
+    {
+      "name": "linux",
+      "resolvePackageReferences": "on",
+      "configurePreset": "linux"
     }
   ],
   "version": 4
