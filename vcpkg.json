@@ -1,5 +1,5 @@
 {
-  "dependencies": ["spdlog"],
+  "dependencies": ["spdlog", "vdf-parser"],
   "overrides": [
     {
       "name": "spdlog",
