@@ -240,6 +240,8 @@ target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
 	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick vdf-parser ${os_specific_private_deps})
 
+target_include_directories(uibase PRIVATE ${os_specific_private_include_dirs})
+
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
 if (WIN32)
