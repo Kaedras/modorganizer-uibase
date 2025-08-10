@@ -16,7 +16,7 @@
 
 #include "dllimport.h"
 #include "formatters.h"
-#include "strings.h"
+#include "stringutility.h"
 
 namespace spdlog
 {

@@ -59,7 +59,7 @@ set(root_headers
 	../include/uibase/safewritefile.h
 	../include/uibase/scopeguard.h
 	../include/uibase/steamutility.h
-	../include/uibase/strings.h
+	../include/uibase/stringutility.h
 	../include/uibase/utility.h
 	../include/uibase/versioning.h
 	../include/uibase/versioninfo.h
@@ -155,7 +155,7 @@ mo2_target_sources(uibase
 	scopeguard.cpp
 	steamutility.cpp
 	${os_name}/steamutility_${os_name}.cpp
-	strings.cpp
+	stringutility.cpp
 	utility.cpp
 	${os_name}/utility_${os_name}.cpp
 	versioning.cpp
