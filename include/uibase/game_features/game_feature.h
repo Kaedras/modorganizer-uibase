@@ -13,7 +13,7 @@ class GameFeature
 {
 public:
   GameFeature()          = default;
-  virtual ~GameFeature() = 0 {}
+  virtual ~GameFeature() = default;
 
   /**
    * @brief Retrieve the type index of the main game feature this feature extends.

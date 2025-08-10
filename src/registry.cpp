@@ -26,39 +26,79 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace MOBase
 {
 
-bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
-                        LPCWSTR fileName)
+// helper function that mirrors the behaviour of WritePrivateProfileString
+bool SetValue(const QString& appName, const QString& keyName, const QString& value,
+              QSettings& ini)
 {
-  bool success = true;
-  if (!::WritePrivateProfileString(appName, keyName, value, fileName)) {
-    success = false;
-    switch (::GetLastError()) {
-    case ERROR_ACCESS_DENIED: {
-      DWORD attrs = ::GetFileAttributes(fileName);
-      if ((attrs != INVALID_FILE_ATTRIBUTES) && (attrs & FILE_ATTRIBUTE_READONLY)) {
-        QFileInfo fileInfo(QString("%1").arg(fileName));
+  if (keyName.isEmpty()) {
+    // remove section if key is empty
+    ini.remove(appName);
+  } else if (value.isEmpty()) {
+    // remove key if value is empty
+    ini.remove(keyName);
+  } else {
+    ini.setValue(appName % '/' % keyName, value);
+  }
 
+  ini.sync();
+  return ini.status() == QSettings::NoError;
+}
+
+bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
+                        const wchar_t* value, const wchar_t* fileName)
+{
+  return WriteRegistryValue(
+      QString::fromWCharArray(appName), QString::fromWCharArray(keyName),
+      QString::fromWCharArray(value), QString::fromWCharArray(fileName));
+}
+
+bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
+                        const char* fileName)
+{
+  return WriteRegistryValue(
+      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
+      QString::fromLocal8Bit(value), QString::fromLocal8Bit(fileName));
+}
+
+bool WriteRegistryValue(const QString& appName, const QString& keyName,
+                        const QString& value, const QString& fileName)
+{
+  QSettings settings(fileName, QSettings::Format::IniFormat);
+  bool success = true;
+
+  if (!SetValue(appName, keyName, value, settings)) {
+    success = false;
+    if (settings.status() == QSettings::AccessError) {
+#ifdef _WIN32
+      // On NTFS file systems, ownership and permissions checking is disabled by default
+      // for performance reasons. source:
+      // https://doc.qt.io/qt-6/qfileinfo.html#ntfs-permissions
+      QNtfsPermissionCheckGuard permissionGuard;
+#endif
+      QFile file(fileName);
+      auto attrs = file.permissions();
+      if (file.exists() && !file.isWritable() && file.isReadable()) {
         QMessageBox::StandardButton result =
             MOBase::TaskDialog(qApp->activeModalWidget(),
                                QObject::tr("INI file is read-only"))
                 .main(QObject::tr("INI file is read-only"))
                 .content(QObject::tr("Mod Organizer is attempting to write to \"%1\" "
                                      "which is currently set to read-only.")
-                             .arg(fileInfo.fileName()))
+                             .arg(fileName))
                 .icon(QMessageBox::Warning)
                 .button({QObject::tr("Clear the read-only flag"), QMessageBox::Yes})
                 .button({QObject::tr("Allow the write once"),
                          QObject::tr("The file will be set to read-only again."),
                          QMessageBox::Ignore})
                 .button({QObject::tr("Skip this file"), QMessageBox::No})
-                .remember("clearReadOnly", fileInfo.fileName())
+                .remember("clearReadOnly", fileName)
                 .exec();
 
         // clear the read-only flag if requested
         if (result & (QMessageBox::Yes | QMessageBox::Ignore)) {
-          attrs &= ~(FILE_ATTRIBUTE_READONLY);
-          if (::SetFileAttributes(fileName, attrs)) {
-            if (::WritePrivateProfileString(appName, keyName, value, fileName)) {
+          attrs |= QFile::Permission::WriteUser;
+          if (file.setPermissions(attrs)) {
+            if (SetValue(appName, keyName, value, settings)) {
               success = true;
             }
           }
@@ -66,11 +106,10 @@ bool WriteRegistryValue(LPCWSTR appName, LPCWSTR keyName, LPCWSTR value,
 
         // set the read-only flag if requested
         if (result == QMessageBox::Ignore) {
-          attrs |= FILE_ATTRIBUTE_READONLY;
-          ::SetFileAttributes(fileName, attrs);
+          attrs &= ~QFile::Permission::WriteUser;
+          file.setPermissions(attrs);
         }
       }
-    } break;
     }
   }
 

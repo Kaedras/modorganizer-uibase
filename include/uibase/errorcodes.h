@@ -1,14 +1,7 @@
-#ifndef UIBASE_ERRORCODES_H
-#define UIBASE_ERRORCODES_H
+#pragma once
 
-#include "dllimport.h"
-#include <Windows.h>
-
-namespace MOBase
-{
-
-QDLLEXPORT const wchar_t* errorCodeName(DWORD code);
-
-}  // namespace MOBase
-
-#endif UIBASE_ERRORCODES_H
+#ifdef _WIN32
+#include "win32/errorcodes.h"
+#else
+#include "linux/errorcodes.h"
+#endif

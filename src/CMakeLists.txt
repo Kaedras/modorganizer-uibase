@@ -3,11 +3,41 @@ cmake_minimum_required(VERSION 3.16)
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
 
+if (UNIX)
+	set(os_name linux)
+
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
+	find_package(KF6KIO CONFIG REQUIRED)
+
+	set(os_specific_private_deps Qt::DBus flatpak KF6::KIOCore KF6::KIOFileWidgets KF6::KIOWidgets ${LIBFLATPAK_LIBRARIES})
+	set(os_specific_private_include_dirs ${LIBFLATPAK_INCLUDE_DIRS})
+
+	set(os_specific_headers
+			../include/uibase/linux/compatibility.h
+			../include/uibase/linux/fdcloser.h
+			../include/uibase/linux/stub.h
+	)
+	set(os_specific_sources
+			linux/fdcloser.cpp
+	)
+else()
+	set(os_name win32)
+
+	set(os_specific_private_deps Version)
+	set(os_specific_private_include_dirs)
+
+	set(os_specific_headers)
+	set(os_specific_sources)
+endif()
+
 set(root_headers
+	${os_specific_headers}
 	../include/uibase/delayedfilewriter.h
 	../include/uibase/diagnosisreport.h
 	../include/uibase/dllimport.h
 	../include/uibase/errorcodes.h
+	../include/uibase/${os_name}/errorcodes.h
 	../include/uibase/eventfilter.h
 	../include/uibase/exceptions.h
 	../include/uibase/executableinfo.h
@@ -72,6 +102,7 @@ set(widget_headers
 	../include/uibase/questionboxmemory.h
 	../include/uibase/sortabletreewidget.h
 	../include/uibase/taskprogressmanager.h
+	../include/uibase/${os_name}/taskprogressmanager.h
 	../include/uibase/textviewer.h
 	../include/uibase/widgetutility.h
 )
@@ -105,13 +136,14 @@ mo2_target_sources(uibase
 	${root_headers}
 	delayedfilewriter.cpp
 	diagnosisreport.cpp
-	errorcodes.cpp
+	${os_name}/errorcodes.cpp
 	eventfilter.cpp
 	executableinfo.cpp
 	filesystemutilities.cpp
 	guessedvalue.cpp
 	json.cpp
 	log.cpp
+	${os_name}/log_${os_name}.cpp
 	modrepositoryfileinfo.cpp
 	nxmurl.cpp
 	pch.cpp
@@ -123,8 +155,10 @@ mo2_target_sources(uibase
 	steamutility.cpp
 	strings.cpp
 	utility.cpp
+	${os_name}/utility_${os_name}.cpp
 	versioning.cpp
 	versioninfo.cpp
+	${os_specific_sources}
 )
 
 mo2_target_sources(uibase
@@ -155,7 +189,7 @@ mo2_target_sources(uibase
 	linklabel.cpp
 	questionboxmemory.cpp
 	sortabletreewidget.cpp
-	taskprogressmanager.cpp
+	${os_name}/taskprogressmanager.cpp
 	textviewer.cpp
 	widgetutility.cpp
 	filterwidget.cpp
@@ -202,11 +236,13 @@ target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick Version)
+	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick ${os_specific_private_deps})
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
-install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
+if (WIN32)
+	install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
+endif()
 install(EXPORT uibaseTargets
 	FILE mo2-uibase-targets.cmake
 	NAMESPACE mo2::

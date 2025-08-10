@@ -25,12 +25,20 @@ namespace MOBase
 {
 
 #if defined(UIBASE_EXPORT)
+#if defined _WIN32
 #define QDLLEXPORT __declspec(dllexport)
+#else
+#define QDLLEXPORT __attribute__((visibility("default")))
+#endif
 #elif defined(_NODLL)
 #define QDLLEXPORT
 #else
 #undef DLLEXPORT
+#if defined _WIN32
 #define QDLLEXPORT __declspec(dllimport)
+#else
+#define QDLLEXPORT
+#endif
 #endif
 
 }  // namespace MOBase

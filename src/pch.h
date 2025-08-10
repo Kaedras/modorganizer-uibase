@@ -49,6 +49,7 @@
 #include <wchar.h>
 
 // windows
+#ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
@@ -58,6 +59,19 @@
 #include <ShlObj.h>
 #include <Windows.h>
 #include <shobjidl.h>
+#endif
+
+#ifdef __unix__
+#include <csignal>
+#include <fcntl.h>
+#include <poll.h>
+#include <spawn.h>
+#include <unistd.h>
+extern "C"
+{
+#include <sys/pidfd.h>
+}
+#endif
 
 // Qt
 #include <QAbstractButton>
@@ -128,6 +142,20 @@
 #include <QWidget>
 #include <QtDebug>
 #include <qmetaobject.h>
+#ifdef __unix__
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QDBusMessage>
+#endif
+
+// KIO
+#ifdef __unix__
+#include <KIO/CopyJob>
+#include <KIO/DeleteJob>
+#include <KIO/DeleteOrTrashJob>
+#include <KIO/JobUiDelegateFactory>
+#include <KJobWidgets>
+#endif
 
 #undef _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #pragma warning(pop)

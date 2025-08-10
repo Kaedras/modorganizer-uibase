@@ -4,6 +4,9 @@ include(CMakePackageConfigHelpers)
 
 project(uibase)
 
+if(LINUX)
+	find_package(OpenGL REQUIRED)
+endif()
 find_package(mo2-cmake CONFIG REQUIRED)
 
 add_subdirectory(src)

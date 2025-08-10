@@ -24,18 +24,22 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QDir>
 #include <QIcon>
 #include <QList>
+#include <QStandardPaths>
 #include <QString>
 #include <QTextStream>
 #include <QUrl>
 #include <QVariant>
-#include <ShlObj.h>
-#include <Windows.h>
 #include <algorithm>
 #include <set>
 #include <vector>
 
 #include "dllimport.h"
 #include "exceptions.h"
+
+#ifdef __unix__
+#include "linux/compatibility.h"
+#include "linux/fdcloser.h"
+#endif
 
 namespace MOBase
 {
@@ -172,6 +176,9 @@ namespace shell
 {
   namespace details
   {
+#ifdef __unix__
+    using HandlePtr = FdCloser;
+#else
     // used by HandlePtr, calls CloseHandle() as the deleter
     //
     struct HandleCloser
@@ -187,6 +194,7 @@ namespace shell
     };
 
     using HandlePtr = std::unique_ptr<HANDLE, HandleCloser>;
+#endif
   }  // namespace details
 
   // returned by the various shell functions; note that the process handle is
@@ -420,6 +428,7 @@ private:
   Qt::CaseSensitivity m_cs;
 };
 
+#ifdef _WIN32
 /**
  * throws on failure
  * @param id    the folder id
@@ -431,6 +440,20 @@ QDLLEXPORT QDir getKnownFolder(KNOWNFOLDERID id, const QString& what = {});
 // same as above, does not log failure
 //
 QDLLEXPORT QString getOptionalKnownFolder(KNOWNFOLDERID id);
+#endif
+
+/**
+ * throws on failure
+ * @param id    the folder id
+ * @param what  the name of the folder, used for logging errors only
+ * @return absolute path of the given known folder id
+ **/
+QDLLEXPORT QDir getKnownFolder(QStandardPaths::StandardLocation location,
+                               const QString& what = {});
+
+// same as above, does not log failure
+//
+QDLLEXPORT QString getOptionalKnownFolder(QStandardPaths::StandardLocation location);
 
 /**
  * throws on failure
@@ -514,6 +537,7 @@ bool isOneOf(const T& val, const std::initializer_list<T>& list)
   return std::find(list.begin(), list.end(), val) != list.end();
 }
 
+#ifdef _WIN32
 QDLLEXPORT std::wstring formatSystemMessage(DWORD id);
 QDLLEXPORT std::wstring formatNtMessage(NTSTATUS s);
 
@@ -521,6 +545,9 @@ inline std::wstring formatSystemMessage(HRESULT hr)
 {
   return formatSystemMessage(static_cast<DWORD>(hr));
 }
+#else
+QDLLEXPORT std::string formatSystemMessage(int id);
+#endif
 
 // forwards to formatSystemMessage(), preserved for ABI
 //
@@ -602,70 +629,30 @@ private:
 template <class F>
 bool forEachLineInFile(const QString& filePath, F&& f)
 {
-  HANDLE h =
-      ::CreateFileW(reinterpret_cast<const wchar_t*>(filePath.utf16()), GENERIC_READ,
-                    FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
-
-  if (h == INVALID_HANDLE_VALUE) {
+  QFile file(filePath);
+  file.open(QIODevice::ReadOnly | QIODevice::Text);
+  if (!file.isOpen() || file.size() == 0 || !file.isReadable()) {
     return false;
   }
 
-  MOBase::Guard g([&] {
-    ::CloseHandle(h);
-  });
-
-  LARGE_INTEGER fileSize;
-  if (!GetFileSizeEx(h, &fileSize)) {
-    return false;
-  }
-
-  auto buffer     = std::make_unique<char[]>(fileSize.QuadPart);
-  DWORD byteCount = static_cast<DWORD>(fileSize.QuadPart);
-  if (!::ReadFile(h, buffer.get(), byteCount, &byteCount, nullptr)) {
-    return false;
-  }
-
-  const char* lineStart = buffer.get();
-  const char* p         = lineStart;
-  const char* end       = buffer.get() + byteCount;
-
-  while (p < end) {
-    // skip all newline characters
-    while ((p < end) && (*p == '\n' || *p == '\r')) {
-      ++p;
+  while (!file.atEnd()) {
+    QByteArray line = file.readLine();
+    // skip empty lines
+    if (line.isEmpty()) {
+      continue;
     }
-
-    // line starts here
-    lineStart = p;
-
-    // find end of line
-    while ((p < end) && *p != '\n' && *p != '\r') {
-      ++p;
+    // remove whitespaces from beginning and end of line
+    line = line.trimmed();
+    // skip comments
+    if (line.startsWith('#')) {
+      continue;
     }
-
-    if (p != lineStart) {
-      // skip whitespace at beginning of line, don't go past end of line
-      while (std::isspace(*lineStart) && lineStart < p) {
-        ++lineStart;
-      }
-
-      // skip comments
-      if (*lineStart != '#') {
-        // skip line if it only had whitespace
-        if (lineStart < p) {
-          // skip white at end of line
-          const char* lineEnd = p - 1;
-          while (std::isspace(*lineEnd) && lineEnd > lineStart) {
-            --lineEnd;
-          }
-          ++lineEnd;
-
-          f(QString::fromUtf8(lineStart, lineEnd - lineStart));
-        }
-      }
+    // skip line if it only had whitespaces
+    if (line.isEmpty()) {
+      continue;
     }
+    f(QString::fromUtf8(line));
   }
-
   return true;
 }
 

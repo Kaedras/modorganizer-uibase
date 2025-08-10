@@ -26,7 +26,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QMainWindow>
 #include <QString>
 #include <QVariant>
+#ifdef __unix__
+#include "linux/compatibility.h"
+#else
 #include <Windows.h>
+#endif
 #include <any>
 #include <functional>
 
