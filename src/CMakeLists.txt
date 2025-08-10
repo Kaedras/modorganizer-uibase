@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 find_package(Qt6 CONFIG REQUIRED COMPONENTS Network Qml Quick QuickWidgets Widgets)
 find_package(spdlog CONFIG REQUIRED)
+find_package(vdf-parser CONFIG REQUIRED)
 
 if (UNIX)
 	set(os_name linux)
@@ -153,6 +154,7 @@ mo2_target_sources(uibase
 	safewritefile.cpp
 	scopeguard.cpp
 	steamutility.cpp
+	${os_name}/steamutility_${os_name}.cpp
 	strings.cpp
 	utility.cpp
 	${os_name}/utility_${os_name}.cpp
@@ -236,7 +238,7 @@ target_compile_definitions(uibase PRIVATE -DUIBASE_EXPORT SPDLOG_USE_STD_FORMAT)
 
 target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
-	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick ${os_specific_private_deps})
+	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick vdf-parser ${os_specific_private_deps})
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
