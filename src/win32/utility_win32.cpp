@@ -1,5 +1,7 @@
 #include "utility.h"
 
+#include "log.h"
+#include <QUuid>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <format>
@@ -244,6 +246,26 @@ namespace shell
     default:
       return QString("Unknown error %1").arg(i);
     }
+  }
+
+  void LogShellFailure(const wchar_t* operation, const wchar_t* file,
+                       const wchar_t* params, DWORD error)
+  {
+    QStringList s;
+
+    if (operation) {
+      s << QString::fromWCharArray(operation);
+    }
+
+    if (file) {
+      s << QString::fromWCharArray(file);
+    }
+
+    if (params) {
+      s << QString::fromWCharArray(params);
+    }
+
+    log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
   }
 
   Result ShellExecuteWrapper(const wchar_t* operation, const wchar_t* file,
@@ -583,17 +605,13 @@ QString getProductVersion(QString const& filepath)
   return QString::fromWCharArray((LPCWSTR)lpb);
 }
 
-void deleteChildWidgets(QWidget* w)
+void trimWString(std::wstring& s)
 {
-  auto* ly = w->layout();
-  if (!ly) {
-    return;
-  }
-
-  while (auto* item = ly->takeAt(0)) {
-    delete item->widget();
-    delete item;
-  }
+  s.erase(std::remove_if(s.begin(), s.end(),
+                         [](wint_t ch) {
+                           return std::iswspace(ch);
+                         }),
+          s.end());
 }
 
 std::wstring getMessage(DWORD id, HMODULE mod)

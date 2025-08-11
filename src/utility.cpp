@@ -172,26 +172,6 @@ namespace shell
     }
   }
 
-  void LogShellFailure(const wchar_t* operation, const wchar_t* file,
-                       const wchar_t* params, DWORD error)
-  {
-    QStringList s;
-
-    if (operation) {
-      s << QString::fromWCharArray(operation);
-    }
-
-    if (file) {
-      s << QString::fromWCharArray(file);
-    }
-
-    if (params) {
-      s << QString::fromWCharArray(params);
-    }
-
-    log::error("failed to invoke '{}': {}", s.join(" "), formatSystemMessage(error));
-  }
-
   // definitions are located in os-specific source files
   extern Result ExploreDirectory(const QFileInfo&);
   extern Result ExploreFileInDirectory(const QFileInfo&);
@@ -483,15 +463,6 @@ void deleteChildWidgets(QWidget* w)
     delete item->widget();
     delete item;
   }
-}
-
-void trimWString(std::wstring& s)
-{
-  s.erase(std::remove_if(s.begin(), s.end(),
-                         [](wint_t ch) {
-                           return std::iswspace(ch);
-                         }),
-          s.end());
 }
 
 QString windowsErrorString(DWORD errorCode)
