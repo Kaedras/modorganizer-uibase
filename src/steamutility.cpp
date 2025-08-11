@@ -243,7 +243,7 @@ QString appIdByGamePath(const QString& gameLocation)
     }
 
     // compare installation paths
-    if (installPath == installdir) {
+    if (installPath.toStdString() == installdir) {
       QString appID = QString::fromStdString(root.attribs["appid"]);
       log::debug("Found appID {}", appID);
       return appID;
