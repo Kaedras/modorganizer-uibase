@@ -78,7 +78,7 @@ jobs:
       # this tests that UI Base can be properly used as a CMake package
       - name: Test UI Base package
         run: |
-          cmake -B build_tests . ${{ matrix.prefix_path }}
+          cmake -B build_tests . "${{ matrix.prefix_path }}"
           cmake --build build_tests --config Debug
           cmake --build build_tests --config Release
           cmake --build build_tests --config RelWithDebInfo
