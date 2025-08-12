@@ -40,6 +40,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "linux/compatibility.h"
 #include "linux/fdcloser.h"
 #else
+#include <ShlObj.h>
 #include <Windows.h>
 #endif
 
