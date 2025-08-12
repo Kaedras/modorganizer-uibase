@@ -20,11 +20,11 @@ jobs:
         include:
           - os: windows-2022
             build_dir: vsbuild
-            prefix_path: "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\\msvc2022_64;${{ github.workspace }}\\install\\lib\\cmake\\"
+            prefix_path: "${env:QT_ROOT_DIR}\\msvc2022_64;"
             os_name: windows
           - os: ubuntu-24.04
             build_dir: build
-            prefix_path: "-DCMAKE_PREFIX_PATH=${{ github.workspace }}/install/lib/cmake/"
+            prefix_path: ""
             os_name: linux
             linux: 1
 
@@ -78,7 +78,7 @@ jobs:
       # this tests that UI Base can be properly used as a CMake package
       - name: Test UI Base package
         run: |
-          cmake -B build_tests . "${{ matrix.prefix_path }}"
+          cmake -B build_tests . "-DCMAKE_PREFIX_PATH=${{ matrix.prefix_path }}${{ github.workspace }}/install/lib/cmake/"
           cmake --build build_tests --config Debug
           cmake --build build_tests --config Release
           cmake --build build_tests --config RelWithDebInfo
