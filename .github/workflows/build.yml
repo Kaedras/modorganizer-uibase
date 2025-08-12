@@ -13,8 +13,42 @@ env:
 
 jobs:
   build:
-    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ windows-2022, ubuntu-24.04 ]
+        include:
+          - os: windows-2022
+            build_dir: vsbuild
+            prefix_path: "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\\msvc2022_64;${{ github.workspace }}\\install\\lib\\cmake\\"
+            os_name: windows
+          - os: ubuntu-24.04
+            build_dir: build
+            prefix_path: "-DCMAKE_PREFIX_PATH=${{ github.workspace }}/install/lib/cmake/"
+            os_name: linux
+            linux: 1
+
+    runs-on: ${{ matrix.os }}
     steps:
+      - if: ${{ matrix.linux }}
+        # ubuntu 24.04 causes errors
+        name: Upgrade release to 25.04 (plucky)
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
+          sudo apt-get install update-manager-core -y
+          sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
+          sudo sed -i 's/noble/plucky/g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
+
+      - if: ${{ matrix.linux }}
+        name: Install build dependencies
+        run: |
+          sudo apt-get install -y \
+          build-essential cmake curl git flatpak libflatpak-dev libegl1-mesa-dev libgl1-mesa-dev \
+          libglvnd-dev libkf6kio-dev mesa-common-dev ninja-build pkg-config tar unzip zip
+
       - name: Configure UIBase
         id: configure-uibase
         uses: ModOrganizer2/build-with-mob-action@master
@@ -26,34 +60,34 @@ jobs:
       - name: Build UI Base
         working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
         run: |
-          cmake --build vsbuild --config Debug --target uibase-tests --verbose
-          cmake --build vsbuild --config RelWithDebInfo --target uibase-tests --verbose
+          cmake --build ${{ matrix.build_dir }} --config Debug --target uibase-tests --verbose
+          cmake --build ${{ matrix.build_dir }} --config RelWithDebInfo --target uibase-tests --verbose
 
       - name: Test UI Base
         working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
         run: |
-          ctest --test-dir vsbuild -C Debug --output-on-failure
-          ctest --test-dir vsbuild -C RelWithDebInfo --output-on-failure
+          ctest --test-dir ${{ matrix.build_dir }} -C Debug --output-on-failure
+          ctest --test-dir ${{ matrix.build_dir }} -C RelWithDebInfo --output-on-failure
 
       - name: Install UI Base
         working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
         run: |
-          cmake --install vsbuild --config Debug
-          cmake --install vsbuild --config RelWithDebInfo
+          cmake --install ${{ matrix.build_dir }} --config Debug
+          cmake --install ${{ matrix.build_dir }} --config RelWithDebInfo
 
       # this tests that UI Base can be properly used as a CMake package
       - name: Test UI Base package
         run: |
-          cmake -B build . "-DCMAKE_PREFIX_PATH=${env:QT_ROOT_DIR}\msvc2022_64;${{ github.workspace }}\install\lib\cmake\"
-          cmake --build build --config Debug
-          cmake --build build --config Release
-          cmake --build build --config RelWithDebInfo
+          cmake -B build_tests . ${{ matrix.prefix_path }}
+          cmake --build build_tests --config Debug
+          cmake --build build_tests --config Release
+          cmake --build build_tests --config RelWithDebInfo
         working-directory: ${{ steps.configure-uibase.outputs.working-directory }}/tests/cmake
 
       - name: Upload UI Base artifact
         uses: actions/upload-artifact@master
         with:
-          name: uibase
+          name: uibase_${{ matrix.os_name }}
           path: ./install
 
   publish:
@@ -63,17 +97,25 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download Artifact
+      - name: Download Windows Artifact
         uses: actions/download-artifact@master
         with:
-          name: uibase
-          path: ./install
+          name: uibase_windows
+          path: ./install_windows
 
-      - name: Create UI Base archive
-        run: 7z a uibase_${{ github.ref_name }}.7z ./install/*
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: uibase_linux
+          path: ./install_linux
+
+      - name: Create UI Base archives
+        run: |
+          7z a uibase_${{ github.ref_name }}_windows.7z ./install_windows/*
+          7z a uibase_${{ github.ref_name }}_linux.7z ./install_linux/*
 
       - name: Publish Release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase_${{ github.ref_name }}.7z
+        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase_${{ github.ref_name }}_windows.7z ./uibase_${{ github.ref_name }}_linux.7z
