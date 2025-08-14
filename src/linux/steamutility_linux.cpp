@@ -145,7 +145,7 @@ QString findCompatDataByAppID(const QString& appID)
 
   for (const auto& library : getAllSteamLibrariesCached()) {
     for (const auto& game : library.games) {
-      if (appID == game.appID) {
+      if (appID.toStdString() == game.appID) {
         filesystem::path compatDataPath = library.path / "steamapps/common" /
                                           game.installDir / "../../compatdata" /
                                           appID.toStdString();
