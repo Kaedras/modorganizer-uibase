@@ -217,36 +217,7 @@ namespace shell
 
   Result ExploreDirectory(const QFileInfo& info)
   {
-    // clang-format off
-    /*
-    interface specification:
-
-    <interface name='org.freedesktop.FileManager1'>
-    <method name='ShowFolders'>
-      <arg type='as' name='URIs' direction='in'/>
-      <arg type='s' name='StartupId' direction='in'/>
-    </method>
-    <method name='ShowItems'>
-      <arg type='as' name='URIs' direction='in'/>
-      <arg type='s' name='StartupId' direction='in'/>
-    </method>
-    <method name='ShowItemProperties'>
-      <arg type='as' name='URIs' direction='in'/>
-      <arg type='s' name='StartupId' direction='in'/>
-    </method>
-    </interface>
-    */
-    // clang-format on
-    QDBusInterface interface(u"org.freedesktop.FileManager1"_s,
-                             u"/org/freedesktop/FileManager1"_s,
-                             u"org.freedesktop.FileManager1"_s);
-    QDBusMessage response = interface.call(
-        u"ShowFolders"_s, QStringList(u"file://"_s % info.absoluteFilePath()), "");
-    if (response.type() == QDBusMessage::ErrorMessage) {
-      return Result::makeFailure(static_cast<uint32_t>(response.type()),
-                                 response.errorMessage());
-    }
-    return Result::makeSuccess();
+    return Open(info.absolutePath());
   }
 
   Result ExploreFileInDirectory(const QFileInfo& info)
