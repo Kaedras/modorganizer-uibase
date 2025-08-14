@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QDBusInterface>
 #include <QDBusMessage>
+#include <QDesktopServices>
 #include <QDir>
 #include <QProcess>
 #include <QStringList>
@@ -204,6 +205,16 @@ namespace shell
 
   static QString g_urlHandler;
 
+  Result OpenUrl(const QUrl& url)
+  {
+    bool result = QDesktopServices::openUrl(url);
+    if (!result) {
+      const int e = errno;
+      return Result::makeFailure(e, strerror(e));
+    }
+    return Result::makeSuccess();
+  }
+
   Result ExploreDirectory(const QFileInfo& info)
   {
     // clang-format off
@@ -272,13 +283,48 @@ namespace shell
     return Result::makeSuccess();
   }
 
-  Result Open(const QString& path) {}
+  Result Open(const QString& path)
+  {
+    return OpenUrl(QUrl::fromLocalFile(path));
+  }
 
-  Result OpenCustomURL(const std::wstring& format, const std::wstring& url) {}
+  Result OpenCustomURL(const QString& format, const QString& url)
+  {
+    log::debug("custom url handler: '{}'", format);
 
-  Result Open(const QUrl& url) {}
+    QString formatStr = format;
 
-  Result Execute(const QString& program, const QString& params, const QString& workdir)
+    // remove %2 %3 ... %98 %99
+    static auto regex = QRegularExpression(u"%([2-9]|[1-9][0-9](?![0-9]))"_s);
+    formatStr.replace(regex, "");
+
+    QString cmd = QString(formatStr).arg(url);
+
+    log::debug("running '{}'", cmd);
+
+    // split cmd into program and arguments
+    QString program, args;
+    if (cmd.contains(' ')) {
+      auto pos = cmd.indexOf(' ');
+
+      program = cmd.mid(0, pos);
+      args    = cmd.sliced(pos);
+    } else {
+      program = cmd;
+    }
+
+    return Execute(program, args);
+  }
+
+  Result Open(const QUrl& url)
+  {
+    if (g_urlHandler.isEmpty()) {
+      return OpenUrl(url);
+    }
+    return OpenCustomURL(g_urlHandler, url.toString(QUrl::FullyEncoded));
+  }
+
+  Result Execute(const QString& program, const QString& workdir, const QString& params)
   {
     if (!QFile::exists(workdir)) {
       return Result::makeFailure(ENOENT, u"Workdir does not exist"_s);
@@ -385,13 +431,54 @@ namespace shell
     g_urlHandler = cmd;
   }
 
-  Result Delete(const QFileInfo& path) {}
+  Result Delete(const QFileInfo& path)
+  {
+    std::error_code ec;
+    std::filesystem::remove(path.filesystemAbsoluteFilePath(), ec);
 
-  Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed) {}
+    if (ec) {
+      return Result::makeFailure(ec.value());
+    }
 
-  Result CreateDirectories(const QDir& dir) {}
+    return Result::makeSuccess();
+  }
 
-  Result DeleteDirectoryRecursive(const QDir& dir) {}
+  Result Rename(const QFileInfo& src, const QFileInfo& dest, bool copyAllowed)
+  {
+    Q_UNUSED(copyAllowed);
+
+    std::error_code ec;
+    std::filesystem::rename(src.filesystemAbsoluteFilePath(),
+                            dest.filesystemAbsoluteFilePath(), ec);
+    if (ec) {
+      return Result::makeFailure(ec.value());
+    }
+    return Result::makeSuccess();
+  }
+
+  Result CreateDirectories(const QDir& dir)
+  {
+    std::error_code ec;
+    std::filesystem::create_directories(dir.filesystemAbsolutePath(), ec);
+
+    if (ec) {
+      return Result::makeFailure(ec.value());
+    }
+
+    return Result::makeSuccess();
+  }
+
+  Result DeleteDirectoryRecursive(const QDir& dir)
+  {
+    std::error_code ec;
+    std::filesystem::remove_all(dir.filesystemPath(), ec);
+
+    if (ec) {
+      return Result::makeFailure(ec.value(), ToQString(ec.message()));
+    }
+
+    return Result::makeSuccess();
+  }
 
 }  // namespace shell
 
