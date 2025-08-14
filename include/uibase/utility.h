@@ -287,6 +287,12 @@ namespace shell
   //
   QDLLEXPORT Result Execute(const QString& program, const QString& params = {});
 
+  // @brief asks the shell to execute the given program inside the specified directory,
+  // with optional parameters
+  //
+  QDLLEXPORT Result ExecuteIn(const QString& program, const QString& workdir,
+                              const QString& params = {});
+
   // asks the shell to delete the given file (not directory)
   //
   QDLLEXPORT Result Delete(const QFileInfo& path);

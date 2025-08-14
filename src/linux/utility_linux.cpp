@@ -295,7 +295,13 @@ namespace shell
     return OpenCustomURL(g_urlHandler, url.toString(QUrl::FullyEncoded));
   }
 
-  Result Execute(const QString& program, const QString& workdir, const QString& params)
+  Result Execute(const QString& program, const QString& params)
+  {
+    return ExecuteIn(program, QDir::currentPath(), params);
+  }
+
+  Result ExecuteIn(const QString& program, const QString& workdir,
+                   const QString& params)
   {
     if (!QFile::exists(workdir)) {
       return Result::makeFailure(ENOENT, u"Workdir does not exist"_s);
