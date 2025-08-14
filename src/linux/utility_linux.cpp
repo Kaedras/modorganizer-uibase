@@ -357,7 +357,11 @@ namespace shell
       // store the temporary QByteArray object
       QByteArray utf8Data = command.toUtf8();
 
-      chdir(workdir.toUtf8().constData());
+      if (chdir(workdir.toUtf8().constData()) != 0) {
+        const int e = errno;
+        log::warn("Could not change directory to '{}': ", workdir, strerror(e));
+        exit(e);
+      }
       execl("/bin/sh", "sh", "-c", utf8Data.constData(), nullptr);
 
       // The exec() functions return only if an error has occurred. The return value is
