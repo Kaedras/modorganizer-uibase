@@ -7,7 +7,6 @@
 #include <QDBusMessage>
 #include <QDesktopServices>
 #include <QDir>
-#include <QProcess>
 #include <QStringList>
 #include <cerrno>
 #include <fcntl.h>
