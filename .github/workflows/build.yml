@@ -26,11 +26,10 @@ jobs:
             build_dir: build
             prefix_path: "$QT_ROOT_DIR/gcc_64;"
             os_name: linux
-            linux: 1
 
     runs-on: ${{ matrix.os }}
     steps:
-      - if: ${{ matrix.linux }}
+      - if: ${{ runner.os == 'Linux' }}
         # upgrade from 24.04 (noble) to 25.10 (questing) because
         # old ubuntu versions cause errors
         name: Upgrade release to 25.10 (questing)
@@ -43,7 +42,7 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
 
-      - if: ${{ matrix.linux }}
+      - if: ${{ runner.os == 'Linux' }}
         name: Install build dependencies
         run: |
           sudo apt-get install -y \
