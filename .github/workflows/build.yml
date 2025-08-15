@@ -49,13 +49,6 @@ jobs:
           sudo apt-get install -y \
           build-essential cmake curl git ninja-build pkg-config tar unzip zip
 
-      - if: ${{ matrix.linux }}
-        name: Update gcc
-        run: |
-          sudo apt install gcc-15 g++-15 -y && \
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 50 && \
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 50
-
       - name: Configure UIBase
         id: configure-uibase
         uses: Kaedras/build-with-mob-action@master
