@@ -897,7 +897,7 @@ TEST(IFileTreeTest, TreeWalkOperations)
     EXPECT_EQ(entries, expected);
 
     entries.clear();
-    for (const auto entry : walk(fileTree)) {
+    for (const auto& entry : walk(fileTree)) {
       if (entry->name() == "e") {
         break;  // Stop on e
       }
