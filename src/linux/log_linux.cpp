@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <locale>
+#include <memory>
 
 #include <spdlog/logger.h>
 #include <spdlog/sinks/ansicolor_sink.h>
@@ -16,10 +17,10 @@ namespace MOBase::log
 
 void Logger::createLogger(const std::string& name)
 {
-  m_sinks.reset(new spdlog::sinks::dist_sink<std::mutex>);
+  m_sinks = std::make_shared<spdlog::sinks::dist_sink<std::mutex>>();
 
   using sink_type = spdlog::sinks::ansicolor_stderr_sink_mt;
-  m_console.reset(new sink_type);
+  m_console       = std::make_shared<sink_type>();
 
   if (auto* cs = dynamic_cast<sink_type*>(m_console.get())) {
     cs->set_color(spdlog::level::info, FOREGROUND_WHITE);
@@ -27,7 +28,7 @@ void Logger::createLogger(const std::string& name)
   }
   addSink(m_console);
 
-  m_logger.reset(new spdlog::logger(name, m_sinks));
+  m_logger = std::make_unique<spdlog::logger>(name, m_sinks);
 }
 
 }  // namespace MOBase::log
