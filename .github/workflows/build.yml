@@ -24,21 +24,22 @@ jobs:
             os_name: windows
           - os: ubuntu-24.04
             build_dir: build
-            prefix_path: ""
+            prefix_path: "$QT_ROOT_DIR/gcc_64;"
             os_name: linux
             linux: 1
 
     runs-on: ${{ matrix.os }}
     steps:
       - if: ${{ matrix.linux }}
-        # ubuntu 24.04 causes errors
-        name: Upgrade release to 25.04 (plucky)
+        # upgrade from 24.04 (noble) to 25.10 (questing) because
+        # old ubuntu versions cause errors
+        name: Upgrade release to 25.10 (questing)
         run: |
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
           sudo apt-get install update-manager-core -y
           sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
-          sudo sed -i 's/noble/plucky/g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo sed -i 's/noble/questing/g' /etc/apt/sources.list.d/ubuntu.sources
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
 
@@ -46,8 +47,7 @@ jobs:
         name: Install build dependencies
         run: |
           sudo apt-get install -y \
-          build-essential cmake curl git flatpak libflatpak-dev libegl1-mesa-dev libgl1-mesa-dev \
-          libglvnd-dev libkf6kio-dev mesa-common-dev ninja-build pkg-config tar unzip zip
+          build-essential cmake curl git ninja-build pkg-config tar unzip zip
 
       - if: ${{ matrix.linux }}
         name: Update gcc
