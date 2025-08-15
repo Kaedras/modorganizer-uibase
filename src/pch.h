@@ -148,14 +148,5 @@ extern "C"
 #include <QDBusMessage>
 #endif
 
-// KIO
-#ifdef __unix__
-#include <KIO/CopyJob>
-#include <KIO/DeleteJob>
-#include <KIO/DeleteOrTrashJob>
-#include <KIO/JobUiDelegateFactory>
-#include <KJobWidgets>
-#endif
-
 #undef _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #pragma warning(pop)

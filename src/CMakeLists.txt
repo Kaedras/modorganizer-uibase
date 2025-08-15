@@ -7,12 +7,8 @@ find_package(vdf-parser CONFIG REQUIRED)
 if (UNIX)
 	set(os_name linux)
 
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(LIBFLATPAK REQUIRED flatpak)
-	find_package(KF6KIO CONFIG REQUIRED)
-
-	set(os_specific_private_deps Qt::DBus flatpak KF6::KIOCore KF6::KIOFileWidgets KF6::KIOWidgets ${LIBFLATPAK_LIBRARIES})
-	set(os_specific_private_include_dirs ${LIBFLATPAK_INCLUDE_DIRS})
+	set(os_specific_private_deps Qt::DBus)
+	set(os_specific_private_include_dirs)
 
 	set(os_specific_headers
 			../include/uibase/linux/compatibility.h

@@ -2,11 +2,6 @@
 
 #include "../pch.h"
 #include "linux/stub.h"
-#include <KIO/CopyJob>
-#include <KIO/DeleteJob>
-#include <KIO/DeleteOrTrashJob>
-#include <KIO/JobUiDelegateFactory>
-#include <KJobWidgets>
 #include <QApplication>
 #include <QDBusInterface>
 #include <QDBusMessage>
@@ -29,155 +24,132 @@ using namespace std;
 using namespace Qt::Literals::StringLiterals;
 namespace fs = std::filesystem;
 
-namespace
-{
-
-int jobErrorToErrno(int error)
-{
-  using namespace KIO;
-  switch (error) {
-  case ERR_CANNOT_OPEN_FOR_READING:
-  case ERR_CANNOT_OPEN_FOR_WRITING:
-    return EIO;
-  case ERR_MALFORMED_URL:
-  case ERR_NO_SOURCE_PROTOCOL:
-    return EINVAL;
-  case ERR_UNSUPPORTED_PROTOCOL:
-    return EPROTONOSUPPORT;
-  case ERR_UNSUPPORTED_ACTION:
-    return ENOTSUP;
-  case ERR_IS_DIRECTORY:
-    return EISDIR;
-  case ERR_DOES_NOT_EXIST:
-    return ENOENT;
-  case ERR_FILE_ALREADY_EXIST:
-  case ERR_DIR_ALREADY_EXIST:
-    return EEXIST;
-  case ERR_ACCESS_DENIED:
-  case ERR_WRITE_ACCESS_DENIED:
-  case ERR_CANNOT_ENTER_DIRECTORY:
-    return EACCES;
-  case ERR_PROTOCOL_IS_NOT_A_FILESYSTEM:
-    return EPROTO;
-  case ERR_USER_CANCELED:
-  case ERR_ABORTED:
-    return ECANCELED;
-  case ERR_DISK_FULL:
-    return ENOSPC;
-  case ERR_OUT_OF_MEMORY:
-    return ENOMEM;
-
-  default:
-    return EIO;
-  }
-}
-
-QList<QUrl> stringListToUrlList(const QStringList& list)
-{
-  QList<QUrl> urls;
-  urls.reserve(list.size());
-  for (const auto& string : list) {
-    urls.push_back(QUrl::fromLocalFile(string));
-  }
-  return urls;
-}
-
-bool runJob(KIO::Job* job, QWidget* dialog = nullptr)
-{
-  // set some defaults for copy jobs
-  if (auto* copyJob = dynamic_cast<KIO::CopyJob*>(job)) {
-    copyJob->setWriteIntoExistingDirectories(true);
-  }
-  KJobWidgets::setWindow(job, dialog);
-
-  int error;
-  // KJob::error() should only be called from the slot connected to result()
-  QObject::connect(job, &KIO::Job::result, [&error, job]() {
-    error = job->error();
-  });
-
-  // event loop is required to process input in confirmation dialogs
-  QEventLoop eventLoop;
-  QObject::connect(job, &KIO::Job::result, &eventLoop, &QEventLoop::quit);
-
-  job->start();
-  eventLoop.exec();
-
-  if (error != 0) {
-    errno = jobErrorToErrno(error);
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
-
 namespace MOBase
 {
 
-bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
-               QWidget* dialog)
+int fileErrorToErrno(QFile::FileError error)
 {
-  if (sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) {
+  switch (error) {
+  case QFile::NoError:
+    return 0;
+  case QFile::ReadError:
+  case QFile::WriteError:
+  case QFile::FatalError:
+    return EIO;
+  case QFile::ResourceError:
+    return ENOENT;
+  case QFile::OpenError:
+    return EACCES;
+  case QFile::AbortError:
+    return ECANCELED;
+  case QFile::TimeOutError:
+    return ETIMEDOUT;
+  case QFile::UnspecifiedError:
+  case QFile::RemoveError:
+  case QFile::RenameError:
+  case QFile::PositionError:
+  case QFile::ResizeError:
+  case QFile::PermissionsError:
+  case QFile::CopyError:
+    return EIO;
+  default:
+    return EINVAL;
+  }
+}
+
+enum op : unsigned int
+{
+  FO_COPY,
+  FO_MOVE
+};
+
+bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
+                 op operation, bool yesToAll, bool silent = false)
+{
+  try {
+    if (exists(dst) && !yesToAll && !silent) {
+      // TODO: prompt for overwrite
+      errno = EEXIST;
+      return false;
+    }
+    if (operation == FO_COPY) {
+      fs::copy(src, dst, fs::copy_options::recursive);
+    } else {
+      fs::rename(src, dst);
+    }
+    return true;
+  } catch (const fs::filesystem_error& ex) {
+    errno = ex.code().value();
+    return false;
+  }
+}
+
+static bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
+                    QWidget* dialog, op operation, bool yesToAll, bool silent = false)
+{
+  if ((sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) ||
+      (destinationNames.size() == 1 && !QFileInfo(destinationNames[0]).isDir())) {
     errno = EINVAL;
     return false;
   }
 
-  if (destinationNames.size() == 1) {
-    KIO::CopyJob* job = KIO::copy(stringListToUrlList(sourceNames),
-                                  QUrl::fromLocalFile(destinationNames[0]));
-    return runJob(job, dialog);
+  std::vector<fs::path> sources;
+  std::vector<fs::path> destinations;
+
+  // allocate memory
+  sources.reserve(sourceNames.size());
+  destinations.reserve(sourceNames.size());
+
+  // create sources
+  for (const auto& sourceName : sourceNames) {
+    sources.emplace_back(QFileInfo(sourceName).filesystemAbsoluteFilePath());
   }
 
-  for (qsizetype i = 0; i < sourceNames.size(); i++) {
-    auto* job = KIO::copy(QUrl::fromLocalFile(sourceNames[i]),
-                          QUrl::fromLocalFile(destinationNames[i]));
-    if (!runJob(job, dialog)) {
+  // create destinations
+  if (destinationNames.size() > 1) {
+    for (const auto& destinationName : destinationNames) {
+      destinations.emplace_back(
+          QFileInfo(destinationName).filesystemAbsoluteFilePath());
+    }
+  } else {
+    fs::path dstDir = QFileInfo(destinationNames[0]).filesystemAbsoluteFilePath();
+
+    for (const auto& sourceName : sourceNames) {
+      destinations.emplace_back(dstDir / sourceName.toStdString());
+    }
+  }
+
+  for (int i = 0; i < sourceNames.size(); ++i) {
+    if (!doOperation(sources[i], destinations[i], dialog, operation, yesToAll)) {
       return false;
     }
   }
+
   return true;
+}
+
+bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
+               QWidget* dialog)
+{
+  return shellOp(sourceNames, destinationNames, dialog, FO_COPY, false);
 }
 
 bool shellCopy(const QString& sourceNames, const QString& destinationNames,
                bool yesToAll, QWidget* dialog)
 {
-  KIO::CopyJob* job =
-      KIO::copy(QUrl::fromLocalFile(sourceNames), QUrl::fromLocalFile(destinationNames),
-                yesToAll ? KIO::Overwrite : KIO::DefaultFlags);
-  return runJob(job, dialog);
+  return shellOp({sourceNames}, {destinationNames}, dialog, FO_COPY, yesToAll);
 }
 
 bool shellMove(const QStringList& sourceNames, const QStringList& destinationNames,
                QWidget* dialog)
 {
-  if (sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) {
-    errno = EINVAL;
-    return false;
-  }
-  if (destinationNames.size() == 1) {
-    auto* job = KIO::move(stringListToUrlList(sourceNames),
-                          QUrl::fromLocalFile(destinationNames[0]));
-    return runJob(job);
-  }
-  for (qsizetype i = 0; i < sourceNames.size(); i++) {
-    auto* job = KIO::move(QUrl::fromLocalFile(sourceNames[i]),
-                          QUrl::fromLocalFile(destinationNames[i]));
-    if (!runJob(job, dialog)) {
-      return false;
-    }
-  }
-
-  return true;
+  return shellOp(sourceNames, destinationNames, dialog, FO_MOVE, false);
 }
 
 bool shellMove(const QString& sourceNames, const QString& destinationNames,
                bool yesToAll, QWidget* dialog)
 {
-  auto* job =
-      KIO::move(QUrl::fromLocalFile(sourceNames), QUrl::fromLocalFile(destinationNames),
-                yesToAll ? KIO::Overwrite : KIO::DefaultFlags);
-  return runJob(job, dialog);
+  return shellOp({sourceNames}, {destinationNames}, dialog, FO_MOVE, yesToAll);
 }
 
 bool shellRename(const QString& oldName, const QString& newName, bool yesToAll,
@@ -188,16 +160,23 @@ bool shellRename(const QString& oldName, const QString& newName, bool yesToAll,
 
 bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
 {
-  KIO::Job* job     = nullptr;
-  QList<QUrl> files = stringListToUrlList(fileNames);
+  (void)dialog;
 
-  if (recycle) {
-    job = KIO::trash(files);
-  } else {
-    job = KIO::del(files);
-  }
-
-  return runJob(job, dialog);
+  return std::ranges::all_of(fileNames, [recycle](const QString& fileName) {
+    QFile file(fileName);
+    if (recycle) {
+      if (!file.moveToTrash()) {
+        errno = fileErrorToErrno(file.error());
+        return false;
+      }
+    } else {
+      if (!file.remove()) {
+        errno = fileErrorToErrno(file.error());
+        return false;
+      }
+    }
+    return true;
+  });
 }
 
 namespace shell
