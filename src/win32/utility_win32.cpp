@@ -401,7 +401,7 @@ namespace shell
     const auto program_ws = program.toStdWString();
     const auto params_ws  = params.toStdWString();
 
-    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str();
+    return ShellExecuteWrapper(L"open", program_ws.c_str(), params_ws.c_str());
   }
 
   Result ExecuteIn(const QString& program, const QString& workdir,
