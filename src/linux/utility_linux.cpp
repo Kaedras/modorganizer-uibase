@@ -443,17 +443,23 @@ namespace shell
 
 QIcon iconForExecutable(const QString& filePath)
 {
+#warning "STUB"
+  (void)filePath;
   STUB();
   return QIcon(u":/MO/gui/executable"_s);
 }
 QString getFileVersion(QString const& filepath)
 {
+#warning "STUB"
+  (void)filepath;
   STUB();
   return "";
 }
 
 QString getProductVersion(QString const& filepath)
 {
+#warning "STUB"
+  (void)filepath;
   STUB();
   return "";
 }
