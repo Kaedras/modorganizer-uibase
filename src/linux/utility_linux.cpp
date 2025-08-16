@@ -84,7 +84,7 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
 }
 
 static bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
-                    QWidget* dialog, op operation, bool yesToAll, bool silent = false)
+                    QWidget* dialog, op operation, bool yesToAll)
 {
   if ((sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) ||
       (destinationNames.size() == 1 && !QFileInfo(destinationNames[0]).isDir())) {
