@@ -48,10 +48,23 @@ jobs:
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           tree /usr/local/share/vcpkg/
-      - name: Show vcpkg download directory
+      - name: Show vcpkg directories
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
+          ls -lah /usr/local/share/vcpkg
           ls -lah /usr/local/share/vcpkg/downloads
+
+      - name: Change permissions
+        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
+        run: |
+          sudo chmod 777 /usr/local/share/vcpkg/downloads/
+      - name: Try to configure UIBase after changing permissions
+        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
+        uses: Kaedras/build-with-mob-action@master
+        with:
+          # skip build because we are going to build both Debug and RelWithDebInfo here
+          mo2-skip-build: true
+          mo2-owner: Kaedras
 
       # build both Debug and RelWithDebInfo for package
       - name: Build UI Base
