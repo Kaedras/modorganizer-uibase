@@ -14,7 +14,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    continue-on-error: true
     steps:
         # upgrade from 24.04 (noble) to 25.10 (questing) because
         # old ubuntu versions cause errors
@@ -46,65 +45,67 @@ jobs:
           mo2-owner: Kaedras
 
       - name: List files
+        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           tree /usr/local/share/vcpkg/
       - name: Show vcpkg download directory
+        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           ls -lah /usr/local/share/vcpkg/downloads
 
       # build both Debug and RelWithDebInfo for package
-#      - name: Build UI Base
-#        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
-#        run: |
-#          cmake --build build --config Debug --target uibase-tests --verbose
-#          cmake --build build --config RelWithDebInfo --target uibase-tests --verbose
-#
-#      - name: Test UI Base
-#        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
-#        run: |
-#          ctest --test-dir build -C Debug --output-on-failure
-#          ctest --test-dir build -C RelWithDebInfo --output-on-failure
-#
-#      - name: Install UI Base
-#        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
-#        run: |
-#          cmake --install build --config Debug
-#          cmake --install build --config RelWithDebInfo
-#
-#      # this tests that UI Base can be properly used as a CMake package
-#      - name: Test UI Base package
-#        run: |
-#          cmake -B build_tests . "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR;${{ github.workspace }}/install/lib/cmake/"
-#          cmake --build build_tests --config Debug
-#          cmake --build build_tests --config Release
-#          cmake --build build_tests --config RelWithDebInfo
-#        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}/tests/cmake
-#
-#      - name: Upload UI Base artifact
-#        uses: actions/upload-artifact@master
-#        with:
-#          name: uibase
-#          path: ./install
-#
-#  publish:
-#    if: github.ref_type == 'tag'
-#    needs: build
-#    runs-on: ubuntu-24.04
-#    permissions:
-#      contents: write
-#    steps:
-#      - name: Download Artifact
-#        uses: actions/download-artifact@master
-#        with:
-#          name: uibase
-#          path: ./install
-#
-#      - name: Create UI Base archives
-#        run: |
-#          7z a uibase_${{ github.ref_name }}.7z ./install/*
-#
-#      - name: Publish Release
-#        env:
-#          GH_TOKEN: ${{ github.token }}
-#          GH_REPO: ${{ github.repository }}
-#        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase_${{ github.ref_name }}.7z
+      - name: Build UI Base
+        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
+        run: |
+          cmake --build build --config Debug --target uibase-tests --verbose
+          cmake --build build --config RelWithDebInfo --target uibase-tests --verbose
+
+      - name: Test UI Base
+        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
+        run: |
+          ctest --test-dir build -C Debug --output-on-failure
+          ctest --test-dir build -C RelWithDebInfo --output-on-failure
+
+      - name: Install UI Base
+        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
+        run: |
+          cmake --install build --config Debug
+          cmake --install build --config RelWithDebInfo
+
+      # this tests that UI Base can be properly used as a CMake package
+      - name: Test UI Base package
+        run: |
+          cmake -B build_tests . "-DCMAKE_PREFIX_PATH=$QT_ROOT_DIR;${{ github.workspace }}/install/lib/cmake/"
+          cmake --build build_tests --config Debug
+          cmake --build build_tests --config Release
+          cmake --build build_tests --config RelWithDebInfo
+        working-directory: ${{ steps.configure-uibase.outputs.working-directory }}/tests/cmake
+
+      - name: Upload UI Base artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: uibase
+          path: ./install
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: uibase
+          path: ./install
+
+      - name: Create UI Base archives
+        run: |
+          7z a uibase_${{ github.ref_name }}.7z ./install/*
+
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release create --draft=false --notes="${{ github.ref_name }}" "${{ github.ref_name }}" ./uibase_${{ github.ref_name }}.7z
