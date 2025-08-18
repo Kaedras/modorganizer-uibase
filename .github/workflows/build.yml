@@ -90,7 +90,7 @@ jobs:
       - name: Remove old files
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
-          cd ${{ github.workspace }} && rm -rf cmake_common
+          cd ${{ github.workspace }} && rm -rf ./*
       - name: Try to configure UIBase after changing permissions
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         uses: Kaedras/build-with-mob-action@master
