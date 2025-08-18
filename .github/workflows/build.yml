@@ -36,6 +36,11 @@ jobs:
         run: |
           df -h
 
+      - name: Show vcpkg directories 1
+        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
+        run: |
+          ls -lah /usr/local/share/vcpkg
+
       - name: Configure UIBase
         id: configure-uibase
         uses: Kaedras/build-with-mob-action@master
@@ -48,7 +53,7 @@ jobs:
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           tree /usr/local/share/vcpkg/
-      - name: Show vcpkg directories
+      - name: Show vcpkg directories 2
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           ls -lah /usr/local/share/vcpkg
