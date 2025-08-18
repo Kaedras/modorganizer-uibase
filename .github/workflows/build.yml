@@ -14,18 +14,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    container: ubuntu:questing
     steps:
-        # upgrade from 24.04 (noble) to 25.10 (questing) because
-        # old ubuntu versions cause errors
-      - name: Upgrade release to 25.10 (questing)
+      - name: Install updates
         run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-          sudo apt-get install update-manager-core -y
-          sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
-          sudo sed -i 's/noble/questing/g' /etc/apt/sources.list.d/ubuntu.sources
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
+          sudo apt-get update && sudo apt-get upgrade -y
+
+      - name: Install powershell # required by build-with-mob-action
+        run: |
+          sudo apt-get install -y wget apt-transport-https software-properties-common &&
+          wget -q https://packages.microsoft.com/config/ubuntu/25.10/packages-microsoft-prod.deb && \
+          sudo dpkg -i packages-microsoft-prod.deb && rm packages-microsoft-prod.deb && sudo apt-get update && sudo apt-get install -y powershell
 
       - name: Install build dependencies
         run: |
