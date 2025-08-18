@@ -23,9 +23,9 @@ jobs:
           sudo apt-get install -y \
           build-essential cmake curl git ninja-build pkg-config sudo tar unzip wget zip
 
-      - name: Cache GCC 15.2
-        id: cache-gcc-15_2
-        uses: actions/cache@v4
+      - name: Restore GCC
+        id: cache-gcc-restore
+        uses: actions/cache/restore@v4
         with:
           path: /opt/gcc-15
           key: gcc-15.2
@@ -45,6 +45,15 @@ jobs:
           ../gcc-15-source/configure --prefix=/opt/gcc-15 --disable-multilib --enable-languages=c,c++
           make -j$(nproc)
           sudo make install
+
+      - name: Save GCC
+        id: cache-gcc-save
+        if: always() && steps.cache-gcc-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.cache-gcc-restore.outputs.cache-primary-key }}
+          path: |
+            /opt/gcc-15
 
       - name: Set GCC 15.2 as default
         run: |
