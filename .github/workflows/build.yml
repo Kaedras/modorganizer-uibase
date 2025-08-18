@@ -38,13 +38,13 @@ jobs:
 
         # upgrade from 24.04 (noble) to 25.10 (questing) because
         # old ubuntu versions cause errors
-      - name: Upgrade release to 25.10 (questing)
+      - name: Upgrade release to 25.04 (plucky)
         run: |
           sudo apt-get -q update
           sudo DEBIAN_FRONTEND=noninteractive apt-get -q install -y tzdata
           sudo apt-get -q install update-manager-core -y
           sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
-          sudo sed -i 's/noble/questing/g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo sed -i 's/noble/plucky/g' /etc/apt/sources.list.d/ubuntu.sources
           sudo apt-get update -q
           sudo DEBIAN_FRONTEND=noninteractive apt-get -q dist-upgrade -y -o "Dpkg::Options::=--force-confold"
 
