@@ -78,11 +78,13 @@ jobs:
         run: |
           ls -lah /usr/local/share/vcpkg
           ls -lah /usr/local/share/vcpkg/downloads
+          ls -la $HOME/.cache/vcpkg
 
       - name: Change permissions
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           sudo chmod 777 /usr/local/share/vcpkg/downloads/
+          sudo chmod 777 $HOME/.cache/vcpkg
       - name: Remove old files
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
