@@ -24,11 +24,6 @@ jobs:
           sudo mkdir -p $HOME/.cache/vcpkg
           sudo chmod -R 777 $HOME/.cache/vcpkg
 
-      - name: Update vcpkg
-        run: |
-          git -C $VCPKG_ROOT pull
-          $VCPKG_ROOT/vcpkg update
-
       - name: Create vcpkg directories
         run: |
           mkdir -p /usr/local/share/vcpkg/downloads/
