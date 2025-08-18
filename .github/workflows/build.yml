@@ -37,7 +37,6 @@ jobs:
           df -h
 
       - name: Show vcpkg directories 1
-        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           ls -lah /usr/local/share/vcpkg
 
@@ -66,7 +65,7 @@ jobs:
       - name: Remove old files
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
-          cd /home/runner/work/ && rm -rf modorganizer-uibase
+          cd ${{ github.workspace }} && rm -rf cmake_common
       - name: Try to configure UIBase after changing permissions
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         uses: Kaedras/build-with-mob-action@master
