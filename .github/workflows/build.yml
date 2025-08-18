@@ -22,7 +22,7 @@ jobs:
       - name: Install build dependencies
         run: |
           apt-get install -y \
-          build-essential cmake curl git ninja-build pkg-config tar unzip wget zip
+          build-essential cmake curl git ninja-build pkg-config sudo tar unzip wget zip
 
       - name: Install vcpkg
         run: |
