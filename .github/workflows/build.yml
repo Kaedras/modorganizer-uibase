@@ -14,23 +14,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    container: ubuntu:questing
     steps:
-      - name: Install updates
+        # upgrade from 24.04 (noble) to 25.10 (questing) because
+        # old ubuntu versions cause errors
+      - name: Upgrade release to 25.10 (questing)
         run: |
-          apt-get update && apt-get upgrade -y
-
-      - name: Install powershell # required by build-with-mob-action
-        run: |
-          apt-get install -y wget && \
-          wget https://github.com/PowerShell/PowerShell/releases/download/v7.5.2/powershell_7.5.2-1.deb_amd64.deb && \
-          dpkg -i powershell_7.5.2-1.deb_amd64.deb && \
-          apt-get install -f && \
-          rm powershell_7.5.2-1.deb_amd64.deb
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
+          sudo apt-get install update-manager-core -y
+          sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
+          sudo sed -i 's/noble/questing/g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
 
       - name: Install build dependencies
         run: |
-          apt-get install -y \
+          sudo apt-get install -y \
           build-essential cmake curl git ninja-build pkg-config tar unzip zip
 
       - name: Configure UIBase
