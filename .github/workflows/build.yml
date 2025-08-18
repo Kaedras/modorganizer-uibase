@@ -40,34 +40,6 @@ jobs:
           mo2-skip-build: true
           mo2-owner: Kaedras
 
-      - name: List files
-        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
-        run: |
-          tree /usr/local/share/vcpkg/
-      - name: Show vcpkg directories 2
-        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
-        run: |
-          ls -lah /usr/local/share/vcpkg
-          ls -lah /usr/local/share/vcpkg/downloads
-          ls -la $HOME/.cache/vcpkg
-
-      - name: Change permissions
-        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
-        run: |
-          sudo chmod -R 777 /usr/local/share/vcpkg/downloads/
-          sudo chmod -R 777 $HOME/.cache/vcpkg
-      - name: Remove old files
-        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
-        run: |
-          cd ${{ github.workspace }} && rm -rf ./*
-      - name: Try to configure UIBase after changing permissions
-        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
-        uses: Kaedras/build-with-mob-action@master
-        with:
-          # skip build because we are going to build both Debug and RelWithDebInfo here
-          mo2-skip-build: true
-          mo2-owner: Kaedras
-
       # build both Debug and RelWithDebInfo for package
       - name: Build UI Base
         working-directory: ${{ steps.configure-uibase.outputs.working-directory }}
