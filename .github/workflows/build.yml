@@ -18,6 +18,15 @@ jobs:
       - name: Show vcpkg directories 1
         run: |
           ls -lah /usr/local/share/vcpkg
+          ls -lah $HOME/.cache/vcpkg
+
+      - name: Fix permissions for vcpkg cache
+        run: sudo chmod -R 777 $HOME/.cache/vcpkg
+
+      - name: Update vcpkg
+        run: |
+          git -C $VCPKG_ROOT pull
+          $VCPKG_ROOT/vcpkg update
 
       - name: Create vcpkg directories
         run: |
