@@ -21,8 +21,8 @@ jobs:
 
       - name: Create vcpkg directories
         run: |
-          mkdir -p "/usr/local/share/vcpkg/{downloads, buildtrees, packages}/"
-          chmod 777 "/usr/local/share/vcpkg/{downloads, buildtrees, packages}/"
+          mkdir -p /usr/local/share/vcpkg/{downloads, buildtrees, packages}/
+          chmod 777 /usr/local/share/vcpkg/{downloads, buildtrees, packages}/
       - name: Show vcpkg directories
         run: |
           ls -lah /usr/local/share/vcpkg
