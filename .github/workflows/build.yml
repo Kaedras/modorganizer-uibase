@@ -32,6 +32,9 @@ jobs:
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
 
+      - name: Create workspace dir
+        run: mkdir -p ${{ github.workspace }}
+
       - name: Configure UIBase
         id: configure-uibase
         uses: Kaedras/build-with-mob-action@dev/bash
