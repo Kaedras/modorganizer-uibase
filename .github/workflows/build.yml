@@ -22,7 +22,7 @@ jobs:
 
       - name: Install powershell # required by build-with-mob-action
         run: |
-          snap install powershell --channel=lts/stable --classic
+          apt-get install snapd && snap install powershell --channel=lts/stable --classic
 
       - name: Install build dependencies
         run: |
