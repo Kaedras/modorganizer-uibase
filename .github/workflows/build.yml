@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Install updates
-        run: sudo apt-get update && apt-get upgrade -y
+        run: sudo apt-get update && sudo apt-get upgrade -y
 
       - name: Install build dependencies
         run: |
