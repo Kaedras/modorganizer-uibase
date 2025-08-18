@@ -14,56 +14,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    container: ubuntu:questing
     steps:
-      - name: Show vcpkg directories 1
-        run: |
-          ls -lah /usr/local/share/vcpkg
-
-      - name: Create vcpkg cache directory
-        run: |
-          sudo mkdir -p $HOME/.cache/vcpkg
-          sudo chmod -R 777 $HOME/.cache/vcpkg
-
-      - name: Create vcpkg directories
-        run: |
-          mkdir -p /usr/local/share/vcpkg/downloads/
-          mkdir -p /usr/local/share/vcpkg/buildtrees/
-          mkdir -p /usr/local/share/vcpkg/packages/
-          chmod 777 /usr/local/share/vcpkg/downloads/
-          chmod 777 /usr/local/share/vcpkg/buildtrees/
-          chmod 777 /usr/local/share/vcpkg/packages/
-      - name: Show vcpkg directories
-        run: |
-          ls -lah /usr/local/share/vcpkg
-
-        # upgrade from 24.04 (noble) to 25.10 (questing) because
-        # old ubuntu versions cause errors
-      - name: Upgrade release to 25.10 (questing)
-        run: |
-          sudo apt-get -q update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -q install -y tzdata
-          sudo apt-get -q install update-manager-core -y
-          sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
-          sudo sed -i 's/noble/questing/g' /etc/apt/sources.list.d/ubuntu.sources
-          sudo apt-get update -q
-          sudo DEBIAN_FRONTEND=noninteractive apt-get -q dist-upgrade -y -o "Dpkg::Options::=--force-confold"
+      - name: Install updates
+        run: apt-get update && apt-get upgrade -y
 
       - name: Install build dependencies
         run: |
-          sudo apt-get install -y \
+          apt-get install -y \
           build-essential cmake curl git ninja-build pkg-config tar unzip zip
 
-      - name: Print disk space
+      - name: Install vcpkg
         run: |
-          df -h
-
-      - name: List files
-        run: |
-          tree ${{ github.workspace }}
+          cd /opt/
+          git clone https://github.com/microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          ./vcpkg integrate install
 
       - name: Configure UIBase
         id: configure-uibase
-        uses: Kaedras/build-with-mob-action@master
+        uses: Kaedras/build-with-mob-action@dev/bash
         with:
           # skip build because we are going to build both Debug and RelWithDebInfo here
           mo2-skip-build: true
