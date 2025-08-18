@@ -58,6 +58,10 @@ jobs:
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         run: |
           sudo chmod 777 /usr/local/share/vcpkg/downloads/
+      - name: Remove old files
+        if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
+        run: |
+          cd /home/runner/work/ && rm -rf modorganizer-uibase
       - name: Try to configure UIBase after changing permissions
         if: ${{ failure() && steps.configure-uibase.outcome == 'failure'}}
         uses: Kaedras/build-with-mob-action@master
