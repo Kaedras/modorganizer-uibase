@@ -54,6 +54,7 @@ jobs:
         with:
           # skip build because we are going to build both Debug and RelWithDebInfo here
           mo2-skip-build: true
+          mo2-owner: Kaedras
 
       # build both Debug and RelWithDebInfo for package
       - name: Build UI Base
