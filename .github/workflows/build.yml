@@ -29,24 +29,50 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - if: ${{ runner.os == 'Linux' }}
-        # upgrade from 24.04 (noble) to 25.10 (questing) because
-        # old ubuntu versions cause errors
-        name: Upgrade release to 25.10 (questing)
-        run: |
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-          sudo apt-get install update-manager-core -y
-          sudo sed -i 's/lts/normal/g' /etc/update-manager/release-upgrades
-          sudo sed -i 's/noble/questing/g' /etc/apt/sources.list.d/ubuntu.sources
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade -y -o "Dpkg::Options::=--force-confold"
-
-      - if: ${{ runner.os == 'Linux' }}
-        name: Install build dependencies
+      - name: Install build dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get install -y \
-          build-essential cmake curl git ninja-build pkg-config tar unzip zip
+          build-essential cmake curl git ninja-build pkg-config tar unzip wget zip
+
+      - name: Restore GCC
+        if: runner.os == 'Linux'
+        id: cache-gcc-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: /opt/gcc-15
+          key: gcc-15.2
+
+      - name: Build and install GCC 15.2
+        if: runner.os == 'Linux' && steps.cache-gcc-restore.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install -y make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev python3 binutils perl libisl-dev libzstd-dev gzip bzip2
+          mkdir gcc-15
+          cd gcc-15
+          git clone https://gcc.gnu.org/git/gcc.git -b releases/gcc-15.2.0 --depth 1 gcc-15-source
+          cd gcc-15-source
+          ./contrib/download_prerequisites
+          cd ..
+          mkdir build
+          cd build
+          ../gcc-15-source/configure --prefix=/opt/gcc-15 --disable-multilib --enable-languages=c,c++
+          make -j$(nproc)
+          sudo make install
+
+      - name: Save GCC
+        id: cache-gcc-save
+        if: runner.os == 'Linux' && steps.cache-gcc-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          key: ${{ steps.cache-gcc-restore.outputs.cache-primary-key }}
+          path: |
+            /opt/gcc-15
+
+      - name: Set GCC 15.2 as default
+        if: runner.os == 'Linux'
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /opt/gcc-15/bin/gcc 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /opt/gcc-15/bin/g++ 100
 
       - name: Configure UIBase
         id: configure-uibase
