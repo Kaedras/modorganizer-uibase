@@ -66,10 +66,28 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
                  op operation, bool yesToAll, bool silent = false)
 {
   try {
-    if (exists(dst) && !yesToAll && !silent) {
-      // TODO: prompt for overwrite
-      errno = EEXIST;
-      return false;
+    if (exists(dst) && !yesToAll) {
+      if (silent) {
+        errno = EEXIST;
+        return false;
+      }
+
+      QMessageBox msg;
+      msg.setText(QStringLiteral("File '%1' already exists").arg(dst.string()));
+      msg.setInformativeText(
+          QStringLiteral(
+              "Would you like to overwrite it?\nSource size: %1, destination size: %2")
+              .arg(file_size(src))
+              .arg(file_size(dst)));
+      msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+      msg.setDefaultButton(QMessageBox::Yes);
+      msg.setParent(dialog);
+
+      int result = msg.exec();
+      if (result == QMessageBox::No) {
+        errno = EEXIST;
+        return false;
+      }
     }
     if (operation == FO_COPY) {
       fs::copy(src, dst, fs::copy_options::recursive);
