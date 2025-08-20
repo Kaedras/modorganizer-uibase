@@ -415,6 +415,14 @@ QDLLEXPORT QString ToQString(const std::wstring& source);
  **/
 QDLLEXPORT QString ToString(const SYSTEMTIME& time);
 
+/**
+ * @brief convert a FILETIME to QDateTime
+ * @param time the time to convert
+ * @param timeZone timezone to use, i.e. QTimeZone::systemTimeZone(), QTimeZone::utc()
+ */
+QDLLEXPORT QDateTime fileTimeToQDateTime(const FILETIME& time,
+                                         const QTimeZone& timeZone = QTimeZone::utc());
+
 // three-way compare for natural sorting (case insensitive default, 10 comes
 // after 2)
 //

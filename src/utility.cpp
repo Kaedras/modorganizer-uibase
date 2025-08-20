@@ -302,6 +302,18 @@ QString ToString(const SYSTEMTIME& time)
   return dt.toString(QLocale::system().dateFormat());
 }
 
+QDateTime fileTimeToQDateTime(const FILETIME& time, const QTimeZone& timeZone)
+{
+  static constexpr int64_t WINDOWS_TICK      = 10'000'000;
+  static constexpr int64_t SEC_TO_UNIX_EPOCH = 11'644'473'600;
+
+  int64_t timeInt =
+      static_cast<int64_t>(time.dwHighDateTime) << 32 | time.dwLowDateTime;
+  time_t unixTime = timeInt / WINDOWS_TICK - SEC_TO_UNIX_EPOCH;
+
+  return QDateTime::fromSecsSinceEpoch(unixTime, timeZone);
+}
+
 static int naturalCompareI(const QString& a, const QString& b)
 {
   static QCollator c = [] {
