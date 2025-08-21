@@ -73,7 +73,8 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
       }
 
       QMessageBox msg;
-      msg.setText(QStringLiteral("File '%1' already exists").arg(dst.string()));
+      msg.setText(QStringLiteral("File '%1' already exists")
+                      .arg(QString::fromStdString(dst.string())));
       msg.setInformativeText(
           QStringLiteral(
               "Would you like to overwrite it?\nSource size: %1, destination size: %2")
