@@ -237,6 +237,9 @@ target_link_libraries(uibase
 	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick vdf-parser ${os_specific_private_deps})
 
 target_include_directories(uibase PRIVATE ${os_specific_private_include_dirs})
+# add inipp.h
+find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
+target_include_directories(uibase PRIVATE ${INIPP_INCLUDE_DIRS})
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)

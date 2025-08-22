@@ -19,56 +19,87 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "log.h"
 #include "report.h"
 #include <QApplication>
-#include <QList>
 #include <QMessageBox>
 #include <QString>
+#include <fstream>
+#include <inipp.h>
+#ifdef __unix__
+#include <linux/compatibility.h>
+#endif
 
-namespace MOBase
+namespace
 {
 
-// helper function that mirrors the behaviour of WritePrivateProfileString
-bool SetValue(const QString& appName, const QString& keyName, const QString& value,
-              QSettings& ini)
+template <typename T, typename... ValidTypes>
+constexpr bool is_one_of()
 {
-  if (keyName.isEmpty()) {
-    // remove section if key is empty
-    ini.remove(appName);
-  } else if (value.isEmpty()) {
-    // remove key if value is empty
-    ini.remove(keyName);
+  return (std::is_same_v<T, ValidTypes> || ...);
+}
+
+// helper function that mirrors the behaviour of WritePrivateProfileString as described
+// in
+// https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-writeprivateprofilestringw
+template <typename CharT, typename T2, typename T3>
+bool SetValue(const CharT* appName, T2 keyName, T3 value,
+              const std::filesystem::path& fileName)
+{
+  // check types
+  static_assert(is_one_of<CharT, char, wchar_t>(),
+                "appName must be const char* or const wchar_t*");
+  static_assert(is_one_of<T2, const char*, const wchar_t*, std::nullptr_t>(),
+                "keyName must be const char*, const wchar_t*, or nullptr_t");
+  static_assert(is_one_of<T3, const char*, const wchar_t*, std::nullptr_t>(),
+                "value must be const char*, const wchar_t*, or nullptr_t");
+
+  using InStream =
+      std::conditional_t<std::is_same_v<CharT, char>, std::ifstream, std::wifstream>;
+  using OutStream =
+      std::conditional_t<std::is_same_v<CharT, char>, std::ofstream, std::wofstream>;
+
+  inipp::Ini<CharT> ini;
+  InStream in(fileName);
+  if (!in.is_open()) {
+    return false;
+  }
+  ini.parse(in);
+  in.close();
+
+  if constexpr (std::is_same_v<T2, std::nullptr_t>) {
+    // remove section if key is nullptr
+    ini.sections.erase(appName);
+  } else if constexpr (std::is_same_v<T3, std::nullptr_t>) {
+    // remove key if value is nullptr
+    ini.sections[appName].erase(keyName);
   } else {
-    ini.setValue(appName % '/' % keyName, value);
+    ini.sections[appName][keyName] = value;
   }
 
-  ini.sync();
-  return ini.status() == QSettings::NoError;
+  OutStream out(fileName);
+  if (!out.is_open()) {
+    return false;
+  }
+  ini.generate(out);
+  return ini.errors.empty();
 }
 
-bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
-                        const wchar_t* value, const wchar_t* fileName)
+template <typename CharT, typename T2, typename T3>
+bool WriteValue(const CharT* appName, T2 keyName, T3 value,
+                const std::filesystem::path& fileName)
 {
-  return WriteRegistryValue(
-      QString::fromWCharArray(appName), QString::fromWCharArray(keyName),
-      QString::fromWCharArray(value), QString::fromWCharArray(fileName));
-}
+  // check types
+  static_assert(is_one_of<CharT, char, wchar_t>(),
+                "appName must be const char* or const wchar_t*");
+  static_assert(is_one_of<T2, const char*, const wchar_t*, std::nullptr_t>(),
+                "keyName must be const char*, const wchar_t*, or nullptr_t");
+  static_assert(is_one_of<T3, const char*, const wchar_t*, std::nullptr_t>(),
+                "value must be const char*, const wchar_t*, or nullptr_t");
 
-bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
-                        const char* fileName)
-{
-  return WriteRegistryValue(
-      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
-      QString::fromLocal8Bit(value), QString::fromLocal8Bit(fileName));
-}
-
-bool WriteRegistryValue(const QString& appName, const QString& keyName,
-                        const QString& value, const QString& fileName)
-{
-  QSettings settings(fileName, QSettings::Format::IniFormat);
   bool success = true;
 
-  if (!SetValue(appName, keyName, value, settings)) {
-    success = false;
-    if (settings.status() == QSettings::AccessError) {
+  if (!SetValue(appName, keyName, value, fileName)) {
+    const int error = errno;
+    success         = false;
+    if (error == ERROR_ACCESS_DENIED) {
 #ifdef _WIN32
       // On NTFS file systems, ownership and permissions checking is disabled by default
       // for performance reasons. source:
@@ -84,21 +115,21 @@ bool WriteRegistryValue(const QString& appName, const QString& keyName,
                 .main(QObject::tr("INI file is read-only"))
                 .content(QObject::tr("Mod Organizer is attempting to write to \"%1\" "
                                      "which is currently set to read-only.")
-                             .arg(fileName))
+                             .arg(file.fileName()))
                 .icon(QMessageBox::Warning)
                 .button({QObject::tr("Clear the read-only flag"), QMessageBox::Yes})
                 .button({QObject::tr("Allow the write once"),
                          QObject::tr("The file will be set to read-only again."),
                          QMessageBox::Ignore})
                 .button({QObject::tr("Skip this file"), QMessageBox::No})
-                .remember("clearReadOnly", fileName)
+                .remember("clearReadOnly", file.fileName())
                 .exec();
 
         // clear the read-only flag if requested
         if (result & (QMessageBox::Yes | QMessageBox::Ignore)) {
           attrs |= QFile::Permission::WriteUser;
           if (file.setPermissions(attrs)) {
-            if (SetValue(appName, keyName, value, settings)) {
+            if (SetValue(appName, keyName, value, fileName)) {
               success = true;
             }
           }
@@ -114,6 +145,23 @@ bool WriteRegistryValue(const QString& appName, const QString& keyName,
   }
 
   return success;
+}
+
+}  // namespace
+
+namespace MOBase
+{
+
+bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
+                        const wchar_t* value, const wchar_t* fileName)
+{
+  return WriteValue(appName, keyName, value, std::filesystem::path(fileName));
+}
+
+bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
+                        const char* fileName)
+{
+  return WriteValue(appName, keyName, value, std::filesystem::path(fileName));
 }
 
 }  // namespace MOBase

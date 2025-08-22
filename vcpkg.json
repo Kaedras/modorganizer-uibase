@@ -1,5 +1,5 @@
 {
-  "dependencies": ["spdlog", "vdf-parser"],
+  "dependencies": ["inipp", "spdlog", "vdf-parser"],
   "overrides": [
     {
       "name": "spdlog",
