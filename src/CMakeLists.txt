@@ -8,7 +8,6 @@ if (UNIX)
 	set(os_name linux)
 
 	set(os_specific_private_deps Qt::DBus)
-	set(os_specific_private_include_dirs)
 
 	set(os_specific_headers
 			../include/uibase/linux/compatibility.h
@@ -22,7 +21,6 @@ else()
 	set(os_name win32)
 
 	set(os_specific_private_deps Version)
-	set(os_specific_private_include_dirs)
 
 	set(os_specific_headers)
 	set(os_specific_sources)
@@ -236,7 +234,6 @@ target_link_libraries(uibase
 	PUBLIC Qt6::Widgets Qt6::Network Qt6::QuickWidgets
 	PRIVATE spdlog::spdlog_header_only Qt6::Qml Qt6::Quick vdf-parser ${os_specific_private_deps})
 
-target_include_directories(uibase PRIVATE ${os_specific_private_include_dirs})
 # add inipp.h
 find_path(INIPP_INCLUDE_DIRS "inipp.h" REQUIRED)
 target_include_directories(uibase PRIVATE ${INIPP_INCLUDE_DIRS})
