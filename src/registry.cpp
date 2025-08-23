@@ -51,11 +51,14 @@ bool SetValue(const CharT* appName, T2 keyName, T3 value,
   static_assert(is_one_of<T3, const char*, const wchar_t*, std::nullptr_t>(),
                 "value must be const char*, const wchar_t*, or nullptr_t");
 
+  // use ifstream/ofstream when CharT is char and wifstream/wofstream when CharT is
+  // wchar_t
   using InStream =
       std::conditional_t<std::is_same_v<CharT, char>, std::ifstream, std::wifstream>;
   using OutStream =
       std::conditional_t<std::is_same_v<CharT, char>, std::ofstream, std::wofstream>;
 
+  // read ini file
   inipp::Ini<CharT> ini;
   InStream in(fileName);
   if (!in.is_open()) {
@@ -74,6 +77,7 @@ bool SetValue(const CharT* appName, T2 keyName, T3 value,
     ini.sections[appName][keyName] = value;
   }
 
+  // write the modified ini file
   OutStream out(fileName);
   if (!out.is_open()) {
     return false;
