@@ -39,17 +39,13 @@ constexpr bool is_one_of()
 // helper function that mirrors the behaviour of WritePrivateProfileString as described
 // in
 // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-writeprivateprofilestringw
-template <typename CharT, typename T2, typename T3>
-bool SetValue(const CharT* appName, T2 keyName, T3 value,
+template <typename CharT>
+bool SetValue(const CharT* appName, const CharT* keyName, const CharT* value,
               const std::filesystem::path& fileName)
 {
   // check types
   static_assert(is_one_of<CharT, char, wchar_t>(),
-                "appName must be const char* or const wchar_t*");
-  static_assert(is_one_of<T2, const char*, const wchar_t*, std::nullptr_t>(),
-                "keyName must be const char*, const wchar_t*, or nullptr_t");
-  static_assert(is_one_of<T3, const char*, const wchar_t*, std::nullptr_t>(),
-                "value must be const char*, const wchar_t*, or nullptr_t");
+                "template parameter must be char or wchar_t");
 
   // use ifstream/ofstream when CharT is char and wifstream/wofstream when CharT is
   // wchar_t
@@ -67,10 +63,10 @@ bool SetValue(const CharT* appName, T2 keyName, T3 value,
   ini.parse(in);
   in.close();
 
-  if constexpr (std::is_same_v<T2, std::nullptr_t>) {
+  if (keyName == nullptr) {
     // remove section if key is nullptr
     ini.sections.erase(appName);
-  } else if constexpr (std::is_same_v<T3, std::nullptr_t>) {
+  } else if (value == nullptr) {
     // remove key if value is nullptr
     ini.sections[appName].erase(keyName);
   } else {
