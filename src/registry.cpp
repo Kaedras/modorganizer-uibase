@@ -97,7 +97,7 @@ bool WriteValue(const CharT* appName, T2 keyName, T3 value,
   bool success = true;
 
   if (!SetValue(appName, keyName, value, fileName)) {
-    const int error = errno;
+    const int error = GetLastError();
     success         = false;
     if (error == ERROR_ACCESS_DENIED) {
 #ifdef _WIN32
