@@ -29,6 +29,16 @@ QDLLEXPORT bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyNam
 QDLLEXPORT bool WriteRegistryValue(const char* appName, const char* keyName,
                                    const char* value, const char* fileName);
 
+QDLLEXPORT std::optional<std::wstring> ReadRegistryValue(const wchar_t* appName,
+                                                         const wchar_t* keyName,
+                                                         const wchar_t* defaultValue,
+                                                         const wchar_t* fileName);
+
+QDLLEXPORT std::optional<std::string> ReadRegistryValue(const char* appName,
+                                                        const char* keyName,
+                                                        const char* defaultValue,
+                                                        const char* fileName);
+
 }  // namespace MOBase
 
 #endif  // REGISTRY_H

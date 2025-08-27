@@ -82,6 +82,65 @@ bool SetValue(const CharT* appName, const CharT* keyName, const CharT* value,
   return ini.errors.empty();
 }
 
+template <typename CharT>
+std::optional<std::basic_string<CharT>>
+GetValue(const CharT* appName, const CharT* keyName, const CharT* defaultValue,
+         const std::filesystem::path& fileName)
+{
+  // check types
+  static_assert(is_one_of<CharT, char, wchar_t>());
+
+  using InStream =
+      std::conditional_t<std::is_same_v<CharT, char>, std::ifstream, std::wifstream>;
+  using String = std::basic_string<CharT>;
+  CharT newline;
+  if constexpr (std::is_same_v<CharT, char>) {
+    newline = '\n';
+  } else {
+    newline = L'\n';
+  }
+
+  // read ini file
+  inipp::Ini<CharT> ini;
+  {
+    InStream in(fileName);
+    if (!in.is_open()) {
+      return {};
+    }
+    ini.parse(in);
+  }
+
+  if (appName == nullptr) {
+    // return all section names in the file
+    String result;
+    for (const auto& section : ini.sections) {
+      result.append(section.first);
+      result += newline;
+    }
+    result.pop_back();
+    return result;
+  }
+  if (keyName == nullptr) {
+    // return all key names in the section specified by the appName parameter
+    String result;
+    if (!ini.sections.contains(appName)) {
+      return result;
+    }
+    for (const auto& key : ini.sections[appName]) {
+      result.append(key.first);
+      result += newline;
+    }
+    result.pop_back();
+    return result;
+  }
+
+  try {
+    return ini.sections.at(appName).at(keyName);
+  } catch (...) {
+    return defaultValue;
+  }
+}
+
 template <typename CharT, typename T2, typename T3>
 bool WriteValue(const CharT* appName, T2 keyName, T3 value,
                 const std::filesystem::path& fileName)
@@ -162,6 +221,21 @@ bool WriteRegistryValue(const char* appName, const char* keyName, const char* va
                         const char* fileName)
 {
   return WriteValue(appName, keyName, value, std::filesystem::path(fileName));
+}
+
+std::optional<std::wstring> ReadRegistryValue(const wchar_t* appName,
+                                              const wchar_t* keyName,
+                                              const wchar_t* defaultValue,
+                                              const wchar_t* fileName)
+{
+  return GetValue(appName, keyName, defaultValue, fileName);
+}
+
+std::optional<std::string> ReadRegistryValue(const char* appName, const char* keyName,
+                                             const char* defaultValue,
+                                             const char* fileName)
+{
+  return GetValue(appName, keyName, defaultValue, fileName);
 }
 
 }  // namespace MOBase
