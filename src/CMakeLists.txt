@@ -16,6 +16,7 @@ if (UNIX)
 	)
 	set(os_specific_sources
 			linux/fdcloser.cpp
+			linux/registry_linux.cpp
 	)
 else()
 	set(os_name win32)
