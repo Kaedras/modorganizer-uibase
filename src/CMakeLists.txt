@@ -13,7 +13,6 @@ if (UNIX)
 	set(os_specific_headers
 			../include/uibase/linux/compatibility.h
 			../include/uibase/linux/fdcloser.h
-			../include/uibase/linux/stub.h
 	)
 	set(os_specific_sources
 			linux/fdcloser.cpp
