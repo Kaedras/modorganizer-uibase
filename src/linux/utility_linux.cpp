@@ -1,13 +1,14 @@
 #include "utility.h"
 
 #include "../pch.h"
-#include "linux/stub.h"
+#include <LIEF/PE.hpp>
 #include <QApplication>
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDesktopServices>
 #include <QDir>
 #include <QStringList>
+#include <QTemporaryDir>
 #include <cerrno>
 #include <fcntl.h>
 #include <format>
@@ -22,6 +23,40 @@ extern "C"
 using namespace std;
 using namespace Qt::Literals::StringLiterals;
 namespace fs = std::filesystem;
+
+namespace
+{
+
+QString getFileInfo(const QString& filepath, const std::u16string& key)
+{
+  std::unique_ptr<LIEF::PE::Binary> pe =
+      LIEF::PE::Parser::parse(filepath.toStdString());
+  if (!pe || !pe->has_resources()) {
+    MOBase::log::debug("No resources found in PE file");
+    return "";
+  }
+
+  auto resources = pe->resources_manager();
+
+  if (!resources->has_version()) {
+    MOBase::log::debug("No version info found");
+    return "";
+  }
+
+  const auto& version = resources->version();
+  if (version->has_string_file_info()) {
+    const auto& items = version->string_file_info()->langcode_items();
+    for (const auto& item : items) {
+      if (item.items().contains(key)) {
+        return QString::fromStdU16String(item.items().at(key)).trimmed();
+      }
+    }
+  }
+  MOBase::log::debug("Could not find version info");
+  return "";
+}
+
+}  // namespace
 
 namespace MOBase
 {
@@ -462,25 +497,58 @@ namespace shell
 
 QIcon iconForExecutable(const QString& filePath)
 {
-#warning "STUB"
-  (void)filePath;
-  STUB();
-  return QIcon(u":/MO/gui/executable"_s);
+  // create temporary directory
+  QTemporaryDir tmpDir;
+  if (!tmpDir.isValid()) {
+    log::debug("Error creating temp directory for icon extraction: {}",
+               tmpDir.errorString());
+    return QIcon(u":/MO/gui/executable"_s);
+  }
+
+  std::unique_ptr<LIEF::PE::Binary> pe =
+      LIEF::PE::Parser::parse(filePath.toStdString());
+  auto rs = pe->resources_manager();
+
+  if (!rs.has_value() || !rs->has_icons()) {
+    log::debug("no icons found in pe file");
+    return QIcon(u":/MO/gui/executable"_s);
+  }
+
+  auto icons = rs->icons();
+  if (icons.empty()) {
+    log::debug("no icons found in pe file");
+    return QIcon(u":/MO/gui/executable"_s);
+  }
+
+  // get largest icon
+  LIEF::PE::ResourceIcon largestIcon;
+  for (const auto& icon : icons) {
+    // width() sometimes returns 0 on the highest resolution icon for some reason
+    if (icon.width() == 0) {
+      largestIcon = icon;
+      break;
+    }
+    if (icon.size() > largestIcon.size()) {
+      largestIcon = icon;
+    }
+  }
+
+  // it would be better to directly access the icon using largestIcon.pixels(),
+  // but saving and reading it from a temporary directory is easier
+  auto iconPath = tmpDir.path().toStdString() + "/icon.png";
+  largestIcon.save(iconPath);
+
+  return QIcon(QString::fromStdString(iconPath));
 }
+
 QString getFileVersion(QString const& filepath)
 {
-#warning "STUB"
-  (void)filepath;
-  STUB();
-  return "";
+  return getFileInfo(filepath, u"FileVersion");
 }
 
 QString getProductVersion(QString const& filepath)
 {
-#warning "STUB"
-  (void)filepath;
-  STUB();
-  return "";
+  return getFileInfo(filepath, u"ProductVersion");
 }
 
 std::string formatSystemMessage(int id)

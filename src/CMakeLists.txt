@@ -7,7 +7,8 @@ find_package(vdf-parser CONFIG REQUIRED)
 if (UNIX)
 	set(os_name linux)
 
-	set(os_specific_private_deps Qt::DBus)
+	find_package(LIEF REQUIRED COMPONENTS STATIC)
+	set(os_specific_private_deps Qt::DBus LIEF::LIEF)
 
 	set(os_specific_headers
 			../include/uibase/linux/compatibility.h
