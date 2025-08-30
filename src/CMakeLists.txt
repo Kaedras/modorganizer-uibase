@@ -7,6 +7,14 @@ find_package(vdf-parser CONFIG REQUIRED)
 if (UNIX)
 	set(os_name linux)
 
+	include(FetchContent)
+	FetchContent_Declare(LIEF
+			GIT_REPOSITORY  "https://github.com/lief-project/LIEF.git"
+			GIT_TAG         0.16.6
+			FIND_PACKAGE_ARGS
+	)
+	FetchContent_MakeAvailable(LIEF)
+
 	find_package(LIEF REQUIRED COMPONENTS STATIC)
 	set(os_specific_private_deps Qt::DBus LIEF::LIEF)
 
