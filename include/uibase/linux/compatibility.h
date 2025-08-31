@@ -10,6 +10,12 @@ extern "C"
 #include <sys/pidfd.h>
 }
 
+// constants
+
+#ifndef MAX_PATH
+#define MAX_PATH 260
+#endif
+
 // windows types
 
 using WORD    = uint16_t;
@@ -17,6 +23,7 @@ using DWORD   = uint32_t;
 using LPDWORD = uint32_t*;
 using HANDLE  = int;
 using LPCWSTR = const wchar_t*;
+using WCHAR   = wchar_t;
 
 // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2fefe8dd-ab48-4e33-a7d5-7171455a9289
 typedef struct _SYSTEMTIME
