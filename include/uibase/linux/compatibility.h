@@ -18,12 +18,16 @@ extern "C"
 
 // windows types
 
-using WORD    = uint16_t;
-using DWORD   = uint32_t;
-using LPDWORD = uint32_t*;
-using HANDLE  = int;
-using LPCWSTR = const wchar_t*;
-using WCHAR   = wchar_t;
+using BYTE             = uint8_t;
+using UINT             = unsigned int;
+using WORD             = uint16_t;
+using DWORD            = uint32_t;
+using LPDWORD          = uint32_t*;
+using HANDLE           = int;
+using HKEY             = int;
+using LPCWSTR          = const wchar_t*;
+using WCHAR            = wchar_t;
+using REFKNOWNFOLDERID = int;
 
 // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/2fefe8dd-ab48-4e33-a7d5-7171455a9289
 typedef struct _SYSTEMTIME
