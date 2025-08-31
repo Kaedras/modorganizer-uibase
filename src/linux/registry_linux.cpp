@@ -170,10 +170,98 @@ bool WritePrivateProfileString(const CharT* section, const CharT* key,
   return ini.errors.empty();
 }
 
+template <typename CharT>
+bool WritePrivateProfileSection(const CharT* section, const CharT* data,
+                                const std::filesystem::path& filename)
+{
+  static_assert(is_one_of<CharT, char, wchar_t>(),
+                "template parameter must be char or wchar_t");
+
+  using InStream =
+      std::conditional_t<std::is_same_v<CharT, char>, std::ifstream, std::wifstream>;
+  using OutStream =
+      std::conditional_t<std::is_same_v<CharT, char>, std::ofstream, std::wofstream>;
+
+  errno = 0;
+
+  if (!section) {
+    errno = EINVAL;
+    return false;
+  }
+
+  std::locale loc(setlocale(LC_ALL, ""));
+
+  inipp::Ini<CharT> ini;
+
+  InStream in(filename);
+  in.imbue(loc);
+  if (in.is_open()) {
+    ini.parse(in);
+    if (!ini.errors.empty()) {
+      errno = EIO;
+      return false;
+    }
+  }
+  in.close();
+
+  // remove all existing keys in section
+  ini.sections.erase(section);
+
+  if (data == nullptr) {
+    // create new section
+    ini.sections[section];
+  } else {
+    // create all keys
+    size_t pos = 0;
+    std::basic_string<CharT> line;
+    while (true) {
+      line = data + pos;
+
+      auto equalSignPos = line.find('=');
+      if (equalSignPos == std::wstring::npos) {
+        std::cerr << "'=' not found" << std::endl;
+        return false;
+      }
+      std::basic_string<CharT> key   = line.substr(0, equalSignPos);
+      std::basic_string<CharT> value = line.substr(equalSignPos + 1);
+      ini.sections[section][key]     = value;
+
+      pos += line.size() + 1;
+      if (data[pos + 1] == 0) {
+        break;
+      }
+    }
+  }
+
+  OutStream out(filename);
+  out.imbue(loc);
+
+  if (!out.is_open()) {
+    errno = EIO;
+    return false;
+  }
+
+  ini.generate(out);
+  out.close();
+  return ini.errors.empty();
+}
+
 }  // namespace
 
 namespace MOBase
 {
+
+bool WritePrivateProfileSectionA(const char* lpAppName, const char* lpString,
+                                 const char* lpFileName)
+{
+  return WritePrivateProfileSection(lpAppName, lpString, lpFileName);
+}
+
+bool WritePrivateProfileSectionW(const wchar_t* lpAppName, const wchar_t* lpString,
+                                 const wchar_t* lpFileName)
+{
+  return WritePrivateProfileSection(lpAppName, lpString, lpFileName);
+}
 
 bool WritePrivateProfileStringW(const wchar_t* appName, const wchar_t* keyName,
                                 const wchar_t* string, const wchar_t* fileName)

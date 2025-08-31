@@ -62,6 +62,13 @@ QDLLEXPORT bool WritePrivateProfileStringW(const wchar_t* lpAppName,
                                            const wchar_t* lpString,
                                            const wchar_t* lpFileName);
 
+QDLLEXPORT bool WritePrivateProfileSectionA(const char* lpAppName, const char* lpString,
+                                            const char* lpFileName);
+
+QDLLEXPORT bool WritePrivateProfileSectionW(const wchar_t* lpAppName,
+                                            const wchar_t* lpString,
+                                            const wchar_t* lpFileName);
+
 #endif
 
 }  // namespace MOBase
