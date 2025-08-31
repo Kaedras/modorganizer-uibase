@@ -1,5 +1,13 @@
 {
-  "dependencies": ["inipp", "spdlog", "vdf-parser"],
+  "dependencies": [
+    "inipp",
+    "spdlog",
+    "vdf-parser",
+    {
+      "name": "lief",
+      "platform": "linux"
+    }
+  ],
   "overrides": [
     {
       "name": "spdlog",
@@ -26,8 +34,8 @@
       {
         "kind": "git",
         "repository": "https://github.com/Kaedras/vcpkg-registry",
-        "baseline": "8a99066c3827712a688c731a0d9bea1266f30939",
-        "packages": ["mo2-cmake", "spdlog", "vdf-parser"]
+        "baseline": "9b8391ef15a34e2f58ee323649e80724187c803d",
+        "packages": ["mo2-cmake", "spdlog", "vdf-parser", "lief"]
       }
     ]
   }
