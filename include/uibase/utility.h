@@ -407,6 +407,16 @@ QDLLEXPORT QString ToQString(const std::string& source);
 QDLLEXPORT QString ToQString(const std::wstring& source);
 
 /**
+ * @brief convert const wchar_t* to QString (assuming the string to be utf-16 encoded)
+ **/
+QDLLEXPORT QString ToQString(const wchar_t* source);
+
+/**
+ * @brief convert const char* to QString (assuming the wstring to be utf-8 encoded)
+ **/
+QDLLEXPORT QString ToQString(const char* source);
+
+/**
  * @brief convert a systemtime object to a string containing date and time in local
  *representation
  *

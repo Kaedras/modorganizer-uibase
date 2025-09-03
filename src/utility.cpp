@@ -292,6 +292,16 @@ QString ToQString(const std::wstring& source)
   return QString::fromStdWString(source);
 }
 
+QString ToQString(const wchar_t* source)
+{
+  return QString::fromWCharArray(source);
+}
+
+QString ToQString(const char* source)
+{
+  return QString::fromUtf8(source);
+}
+
 QString ToString(const SYSTEMTIME& time)
 {
   QDate d(time.wYear, time.wMonth, time.wDay);
