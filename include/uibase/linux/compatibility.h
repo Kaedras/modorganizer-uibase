@@ -10,6 +10,8 @@ extern "C"
 #include <sys/pidfd.h>
 }
 
+#define __FUNCSIG__ __PRETTY_FUNCTION__
+
 // constants
 
 #ifndef MAX_PATH

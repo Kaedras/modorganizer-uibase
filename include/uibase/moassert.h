@@ -3,6 +3,10 @@
 
 #include "log.h"
 
+#ifdef __unix__
+#include <linux/compatibility.h>
+#endif
+
 namespace MOBase
 {
 
