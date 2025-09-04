@@ -18,6 +18,11 @@ extern "C"
 #define MAX_PATH 260
 #endif
 
+static constexpr uint32_t WAIT_ABANDONED = 0x00000080L;
+static constexpr uint32_t WAIT_OBJECT_0  = 0x00000000L;
+static constexpr uint32_t WAIT_TIMEOUT   = 0x00000102L;
+static constexpr uint32_t WAIT_FAILED    = 0xFFFFFFFF;
+
 // windows types
 
 using BYTE             = uint8_t;
@@ -62,7 +67,7 @@ static inline constexpr int INVALID_HANDLE_VALUE = -1;
 #define ERROR_BAD_ARGUMENTS EINVAL
 #define ERROR_CANCELLED ECANCELED
 
-// windows function wrappers
+// windows functions
 
 inline int GetLastError()
 {
@@ -108,17 +113,17 @@ inline int NtClose(HANDLE fd)
   return close(fd);
 }
 
-/* Poll the file descriptors. If TIMEOUT is nonzero and not -1, allow TIMEOUT
-
- * milliseconds for an event to occur; if TIMEOUT is -1, block until an event occurs.
-
- * Returns the number of file descriptors with events, zero if timed out,
-   or -1 for
- * errors. */
-inline int WaitForSingleObject(HANDLE fd, int timeout)
+inline uint32_t WaitForSingleObject(HANDLE fd, int timeout)
 {
   pollfd pfd = {fd, POLLIN, 0};
-  return poll(&pfd, 1, timeout);
+  int result = poll(&pfd, 1, timeout);
+  if (result == 1) {
+    return WAIT_OBJECT_0;
+  }
+  if (result == 0) {
+    return WAIT_TIMEOUT;
+  }
+  return WAIT_FAILED;
 }
 
 template <typename... Params>
