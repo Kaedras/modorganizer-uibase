@@ -38,6 +38,7 @@ QDLLEXPORT std::optional<std::string> ReadRegistryValue(const char* appName,
                                                         const char* keyName,
                                                         const char* defaultValue,
                                                         const char* fileName);
+}  // namespace MOBase
 
 #ifdef __unix__
 
@@ -78,7 +79,5 @@ QDLLEXPORT bool WritePrivateProfileSectionW(const wchar_t* lpAppName,
                                             const wchar_t* lpFileName);
 
 #endif
-
-}  // namespace MOBase
 
 #endif  // REGISTRY_H

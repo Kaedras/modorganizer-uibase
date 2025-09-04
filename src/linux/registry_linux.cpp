@@ -257,9 +257,6 @@ bool WritePrivateProfileSection(const CharT* section, const CharT* data,
 
 }  // namespace
 
-namespace MOBase
-{
-
 bool WritePrivateProfileSectionA(const char* lpAppName, const char* lpString,
                                  const char* lpFileName)
 {
@@ -311,5 +308,3 @@ uint32_t GetPrivateProfileSectionNamesW(wchar_t* lpszReturnBuffer, uint32_t nSiz
 {
   return GetPrivateProfileSectionNames(lpszReturnBuffer, nSize, lpFileName);
 }
-
-}  // namespace MOBase
