@@ -41,6 +41,14 @@ QDLLEXPORT std::optional<std::string> ReadRegistryValue(const char* appName,
 
 #ifdef __unix__
 
+QDLLEXPORT uint32_t GetPrivateProfileSectionNamesA(char* lpszReturnBuffer,
+                                                   uint32_t nSize,
+                                                   const char* lpFileName);
+
+QDLLEXPORT uint32_t GetPrivateProfileSectionNamesW(wchar_t* lpszReturnBuffer,
+                                                   uint32_t nSize,
+                                                   const wchar_t* lpFileName);
+
 QDLLEXPORT uint32_t GetPrivateProfileStringA(const char* lpAppName,
                                              const char* lpKeyName,
                                              const char* lpDefault,

@@ -113,6 +113,15 @@ uint32_t GetPrivateProfileString(const CharT* section, const CharT* key,
 }
 
 template <typename CharT>
+uint32_t GetPrivateProfileSectionNames(CharT* buffer, uint32_t bufferSize,
+                                       const std::filesystem::path& path)
+{
+  return GetPrivateProfileString(
+      static_cast<const CharT*>(nullptr), static_cast<const CharT*>(nullptr),
+      static_cast<const CharT*>(nullptr), buffer, bufferSize, path);
+}
+
+template <typename CharT>
 bool WritePrivateProfileString(const CharT* section, const CharT* key,
                                const CharT* value,
                                const std::filesystem::path& filename)
@@ -289,6 +298,18 @@ uint32_t GetPrivateProfileStringA(const char* appName, const char* keyName,
 {
   return GetPrivateProfileString(appName, keyName, defaultString, returnedString, size,
                                  fileName);
+}
+
+uint32_t GetPrivateProfileSectionNamesA(char* lpszReturnBuffer, uint32_t nSize,
+                                        const char* lpFileName)
+{
+  return GetPrivateProfileSectionNames(lpszReturnBuffer, nSize, lpFileName);
+}
+
+uint32_t GetPrivateProfileSectionNamesW(wchar_t* lpszReturnBuffer, uint32_t nSize,
+                                        const wchar_t* lpFileName)
+{
+  return GetPrivateProfileSectionNames(lpszReturnBuffer, nSize, lpFileName);
 }
 
 }  // namespace MOBase
