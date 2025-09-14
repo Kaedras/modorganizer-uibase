@@ -22,16 +22,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IFILETREE_H
 
 #include <atomic>
-#include <generator>
 #include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
 #include <vector>
-#include <version>
 
-#include <QDateTime>
 #include <QFlags>
 #include <QList>
 #include <QString>
