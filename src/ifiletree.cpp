@@ -1,6 +1,7 @@
 #include "ifiletree.h"
 
 #include <algorithm>
+#include <generator>
 #include <ranges>
 #include <span>
 #include <stack>
