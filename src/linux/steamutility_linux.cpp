@@ -17,22 +17,14 @@ QString findSteam()
 {
   QString home = QDir::homePath();
 
-  // try ~/.local/share/Steam
-  QString steam = home % u"/.local/share/Steam"_s;
-  if (QFile::exists(steam)) {
-    return steam;
-  }
+  static const QStringList paths = {
+      home % "/.local/share/Steam"_L1, home % "/.steam/steam"_L1,
+      home % "/.var/app/com.valvesoftware.Steam/.local/share/Steam"_L1};
 
-  // try ~/.steam/steam
-  steam = home % u"/.steam/steam"_s;
-  if (QFile::exists(steam)) {
-    return steam;
-  }
-
-  // try flatpak
-  steam = home % u"/.var/app/com.valvesoftware.Steam/.local/share/Steam"_s;
-  if (QFile::exists(steam)) {
-    return steam;
+  for (const auto& path : paths) {
+    if (QFile::exists(path)) {
+      return path;
+    }
   }
 
   return "";
