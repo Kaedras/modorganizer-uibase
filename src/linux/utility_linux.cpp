@@ -497,7 +497,13 @@ namespace shell
 
 QIcon iconForExecutable(const QString& filePath)
 {
-  // create temporary directory
+  if (!QFileInfo::exists(filePath)) {
+    log::debug("cannot extract icon from file '{}' because it does not exist",
+               filePath);
+    return QIcon(u":/MO/gui/executable"_s);
+  }
+
+  // create a temporary directory
   QTemporaryDir tmpDir;
   if (!tmpDir.isValid()) {
     log::debug("Error creating temp directory for icon extraction: {}",
