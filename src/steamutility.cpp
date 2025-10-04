@@ -79,7 +79,7 @@ QString findSteamGame(const QString& appName, const QString& validFile)
   // Search the Steam libraries for the game directory
   for (auto library : libraryFolders) {
     QDir libraryDir(library);
-    if (!libraryDir.cd("steamapps\\common\\" + appName))
+    if (!libraryDir.cd("steamapps/common/" + appName))
       continue;
     if (validFile.isEmpty() || libraryDir.exists(validFile))
       return libraryDir.absolutePath();
