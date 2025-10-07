@@ -7,16 +7,18 @@ find_package(vdf-parser CONFIG REQUIRED)
 if (UNIX)
 	set(os_name linux)
 
-	find_package(LIEF REQUIRED COMPONENTS STATIC)
-	set(os_specific_private_deps Qt::DBus LIEF::LIEF)
+	set(os_specific_private_deps Qt::DBus)
 
 	set(os_specific_headers
 			../include/uibase/linux/compatibility.h
 			../include/uibase/linux/fdcloser.h
+			../include/uibase/linux/petypes.h
+			../include/uibase/linux/peextractor.h
 	)
 	set(os_specific_sources
 			linux/fdcloser.cpp
 			linux/registry_linux.cpp
+			linux/peextractor.cpp
 	)
 else()
 	set(os_name win32)

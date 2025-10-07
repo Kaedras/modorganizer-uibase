@@ -1,7 +1,8 @@
 #include "utility.h"
 
 #include "../pch.h"
-#include <LIEF/PE.hpp>
+#include "linux/peextractor.h"
+
 #include <QApplication>
 #include <QDBusInterface>
 #include <QDBusMessage>
@@ -27,33 +28,39 @@ namespace fs = std::filesystem;
 namespace
 {
 
-QString getFileInfo(const QString& filepath, const std::u16string& key)
+enum version_t : uint8_t
 {
-  std::unique_ptr<LIEF::PE::Binary> pe =
-      LIEF::PE::Parser::parse(filepath.toStdString());
-  if (!pe || !pe->has_resources()) {
-    MOBase::log::debug("No resources found in PE file");
-    return "";
+  fileversion,
+  productversion
+};
+
+QString getFileVersionInfo(QString const& filepath, version_t type)
+{
+  QFile exeFile(filepath);
+  QBuffer buffer;
+
+  if (!exeFile.open(QIODeviceBase::ReadOnly) ||
+      !buffer.open(QIODeviceBase::ReadWrite)) {
+    return {};
   }
 
-  auto resources = pe->resources_manager();
-
-  if (!resources->has_version()) {
-    MOBase::log::debug("No version info found");
-    return "";
+  if (!PeExtractor::loadVersionData(&exeFile, &buffer)) {
+    return {};
   }
 
-  const auto& version = resources->version();
-  if (version->has_string_file_info()) {
-    const auto& items = version->string_file_info()->langcode_items();
-    for (const auto& item : items) {
-      if (item.items().contains(key)) {
-        return QString::fromStdU16String(item.items().at(key)).trimmed();
-      }
-    }
+  QString fileVersion, productVersion;
+
+  buffer.seek(0);
+  QDataStream stream(&buffer);
+  stream >> fileVersion >> productVersion;
+
+  switch (type) {
+  case fileversion:
+    return fileVersion;
+  case productversion:
+    return productVersion;
   }
-  MOBase::log::debug("Could not find version info");
-  return "";
+  return {};
 }
 
 }  // namespace
@@ -494,67 +501,36 @@ namespace shell
   }
 
 }  // namespace shell
-
-QIcon iconForExecutable(const QString& filePath)
+QIcon iconForExecutable(const QString& filepath)
 {
-  if (!QFileInfo::exists(filePath)) {
-    log::debug("cannot extract icon from file '{}' because it does not exist",
-               filePath);
-    return QIcon(u":/MO/gui/executable"_s);
+  QFile exeFile(filepath);
+  QBuffer buffer;
+
+  if (!exeFile.open(QIODeviceBase::ReadOnly) ||
+      !buffer.open(QIODeviceBase::ReadWrite)) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
   }
 
-  // create a temporary directory
-  QTemporaryDir tmpDir;
-  if (!tmpDir.isValid()) {
-    log::debug("Error creating temp directory for icon extraction: {}",
-               tmpDir.errorString());
-    return QIcon(u":/MO/gui/executable"_s);
+  if (!PeExtractor::loadIconData(&exeFile, &buffer)) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
   }
 
-  std::unique_ptr<LIEF::PE::Binary> pe =
-      LIEF::PE::Parser::parse(filePath.toStdString());
-  auto rs = pe->resources_manager();
-
-  if (!rs.has_value() || !rs->has_icons()) {
-    log::debug("no icons found in pe file");
-    return QIcon(u":/MO/gui/executable"_s);
+  QPixmap pixmap;
+  if (!pixmap.loadFromData(buffer.buffer())) {
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
   }
 
-  auto icons = rs->icons();
-  if (icons.empty()) {
-    log::debug("no icons found in pe file");
-    return QIcon(u":/MO/gui/executable"_s);
-  }
-
-  // get largest icon
-  LIEF::PE::ResourceIcon largestIcon;
-  for (const auto& icon : icons) {
-    // width() sometimes returns 0 on the highest resolution icon for some reason
-    if (icon.width() == 0) {
-      largestIcon = icon;
-      break;
-    }
-    if (icon.size() > largestIcon.size()) {
-      largestIcon = icon;
-    }
-  }
-
-  // it would be better to directly access the icon using largestIcon.pixels(),
-  // but saving and reading it from a temporary directory is easier
-  auto iconPath = tmpDir.path().toStdString() + "/icon.png";
-  largestIcon.save(iconPath);
-
-  return QIcon(QString::fromStdString(iconPath));
+  return QIcon(pixmap);
 }
 
 QString getFileVersion(QString const& filepath)
 {
-  return getFileInfo(filepath, u"FileVersion");
+  return getFileVersionInfo(filepath, fileversion);
 }
 
 QString getProductVersion(QString const& filepath)
 {
-  return getFileInfo(filepath, u"ProductVersion");
+  return getFileVersionInfo(filepath, productversion);
 }
 
 std::string formatSystemMessage(int id)
