@@ -1,6 +1,7 @@
 #include "utility.h"
 
 #include "../pch.h"
+#include "linux/icoutils.h"
 #include "linux/peextractor.h"
 
 #include <QApplication>
@@ -501,26 +502,15 @@ namespace shell
   }
 
 }  // namespace shell
+
 QIcon iconForExecutable(const QString& filepath)
 {
-  QFile exeFile(filepath);
-  QBuffer buffer;
-
-  if (!exeFile.open(QIODeviceBase::ReadOnly) ||
-      !buffer.open(QIODeviceBase::ReadWrite)) {
-    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  QImage img;
+  if (!IcoUtils::loadIcoImageFromExe(filepath, img)) {
+    QIcon(QStringLiteral(":/MO/gui/executable"));
   }
 
-  if (!PeExtractor::loadIconData(&exeFile, &buffer)) {
-    return QIcon(QStringLiteral(":/MO/gui/executable"));
-  }
-
-  QPixmap pixmap;
-  if (!pixmap.loadFromData(buffer.buffer())) {
-    return QIcon(QStringLiteral(":/MO/gui/executable"));
-  }
-
-  return QIcon(pixmap);
+  return QIcon(QPixmap::fromImage(img));
 }
 
 QString getFileVersion(QString const& filepath)

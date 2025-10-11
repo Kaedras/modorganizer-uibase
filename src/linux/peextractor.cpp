@@ -106,8 +106,11 @@ qint64 addressToOffset(const QVector<PeSection>& sections, quint32 rva)
 {
   for (const auto& section : sections) {
     quint32 sectionBegin = section.virtualAddress;
-    quint32 sectionEnd =
-        section.virtualAddress + std::min(section.sizeOfRawData, section.virtualSize);
+    auto effectiveSize   = section.sizeOfRawData;
+    if (section.virtualSize) {
+      effectiveSize = std::min(effectiveSize, section.virtualSize);
+    }
+    auto sectionEnd = section.virtualAddress + effectiveSize;
     if (rva >= sectionBegin && rva < sectionEnd) {
       return rva - sectionBegin + section.pointerToRawData;
     }
@@ -127,6 +130,7 @@ QVector<PeResourceDirectoryEntry> readResourceDataDirectoryEntry(QDataStream& ds
   }
   return entries;
 }
+
 }  // namespace
 
 bool PeExtractor::readPeData()

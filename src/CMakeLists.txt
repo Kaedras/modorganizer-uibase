@@ -14,11 +14,13 @@ if (UNIX)
 			../include/uibase/linux/fdcloser.h
 			../include/uibase/linux/petypes.h
 			../include/uibase/linux/peextractor.h
+			../include/uibase/linux/icoutils.h
 	)
 	set(os_specific_sources
 			linux/fdcloser.cpp
 			linux/registry_linux.cpp
 			linux/peextractor.cpp
+			linux/icoutils.cpp
 	)
 else()
 	set(os_name win32)
