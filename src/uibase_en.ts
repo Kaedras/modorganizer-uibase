@@ -114,39 +114,39 @@
         </translation>
     </message>
     <message>
+        <location filename="registry.cpp" line="172"/>
         <location filename="registry.cpp" line="173"/>
-        <location filename="registry.cpp" line="174"/>
         <location filename="textviewer.cpp" line="173"/>
         <location filename="textviewer.cpp" line="174"/>
         <source>INI file is read-only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="175"/>
+        <location filename="registry.cpp" line="174"/>
         <location filename="textviewer.cpp" line="175"/>
         <source>Mod Organizer is attempting to write to &quot;%1&quot; which is currently set to read-only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="179"/>
+        <location filename="registry.cpp" line="178"/>
         <location filename="textviewer.cpp" line="179"/>
         <source>Clear the read-only flag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="180"/>
+        <location filename="registry.cpp" line="179"/>
         <location filename="textviewer.cpp" line="180"/>
         <source>Allow the write once</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="181"/>
+        <location filename="registry.cpp" line="180"/>
         <location filename="textviewer.cpp" line="181"/>
         <source>The file will be set to read-only again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="183"/>
+        <location filename="registry.cpp" line="182"/>
         <location filename="textviewer.cpp" line="183"/>
         <source>Skip this file</source>
         <translation type="unfinished"></translation>

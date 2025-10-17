@@ -54,14 +54,17 @@ bool SetValue(const CharT* appName, const CharT* keyName, const CharT* value,
   using OutStream =
       std::conditional_t<std::is_same_v<CharT, char>, std::ofstream, std::wofstream>;
 
-  // read ini file
   inipp::Ini<CharT> ini;
-  InStream in(fileName);
-  if (!in.is_open()) {
-    return false;
+
+  // read ini file if it exists
+  if (exists(fileName)) {
+    InStream in(fileName);
+    if (!in.is_open()) {
+      return false;
+    }
+    ini.parse(in);
+    in.close();
   }
-  ini.parse(in);
-  in.close();
 
   if (keyName == nullptr) {
     // remove section if key is nullptr
@@ -141,17 +144,13 @@ GetValue(const CharT* appName, const CharT* keyName, const CharT* defaultValue,
   }
 }
 
-template <typename CharT, typename T2, typename T3>
-bool WriteValue(const CharT* appName, T2 keyName, T3 value,
+template <typename CharT>
+bool WriteValue(CharT appName, CharT keyName, CharT value,
                 const std::filesystem::path& fileName)
 {
   // check types
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "appName must be const char* or const wchar_t*");
-  static_assert(is_one_of<T2, const char*, const wchar_t*, std::nullptr_t>(),
-                "keyName must be const char*, const wchar_t*, or nullptr_t");
-  static_assert(is_one_of<T3, const char*, const wchar_t*, std::nullptr_t>(),
-                "value must be const char*, const wchar_t*, or nullptr_t");
+  static_assert(is_one_of<CharT, const char*, const wchar_t*>(),
+                "template parameter must be const char* or const wchar_t*");
 
   bool success = true;
 
