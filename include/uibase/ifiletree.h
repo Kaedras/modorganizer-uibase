@@ -240,7 +240,7 @@ public:  // Methods
    * @return the path from this entry to the root, including the name
    *     of this entry.
    */
-  QString path(QString sep = "\\") const { return pathFrom(nullptr, sep); }
+  QString path(QString sep = QDir::separator()) const { return pathFrom(nullptr, sep); }
 
   /**
    * @brief Retrieve the path from this entry to the given tree.
@@ -252,7 +252,8 @@ public:  // Methods
    *     of this entry, or QString() if the given tree is not a parent of
    *     this one.
    */
-  QString pathFrom(std::shared_ptr<const IFileTree> tree, QString sep = "\\") const;
+  QString pathFrom(std::shared_ptr<const IFileTree> tree,
+                   QString sep = QDir::separator()) const;
 
   /**
    * @brief Detach this entry from its parent tree.
@@ -595,7 +596,8 @@ public:  // Access methods:
    * @return the path from this tree to the given entry, including the name
    *     of the entry, or QString() if the given entry is not in this tree.
    */
-  QString pathTo(std::shared_ptr<const FileTreeEntry> entry, QString sep = "\\") const
+  QString pathTo(std::shared_ptr<const FileTreeEntry> entry,
+                 QString sep = QDir::separator()) const
   {
     return entry->pathFrom(astree(), sep);
   }
@@ -636,7 +638,7 @@ public:  // Walk & Glob operations
   void
   walk(std::function<WalkReturn(QString const&, std::shared_ptr<const FileTreeEntry>)>
            callback,
-       QString sep = "\\") const;
+       QString sep = QDir::separator()) const;
 
 public:  // Utility functions:
   /**
