@@ -17,12 +17,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "registry.h"
 #include "log.h"
+#include "qinipp.h"
 #include "report.h"
 #include <QApplication>
 #include <QMessageBox>
 #include <QString>
 #include <fstream>
-#include <inipp.h>
 #ifdef __unix__
 #include <linux/compatibility.h>
 #endif
@@ -30,39 +30,22 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace
 {
 
-template <typename T, typename... ValidTypes>
-constexpr bool is_one_of()
-{
-  return (std::is_same_v<T, ValidTypes> || ...);
-}
-
 // helper function that mirrors the behaviour of WritePrivateProfileString as described
 // in
 // https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-writeprivateprofilestringw
-template <typename CharT>
-bool SetValue(const CharT* appName, const CharT* keyName, const CharT* value,
-              const std::filesystem::path& fileName)
+bool SetValue(const QString& appName, const QString& keyName, const QString& value,
+              const QString& fileName)
 {
-  // check types
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "template parameter must be char or wchar_t");
-
-  // use ifstream/ofstream when CharT is char and wifstream/wofstream when CharT is
-  // wchar_t
-  using InStream =
-      std::conditional_t<std::is_same_v<CharT, char>, std::ifstream, std::wifstream>;
-  using OutStream =
-      std::conditional_t<std::is_same_v<CharT, char>, std::ofstream, std::wofstream>;
-
-  inipp::Ini<CharT> ini;
+  qinipp::Ini ini;
 
   // read ini file if it exists
-  if (exists(fileName)) {
-    InStream in(fileName);
-    if (!in.is_open()) {
+  if (QFile::exists(fileName)) {
+    QFile in(fileName);
+    if (!in.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)) {
       return false;
     }
-    ini.parse(in);
+    QTextStream inStream(&in);
+    ini.parse(inStream);
     in.close();
   }
 
@@ -77,81 +60,39 @@ bool SetValue(const CharT* appName, const CharT* keyName, const CharT* value,
   }
 
   // write the modified ini file
-  OutStream out(fileName);
-  if (!out.is_open()) {
+  QFile out(fileName);
+  if (!out.open(QIODeviceBase::WriteOnly | QIODeviceBase::Text)) {
     return false;
   }
-  ini.generate(out);
+  QTextStream outStream(&out);
+  ini.generate(outStream);
   return ini.errors.empty();
 }
 
-template <typename CharT>
-std::optional<std::basic_string<CharT>>
-GetValue(const CharT* appName, const CharT* keyName, const CharT* defaultValue,
-         const std::filesystem::path& fileName)
+}  // namespace
+
+namespace MOBase
 {
-  // check types
-  static_assert(is_one_of<CharT, char, wchar_t>());
 
-  using InStream =
-      std::conditional_t<std::is_same_v<CharT, char>, std::ifstream, std::wifstream>;
-  using String = std::basic_string<CharT>;
-  CharT newline;
-  if constexpr (std::is_same_v<CharT, char>) {
-    newline = '\n';
-  } else {
-    newline = L'\n';
-  }
-
-  // read ini file
-  inipp::Ini<CharT> ini;
-  {
-    InStream in(fileName);
-    if (!in.is_open()) {
-      return {};
-    }
-    ini.parse(in);
-  }
-
-  if (appName == nullptr) {
-    // return all section names in the file
-    String result;
-    for (const auto& section : ini.sections) {
-      result.append(section.first);
-      result += newline;
-    }
-    result.pop_back();
-    return result;
-  }
-  if (keyName == nullptr) {
-    // return all key names in the section specified by the appName parameter
-    String result;
-    if (!ini.sections.contains(appName)) {
-      return result;
-    }
-    for (const auto& key : ini.sections[appName]) {
-      result.append(key.first);
-      result += newline;
-    }
-    result.pop_back();
-    return result;
-  }
-
-  try {
-    return ini.sections.at(appName).at(keyName);
-  } catch (...) {
-    return defaultValue;
-  }
+bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
+                        const wchar_t* value, const wchar_t* fileName)
+{
+  return WriteRegistryValue(
+      QString::fromWCharArray(appName), QString::fromWCharArray(keyName),
+      QString::fromWCharArray(value), QString::fromWCharArray(fileName));
 }
 
-template <typename CharT>
-bool WriteValue(CharT appName, CharT keyName, CharT value,
-                const std::filesystem::path& fileName)
+bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
+                        const char* fileName)
 {
-  // check types
-  static_assert(is_one_of<CharT, const char*, const wchar_t*>(),
-                "template parameter must be const char* or const wchar_t*");
+  return WriteRegistryValue(
+      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
+      QString::fromLocal8Bit(value), QString::fromLocal8Bit(fileName));
+}
 
+bool WriteRegistryValue(const QString& appName, const QString& keyName,
+                        const QString& value, const QString& fileName)
+{
   bool success = true;
 
   if (!SetValue(appName, keyName, value, fileName)) {
@@ -205,36 +146,81 @@ bool WriteValue(CharT appName, CharT keyName, CharT value,
   return success;
 }
 
-}  // namespace
-
-namespace MOBase
-{
-
-bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
-                        const wchar_t* value, const wchar_t* fileName)
-{
-  return WriteValue(appName, keyName, value, std::filesystem::path(fileName));
-}
-
-bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
-                        const char* fileName)
-{
-  return WriteValue(appName, keyName, value, std::filesystem::path(fileName));
-}
-
 std::optional<std::wstring> ReadRegistryValue(const wchar_t* appName,
                                               const wchar_t* keyName,
                                               const wchar_t* defaultValue,
                                               const wchar_t* fileName)
 {
-  return GetValue(appName, keyName, defaultValue, fileName);
+  auto result = ReadRegistryValue(
+      QString::fromWCharArray(appName), QString::fromWCharArray(keyName),
+      QString::fromWCharArray(defaultValue), QString::fromWCharArray(fileName));
+  if (result) {
+    return result->toStdWString();
+  }
+  return {};
 }
 
 std::optional<std::string> ReadRegistryValue(const char* appName, const char* keyName,
                                              const char* defaultValue,
                                              const char* fileName)
 {
-  return GetValue(appName, keyName, defaultValue, fileName);
+  auto result = ReadRegistryValue(
+      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
+      QString::fromLocal8Bit(defaultValue), QString::fromLocal8Bit(fileName));
+  if (result) {
+    return result->toStdString();
+  }
+  return {};
+}
+
+std::optional<QString> ReadRegistryValue(const QString& appName, const QString& keyName,
+                                         const QString& defaultValue,
+                                         const QString& fileName)
+{
+  // read ini file
+  qinipp::Ini ini;
+  {
+    // read ini file
+    if (QFile::exists(fileName)) {
+      QFile in(fileName);
+      if (!in.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)) {
+        return {};
+      }
+      QTextStream inStream(&in);
+      ini.parse(inStream);
+      in.close();
+    }
+  }
+
+  if (appName == nullptr) {
+    // return all section names in the file
+    QString result;
+    for (const auto& sectionName : ini.sections | std::views::keys) {
+      result.append(sectionName);
+      result += '\n';
+    }
+    result.chop(1);
+    return result;
+  }
+  if (keyName == nullptr) {
+    // return all key names in the section specified by the appName parameter
+    QString result;
+    if (!ini.sections.contains(appName)) {
+      return result;
+    }
+    for (const auto& key : ini.sections[appName] | std::views::keys) {
+      result.append(key);
+      result += '\n';
+    }
+    result.chop(1);
+    return result;
+  }
+
+  try {
+    return ini.sections.at(appName).at(keyName);
+  } catch (...) {
+    return defaultValue;
+  }
 }
 
 }  // namespace MOBase

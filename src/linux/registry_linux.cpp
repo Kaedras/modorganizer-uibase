@@ -1,40 +1,23 @@
+#include "log.h"
 #include "registry.h"
 
-#include "inipp.h"
-#include <filesystem>
-#include <fstream>
-#include <ranges>
-
-#include <linux/compatibility.h>
+#include "qinipp.h"
 
 using namespace std;
 namespace fs = std::filesystem;
 
 namespace
 {
-template <typename T, typename... ValidTypes>
-constexpr bool is_one_of()
+bool readIni(const QString& filename, qinipp::Ini& ini)
 {
-  return (is_same_v<T, ValidTypes> || ...);
-}
-
-template <typename CharT>
-bool readIni(const fs::path& filename, inipp::Ini<CharT>& ini)
-{
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "template parameter must be char or wchar_t");
-
-  using InStream = conditional_t<is_same_v<CharT, char>, ifstream, wifstream>;
-
-  locale loc(setlocale(LC_ALL, ""));
-
-  InStream in(filename);
-  in.imbue(loc);
-
-  if (!in.is_open()) {
+  QFile file(filename);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    MOBase::log::error("Error opening file '{}': {}", filename, file.errorString());
     errno = EIO;
     return false;
   }
+
+  QTextStream in(&file);
   ini.parse(in);
   if (!ini.errors.empty()) {
     errno = EIO;
@@ -44,26 +27,17 @@ bool readIni(const fs::path& filename, inipp::Ini<CharT>& ini)
   return true;
 }
 
-template <typename CharT>
-bool saveIni(const fs::path& filename, inipp::Ini<CharT>& ini)
+bool saveIni(const QString& filename, qinipp::Ini& ini)
 {
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "template parameter must be char or wchar_t");
-
-  using OutStream = conditional_t<is_same_v<CharT, char>, ofstream, wofstream>;
-
-  locale loc(setlocale(LC_ALL, ""));
-
-  OutStream out(filename, ios::trunc);
-  out.imbue(loc);
-
-  if (!out.is_open()) {
+  QFile file(filename);
+  if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    MOBase::log::error("Error opening file '{}': {}", filename, file.errorString());
     errno = EIO;
     return false;
   }
 
+  QTextStream out(&file);
   ini.generate(out);
-  out.close();
   return ini.errors.empty();
 }
 
@@ -75,70 +49,58 @@ bool saveIni(const fs::path& filename, inipp::Ini<CharT>& ini)
  * @return Number of characters copied to the buffer, not including the terminating null
  * character
  */
-template <typename CharT>
-uint32_t copy_string(const basic_string<CharT>& src, CharT* dest, size_t dstSize)
+uint32_t copy_string(const QString& src, QString& dest, size_t dstSize)
 {
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "template parameter must be char or wchar_t");
-
   // truncate string if the destination size is too small
   if (src.size() > dstSize) {
-    memcpy(dest, src.c_str(), dstSize);
+    memcpy(dest.data(), src.data(), dstSize);
     dest[dstSize - 1] = '\0';
     return dstSize - 1;
   }
 
-  memcpy(dest, src.c_str(), src.size() * sizeof(CharT));
+  memcpy(dest.data(), src.data(), src.size() * sizeof(QChar));
   return src.size();
 }
 
-template <typename CharT>
-uint32_t GetPrivateProfileString(const CharT* section, const CharT* key,
-                                 const CharT* defaultValue, CharT* returnedString,
-                                 size_t length, const fs::path& path)
+uint32_t GetPrivateProfileString(const QString& section, const QString& key,
+                                 const QString& defaultValue, QString& returnedString,
+                                 size_t length, const QString& path)
 {
-  static_assert(is_one_of<CharT, char, wchar_t>());
-  using InStream = conditional_t<is_same_v<CharT, char>, ifstream, wifstream>;
-
   errno           = 0;
   uint32_t copied = 0;
 
   // check if the file exists
-  if (!exists(path)) {
+  if (!QFileInfo::exists(path)) {
     errno = ENOENT;
     return copied;
   }
 
   // get effective default value (empty string if null)
-  const CharT* effectiveDefault = defaultValue;
-  if (effectiveDefault == nullptr) {
-    if constexpr (is_same_v<CharT, char>) {
-      effectiveDefault = "";
-    } else {
-      effectiveDefault = L"";
-    }
-  }
+  QString effectiveDefault = defaultValue.isNull() ? "" : defaultValue;
 
-  basic_string<CharT> result;
+  QString result;
 
   // read ini file
-  inipp::Ini<CharT> ini;
-  InStream in(path);
-  if (!in.is_open()) {
+  qinipp::Ini ini;
+  QFile file(path);
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    MOBase::log::error("Error opening file '{}': {}", path, file.errorString());
     errno = EIO;
     return copied;
   }
+
+  QTextStream in(&file);
   ini.parse(in);
 
   if (section == nullptr) {
     // list all section names
     for (const auto& sectionName : ini.sections | views::keys) {
-      result += sectionName + static_cast<CharT>(0);
+      result += sectionName % '\0';
     }
   } else if (key == nullptr) {
     // list all keys in the specified section
     for (const auto& keyName : ini.sections[section] | views::keys) {
-      result += keyName + static_cast<CharT>(0);
+      result += keyName % '\0';
     }
   } else {
     // get specified value
@@ -156,40 +118,34 @@ uint32_t GetPrivateProfileString(const CharT* section, const CharT* key,
 
   // handle truncation for list results (add double null termination)
   if (copied < result.size() && length >= 2) {
-    returnedString[length - 2] = 0;
-    returnedString[length - 1] = 0;
+    returnedString[length - 2] = '\0';
+    returnedString[length - 1] = '\0';
     --copied;
   }
 
   return copied;
 }
 
-template <typename CharT>
-uint32_t GetPrivateProfileSectionNames(CharT* buffer, uint32_t bufferSize,
-                                       const fs::path& path)
+uint32_t GetPrivateProfileSectionNames(QString& buffer, uint32_t bufferSize,
+                                       const QString& path)
 {
-  return GetPrivateProfileString(
-      static_cast<const CharT*>(nullptr), static_cast<const CharT*>(nullptr),
-      static_cast<const CharT*>(nullptr), buffer, bufferSize, path);
+  return GetPrivateProfileString(QString(), QString(), QString(), buffer, bufferSize,
+                                 path);
 }
 
-template <typename CharT>
-bool WritePrivateProfileString(const CharT* section, const CharT* key,
-                               const CharT* value, const fs::path& filename)
+bool WritePrivateProfileString(const QString& section, const QString& key,
+                               const QString& value, const QString& filename)
 {
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "template parameter must be char or wchar_t");
-
   errno = 0;
 
-  if (!section) {
+  if (section.isNull()) {
     errno = EINVAL;
     return false;
   }
 
-  inipp::Ini<CharT> ini;
+  qinipp::Ini ini;
 
-  if (exists(filename)) {
+  if (QFileInfo::exists(filename)) {
     if (!readIni(filename, ini)) {
       return false;
     }
@@ -208,23 +164,19 @@ bool WritePrivateProfileString(const CharT* section, const CharT* key,
   return saveIni(filename, ini);
 }
 
-template <typename CharT>
-bool WritePrivateProfileSection(const CharT* section, const CharT* data,
-                                const fs::path& filename)
+bool WritePrivateProfileSection(const QString& section, const QString& data,
+                                const QString& filename)
 {
-  static_assert(is_one_of<CharT, char, wchar_t>(),
-                "template parameter must be char or wchar_t");
-
   errno = 0;
 
-  if (!section) {
+  if (section.isNull()) {
     errno = EINVAL;
     return false;
   }
 
-  inipp::Ini<CharT> ini;
+  qinipp::Ini ini;
 
-  if (exists(filename)) {
+  if (QFileInfo::exists(filename)) {
     if (!readIni(filename, ini)) {
       return false;
     }
@@ -238,24 +190,17 @@ bool WritePrivateProfileSection(const CharT* section, const CharT* data,
     ini.sections[section];
   } else {
     // create all keys
-    size_t pos = 0;
-    basic_string<CharT> line;
-    while (true) {
-      line = data + pos;
 
-      auto equalSignPos = line.find('=');
-      if (equalSignPos == basic_string<CharT>::npos) {
-        cerr << "'=' not found\n";
+    auto lines = data.split("\0", Qt::SkipEmptyParts);
+    for (const auto& line : lines) {
+      auto equalSignPos = line.indexOf('=');
+      if (equalSignPos == -1) {
+        MOBase::log::error("WritePrivateProfileSection(): '=' not found");
         return false;
       }
-      basic_string<CharT> key    = line.substr(0, equalSignPos);
-      basic_string<CharT> value  = line.substr(equalSignPos + 1);
+      QString key                = line.first(equalSignPos);
+      QString value              = line.sliced(equalSignPos + 1);
       ini.sections[section][key] = value;
-
-      pos += line.size() + 1;
-      if (data[pos + 1] == 0) {
-        break;
-      }
     }
   }
 
@@ -273,13 +218,17 @@ bool WritePrivateProfileSectionA(const char* lpAppName, const char* lpString,
 bool WritePrivateProfileSectionW(const wchar_t* lpAppName, const wchar_t* lpString,
                                  const wchar_t* lpFileName)
 {
-  return WritePrivateProfileSection(lpAppName, lpString, lpFileName);
+  return WritePrivateProfileSection(QString::fromWCharArray(lpAppName),
+                                    QString::fromWCharArray(lpString),
+                                    QString::fromWCharArray(lpFileName));
 }
 
 bool WritePrivateProfileStringW(const wchar_t* lpAppName, const wchar_t* lpKeyName,
                                 const wchar_t* lpString, const wchar_t* lpFileName)
 {
-  return WritePrivateProfileString(lpAppName, lpKeyName, lpString, lpFileName);
+  return WritePrivateProfileString(
+      QString::fromWCharArray(lpAppName), QString::fromWCharArray(lpKeyName),
+      QString::fromWCharArray(lpString), QString::fromWCharArray(lpFileName));
 }
 
 bool WritePrivateProfileStringA(const char* lpAppName, const char* lpKeyName,
@@ -292,26 +241,53 @@ uint32_t GetPrivateProfileStringW(const wchar_t* lpAppName, const wchar_t* lpKey
                                   const wchar_t* lpDefault, wchar_t* lpReturnedString,
                                   uint32_t nSize, const wchar_t* lpFileName)
 {
-  return GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString,
-                                 nSize, lpFileName);
+  QString returnedString;
+  uint32_t result = GetPrivateProfileString(
+      QString::fromWCharArray(lpAppName), QString::fromWCharArray(lpKeyName),
+      QString::fromWCharArray(lpDefault), returnedString, nSize,
+      QString::fromWCharArray(lpFileName));
+
+  vector<wchar_t> buf(nSize, 0);
+  returnedString.toWCharArray(buf.data());
+  memcpy(lpReturnedString, buf.data(), result);
+  return result;
 }
 
 uint32_t GetPrivateProfileStringA(const char* lpAppName, const char* lpKeyName,
                                   const char* lpDefault, char* lpReturnedString,
                                   uint32_t nSize, const char* lpFileName)
 {
-  return GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString,
-                                 nSize, lpFileName);
+  QString returnedString;
+  auto result = GetPrivateProfileString(
+      QString::fromLocal8Bit(lpAppName), QString::fromLocal8Bit(lpKeyName),
+      QString::fromLocal8Bit(lpDefault), returnedString, nSize, lpFileName);
+
+  auto buf = returnedString.toLocal8Bit();
+  memcpy(lpReturnedString, buf.constData(), result);
+  return result;
 }
 
 uint32_t GetPrivateProfileSectionNamesA(char* lpszReturnBuffer, uint32_t nSize,
                                         const char* lpFileName)
 {
-  return GetPrivateProfileSectionNames(lpszReturnBuffer, nSize, lpFileName);
+  QString returnBuffer;
+  auto result = GetPrivateProfileSectionNames(returnBuffer, nSize,
+                                              QString::fromLocal8Bit(lpFileName));
+
+  auto buf = returnBuffer.toLocal8Bit();
+  memcpy(lpszReturnBuffer, buf.constData(), result);
+  return result;
 }
 
 uint32_t GetPrivateProfileSectionNamesW(wchar_t* lpszReturnBuffer, uint32_t nSize,
                                         const wchar_t* lpFileName)
 {
-  return GetPrivateProfileSectionNames(lpszReturnBuffer, nSize, lpFileName);
+  QString returnBuffer;
+  auto result = GetPrivateProfileSectionNames(returnBuffer, nSize,
+                                              QString::fromWCharArray(lpFileName));
+
+  vector<wchar_t> buf(nSize, 0);
+  returnBuffer.toWCharArray(buf.data());
+  memcpy(lpszReturnBuffer, buf.data(), result);
+  return result;
 }

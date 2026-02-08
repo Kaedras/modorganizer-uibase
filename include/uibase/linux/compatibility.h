@@ -5,10 +5,6 @@
 #include <poll.h>
 #include <unistd.h>
 #include <utility>
-extern "C"
-{
-#include <sys/pidfd.h>
-}
 
 #define __FUNCSIG__ __PRETTY_FUNCTION__
 

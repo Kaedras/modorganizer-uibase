@@ -17,11 +17,6 @@
 #include <log.h>
 #include <spawn.h>
 
-extern "C"
-{
-#include <sys/pidfd.h>
-}
-
 using namespace std;
 using namespace Qt::Literals::StringLiterals;
 namespace fs = std::filesystem;

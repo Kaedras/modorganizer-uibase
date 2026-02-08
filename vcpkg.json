@@ -1,6 +1,5 @@
 {
   "dependencies": [
-    "inipp",
     "spdlog",
     "vdf-parser"
   ],

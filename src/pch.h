@@ -1,3 +1,5 @@
+#pragma once
+
 #pragma warning(disable : 4251)  // neds to have dll-interface
 #pragma warning(disable : 4355)  // this used in initializer list
 #pragma warning(disable : 4371)  // layout may have changed
