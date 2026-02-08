@@ -69,10 +69,6 @@
 #include <poll.h>
 #include <spawn.h>
 #include <unistd.h>
-extern "C"
-{
-#include <sys/pidfd.h>
-}
 #endif
 
 // Qt
