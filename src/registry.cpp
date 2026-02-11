@@ -24,7 +24,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QString>
 #include <fstream>
 #ifdef __unix__
-#include <linux/compatibility.h>
+#include "linux/compatibility.h"
 #endif
 
 namespace
@@ -49,11 +49,11 @@ bool SetValue(const QString& appName, const QString& keyName, const QString& val
     in.close();
   }
 
-  if (keyName == nullptr) {
-    // remove section if key is nullptr
+  if (keyName.isNull()) {
+    // remove section if key is null
     ini.sections.erase(appName);
-  } else if (value == nullptr) {
-    // remove key if value is nullptr
+  } else if (value.isNull()) {
+    // remove key if value is null
     ini.sections[appName].erase(keyName);
   } else {
     ini.sections[appName][keyName] = value;
@@ -73,22 +73,6 @@ bool SetValue(const QString& appName, const QString& keyName, const QString& val
 
 namespace MOBase
 {
-
-bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
-                        const wchar_t* value, const wchar_t* fileName)
-{
-  return WriteRegistryValue(
-      QString::fromWCharArray(appName), QString::fromWCharArray(keyName),
-      QString::fromWCharArray(value), QString::fromWCharArray(fileName));
-}
-
-bool WriteRegistryValue(const char* appName, const char* keyName, const char* value,
-                        const char* fileName)
-{
-  return WriteRegistryValue(
-      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
-      QString::fromLocal8Bit(value), QString::fromLocal8Bit(fileName));
-}
 
 bool WriteRegistryValue(const QString& appName, const QString& keyName,
                         const QString& value, const QString& fileName)
@@ -146,36 +130,8 @@ bool WriteRegistryValue(const QString& appName, const QString& keyName,
   return success;
 }
 
-std::optional<std::wstring> ReadRegistryValue(const wchar_t* appName,
-                                              const wchar_t* keyName,
-                                              const wchar_t* defaultValue,
-                                              const wchar_t* fileName)
-{
-  auto result = ReadRegistryValue(
-      QString::fromWCharArray(appName), QString::fromWCharArray(keyName),
-      QString::fromWCharArray(defaultValue), QString::fromWCharArray(fileName));
-  if (result) {
-    return result->toStdWString();
-  }
-  return {};
-}
-
-std::optional<std::string> ReadRegistryValue(const char* appName, const char* keyName,
-                                             const char* defaultValue,
-                                             const char* fileName)
-{
-  auto result = ReadRegistryValue(
-      QString::fromLocal8Bit(appName), QString::fromLocal8Bit(keyName),
-      QString::fromLocal8Bit(defaultValue), QString::fromLocal8Bit(fileName));
-  if (result) {
-    return result->toStdString();
-  }
-  return {};
-}
-
-std::optional<QString> ReadRegistryValue(const QString& appName, const QString& keyName,
-                                         const QString& defaultValue,
-                                         const QString& fileName)
+QString ReadRegistryValue(const QString& appName, const QString& keyName,
+                          const QString& defaultValue, const QString& fileName)
 {
   // read ini file
   qinipp::Ini ini;
@@ -184,7 +140,7 @@ std::optional<QString> ReadRegistryValue(const QString& appName, const QString& 
     if (QFile::exists(fileName)) {
       QFile in(fileName);
       if (!in.open(QIODeviceBase::ReadOnly | QIODeviceBase::Text)) {
-        return {};
+        return defaultValue;
       }
       QTextStream inStream(&in);
       ini.parse(inStream);
@@ -192,7 +148,7 @@ std::optional<QString> ReadRegistryValue(const QString& appName, const QString& 
     }
   }
 
-  if (appName == nullptr) {
+  if (appName.isNull()) {
     // return all section names in the file
     QString result;
     for (const auto& sectionName : ini.sections | std::views::keys) {
@@ -202,7 +158,7 @@ std::optional<QString> ReadRegistryValue(const QString& appName, const QString& 
     result.chop(1);
     return result;
   }
-  if (keyName == nullptr) {
+  if (keyName.isNull()) {
     // return all key names in the section specified by the appName parameter
     QString result;
     if (!ini.sections.contains(appName)) {

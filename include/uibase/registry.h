@@ -23,69 +23,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace MOBase
 {
 
-QDLLEXPORT bool WriteRegistryValue(const wchar_t* appName, const wchar_t* keyName,
-                                   const wchar_t* value, const wchar_t* fileName);
-
-QDLLEXPORT bool WriteRegistryValue(const char* appName, const char* keyName,
-                                   const char* value, const char* fileName);
-
+// use a default constructed QString (i.e. QString() or {}) when nullptr would be used
+// for WritePrivateProfileString
 QDLLEXPORT bool WriteRegistryValue(const QString& appName, const QString& keyName,
                                    const QString& value, const QString& fileName);
 
-QDLLEXPORT std::optional<std::wstring> ReadRegistryValue(const wchar_t* appName,
-                                                         const wchar_t* keyName,
-                                                         const wchar_t* defaultValue,
-                                                         const wchar_t* fileName);
-
-QDLLEXPORT std::optional<std::string> ReadRegistryValue(const char* appName,
-                                                        const char* keyName,
-                                                        const char* defaultValue,
-                                                        const char* fileName);
-
-QDLLEXPORT std::optional<QString> ReadRegistryValue(const QString& appName,
-                                                    const QString& keyName,
-                                                    const QString& defaultValue,
-                                                    const QString& fileName);
+// use a default constructed QString (i.e. QString() or {}) when nullptr would be used
+// for GetPrivateProfileString
+QDLLEXPORT QString ReadRegistryValue(const QString& appName, const QString& keyName,
+                                     const QString& defaultValue,
+                                     const QString& fileName);
 }  // namespace MOBase
-
-#ifdef __unix__
-
-QDLLEXPORT uint32_t GetPrivateProfileSectionNamesA(char* lpszReturnBuffer,
-                                                   uint32_t nSize,
-                                                   const char* lpFileName);
-
-QDLLEXPORT uint32_t GetPrivateProfileSectionNamesW(wchar_t* lpszReturnBuffer,
-                                                   uint32_t nSize,
-                                                   const wchar_t* lpFileName);
-
-QDLLEXPORT uint32_t GetPrivateProfileStringA(const char* lpAppName,
-                                             const char* lpKeyName,
-                                             const char* lpDefault,
-                                             char* lpReturnedString, uint32_t nSize,
-                                             const char* lpFileName);
-
-QDLLEXPORT uint32_t GetPrivateProfileStringW(const wchar_t* lpAppName,
-                                             const wchar_t* lpKeyName,
-                                             const wchar_t* lpDefault,
-                                             wchar_t* lpReturnedString, uint32_t nSize,
-                                             const wchar_t* lpFileName);
-
-QDLLEXPORT bool WritePrivateProfileStringA(const char* lpAppName, const char* lpKeyName,
-                                           const char* lpString,
-                                           const char* lpFileName);
-
-QDLLEXPORT bool WritePrivateProfileStringW(const wchar_t* lpAppName,
-                                           const wchar_t* lpKeyName,
-                                           const wchar_t* lpString,
-                                           const wchar_t* lpFileName);
-
-QDLLEXPORT bool WritePrivateProfileSectionA(const char* lpAppName, const char* lpString,
-                                            const char* lpFileName);
-
-QDLLEXPORT bool WritePrivateProfileSectionW(const wchar_t* lpAppName,
-                                            const wchar_t* lpString,
-                                            const wchar_t* lpFileName);
-
-#endif
 
 #endif  // REGISTRY_H

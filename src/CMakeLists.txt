@@ -17,7 +17,6 @@ if (UNIX)
 	)
 	set(os_specific_sources
 			linux/fdcloser.cpp
-			linux/registry_linux.cpp
 			linux/peextractor.cpp
 			linux/icoutils.cpp
 	)
