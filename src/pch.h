@@ -63,6 +63,7 @@
 #include <shobjidl.h>
 #endif
 
+// linux
 #ifdef __unix__
 #include <csignal>
 #include <fcntl.h>
@@ -145,7 +146,24 @@
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDesktopServices>
+#include <QImageReader>
 #endif
+
+// spdlog
+#include <spdlog/logger.h>
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/daily_file_sink.h>
+#include <spdlog/sinks/dist_sink.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#ifdef _WIN32
+#include <spdlog/sinks/stdout_color_sinks.h>
+#else
+#include <spdlog/sinks/ansicolor_sink.h>
+#endif
+
+// vdf-parser
+#include <vdf-parser/vdf_parser.hpp>
 
 #undef _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
 #pragma warning(pop)
