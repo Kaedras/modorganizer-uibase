@@ -143,8 +143,10 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
 static bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
                     QWidget* dialog, op operation, bool yesToAll)
 {
-  if ((sourceNames.size() != destinationNames.size() && destinationNames.size() != 1) ||
-      (destinationNames.size() == 1 && !QFileInfo(destinationNames[0]).isDir())) {
+  // sourceNames and destinationNames should either be of identical size, or
+  // destinationNames size should be 1 and be a directory
+  if (sourceNames.size() != destinationNames.size() &&
+      (destinationNames.size() != 1 || !QFileInfo(destinationNames[0]).isDir())) {
     errno = EINVAL;
     return false;
   }
@@ -162,7 +164,8 @@ static bool shellOp(const QStringList& sourceNames, const QStringList& destinati
   }
 
   // create destinations
-  if (destinationNames.size() > 1) {
+  if ((sourceNames.size() == 1 && destinationNames.size() == 1) ||
+      destinationNames.size() > 1) {
     for (const auto& destinationName : destinationNames) {
       destinations.emplace_back(
           QFileInfo(destinationName).filesystemAbsoluteFilePath());
