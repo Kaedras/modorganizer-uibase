@@ -505,7 +505,7 @@ QIcon iconForExecutable(const QString& filepath)
 {
   QImage img;
   if (!IcoUtils::loadIcoImageFromExe(filepath, img)) {
-    QIcon(QStringLiteral(":/MO/gui/executable"));
+    return QIcon(QStringLiteral(":/MO/gui/executable"));
   }
 
   return QIcon(QPixmap::fromImage(img));
