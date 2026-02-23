@@ -1,21 +1,8 @@
 #include "utility.h"
 
-#include "../pch.h"
 #include "linux/icoutils.h"
 #include "linux/peextractor.h"
-
-#include <QApplication>
-#include <QDBusInterface>
-#include <QDBusMessage>
-#include <QDesktopServices>
-#include <QDir>
-#include <QStringList>
-#include <QTemporaryDir>
-#include <cerrno>
-#include <fcntl.h>
-#include <format>
-#include <log.h>
-#include <spawn.h>
+#include "log.h"
 
 using namespace std;
 using namespace Qt::Literals::StringLiterals;

@@ -144,6 +144,7 @@
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QDBusMessage>
+#include <QDesktopServices>
 #endif
 
 #undef _SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING
