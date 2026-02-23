@@ -94,7 +94,7 @@ int fileErrorToErrno(QFile::FileError error)
   }
 }
 
-enum op : unsigned int
+enum op : uint8_t
 {
   FO_COPY,
   FO_MOVE
