@@ -1,14 +1,5 @@
-#include "../pch.h"
 #include "log.h"
 #include "utility.h"
-
-#include <algorithm>
-#include <locale>
-#include <memory>
-
-#include <spdlog/logger.h>
-#include <spdlog/sinks/ansicolor_sink.h>
-#include <spdlog/sinks/dist_sink.h>
 
 static constexpr spdlog::string_view_t FOREGROUND_WHITE = "\033[37m";
 

@@ -3,10 +3,6 @@
 #include "log.h"
 #include "utility.h"
 
-#include <QString>
-#include <fstream>
-#include <vdf-parser/vdf_parser.hpp>
-
 using namespace Qt::StringLiterals;
 using namespace std;
 

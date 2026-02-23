@@ -1,8 +1,6 @@
 #include "taskprogressmanager.h"
 
 #include "log.h"
-#include <QDBusConnection>
-#include <QDBusMessage>
 
 namespace MOBase
 {

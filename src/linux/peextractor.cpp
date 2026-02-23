@@ -1,12 +1,6 @@
 #include "linux/peextractor.h"
 #include "linux/petypes.h"
 
-#include <QDataStream>
-#include <QFile>
-#include <QIODevice>
-#include <QString>
-#include <QVector>
-
 using namespace peTypes;
 
 namespace

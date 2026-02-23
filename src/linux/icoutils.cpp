@@ -9,14 +9,6 @@
 #include "linux/icoutils.h"
 #include "linux/peextractor.h"
 
-#include <QBuffer>
-#include <QImage>
-#include <QImageReader>
-#include <QList>
-#include <QString>
-
-#include <algorithm>
-
 namespace
 {
 
