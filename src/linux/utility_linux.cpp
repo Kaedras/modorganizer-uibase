@@ -116,7 +116,11 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
       }
     }
     if (operation == FO_COPY) {
-      fs::copy(src, dst, fs::copy_options::recursive);
+      auto opts = fs::copy_options::recursive;
+      if (yesToAll) {
+        opts |= fs::copy_options::overwrite_existing;
+      }
+      fs::copy(src, dst, opts);
     } else {
       fs::rename(src, dst);
     }
