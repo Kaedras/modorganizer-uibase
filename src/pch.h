@@ -150,6 +150,9 @@
 #endif
 
 // spdlog
+#ifdef _WIN32
+#define SPDLOG_WCHAR_FILENAMES 1
+#endif
 #include <spdlog/logger.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
