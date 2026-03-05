@@ -246,7 +246,7 @@ namespace shell
 
   Result ExploreDirectory(const QFileInfo& info)
   {
-    return Open(info.absolutePath());
+    return Open(info.absoluteFilePath());
   }
 
   Result ExploreFileInDirectory(const QFileInfo& info)
