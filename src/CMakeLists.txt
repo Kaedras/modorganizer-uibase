@@ -239,9 +239,7 @@ target_link_libraries(uibase
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
-if (WIN32)
-	install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
-endif()
+mo2_install_pdb(TARGET uibase)
 install(EXPORT uibaseTargets
 	FILE mo2-uibase-targets.cmake
 	NAMESPACE mo2::
