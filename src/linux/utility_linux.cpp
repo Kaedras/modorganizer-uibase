@@ -369,7 +369,8 @@ namespace shell
 
     int result = pipe(pipefd);
     if (result == -1) {
-      return Result::makeFailure(EPIPE, u"Could not open pipe"_s);
+      const int error = errno;
+      return Result::makeFailure(error, u"Could not open pipe"_s);
     }
 
     pid_t pid = fork();
