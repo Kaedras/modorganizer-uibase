@@ -374,9 +374,18 @@ namespace shell
 
     pid_t pid = fork();
 
-    switch (pid) {
-    case 0:  // child
-    {
+    // error
+    if (pid == -1) {
+      close(pipefd[0]);
+      close(pipefd[1]);
+
+      const int error = errno;
+      return Result::makeFailure(
+          error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
+    }
+
+    // child
+    if (pid == 0) {
       // close read end
       close(pipefd[0]);
       // set CLOEXEC on write end
@@ -406,34 +415,23 @@ namespace shell
 
       exit(error);
     }
-    case -1:  // error
-    {
-      close(pipefd[0]);
-      close(pipefd[1]);
 
-      const int error = errno;
-      return Result::makeFailure(
-          error, QStringLiteral("Could not fork, %1").arg(strerror(error)));
+    // parent
+    // close write end
+    close(pipefd[1]);
+
+    int buf;
+
+    size_t count = read(pipefd[0], &buf, sizeof(int));
+
+    // close read end
+    close(pipefd[0]);
+    if (count == 0) {
+      // success
+      return Result::makeSuccess(pidfd_open(pid, 0));
     }
-    default:  // parent
-    {
-      // close write end
-      close(pipefd[1]);
 
-      int buf;
-
-      size_t count = read(pipefd[0], &buf, sizeof(int));
-
-      // close read end
-      close(pipefd[0]);
-      if (count == 0) {
-        // success
-        return Result::makeSuccess(pidfd_open(pid, 0));
-      }
-
-      return Result::makeFailure(buf, QString::fromStdString(strerror(buf)));
-    }
-    }
+    return Result::makeFailure(buf, QString::fromStdString(strerror(buf)));
   }
 
   void SetUrlHandler(const QString& cmd)
