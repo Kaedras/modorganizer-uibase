@@ -13,8 +13,8 @@ namespace
 
 enum version_t : uint8_t
 {
-  fileversion,
-  productversion
+  fileVersion,
+  productVersion
 };
 
 QString getFileVersionInfo(QString const& filepath, version_t type)
@@ -31,17 +31,17 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
     return {};
   }
 
-  QString fileVersion, productVersion;
+  QString fileVersionStr, productVersionStr;
 
   buffer.seek(0);
   QDataStream stream(&buffer);
-  stream >> fileVersion >> productVersion;
+  stream >> fileVersionStr >> productVersionStr;
 
   switch (type) {
-  case fileversion:
-    return fileVersion;
-  case productversion:
-    return productVersion;
+  case fileVersion:
+    return fileVersionStr;
+  case productVersion:
+    return productVersionStr;
   }
   return {};
 }
@@ -509,12 +509,12 @@ QIcon iconForExecutable(const QString& filepath)
 
 QString getFileVersion(QString const& filepath)
 {
-  return getFileVersionInfo(filepath, fileversion);
+  return getFileVersionInfo(filepath, fileVersion);
 }
 
 QString getProductVersion(QString const& filepath)
 {
-  return getFileVersionInfo(filepath, productversion);
+  return getFileVersionInfo(filepath, productVersion);
 }
 
 std::string formatSystemMessage(int id)
