@@ -494,12 +494,17 @@ namespace shell
 
 QIcon iconForExecutable(const QString& filepath)
 {
-  QImage img;
-  if (!IcoUtils::loadIcoImageFromExe(filepath, img)) {
-    return QIcon(QStringLiteral(":/MO/gui/executable"));
+  if (filepath.endsWith(".desktop"_L1)) {
+    QFileInfo info(filepath);
+    return QIcon::fromTheme(info.completeBaseName(),
+                            QIcon(QStringLiteral(":/MO/gui/executable")));
   }
 
-  return QIcon(QPixmap::fromImage(img));
+  QImage img;
+  if (IcoUtils::loadIcoImageFromExe(filepath, img)) {
+    return {QPixmap::fromImage(img)};
+  }
+  return QIcon(QStringLiteral(":/MO/gui/executable"));
 }
 
 QString getFileVersion(QString const& filepath)
