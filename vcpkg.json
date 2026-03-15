@@ -29,7 +29,7 @@
       {
         "kind": "git",
         "repository": "https://github.com/Kaedras/vcpkg-registry",
-        "baseline": "b9606d9a02bf512dbf35171ee7ad439b7c2d14aa",
+        "baseline": "ec3b95c5dca44c7a5058d168e6e368722cc76de8",
         "packages": ["mo2-cmake", "spdlog", "vdf-parser"]
       }
     ]
