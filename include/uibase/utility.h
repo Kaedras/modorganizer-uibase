@@ -287,6 +287,15 @@ namespace shell
   //
   QDLLEXPORT Result Execute(const QString& program, const QString& params = {});
 
+#ifdef __unix__
+  // @brief asks the shell to execute the given program inside the specified directory
+  // with parameters and additional environment strings.
+  // environment strings are added to the current env
+  //
+  QDLLEXPORT Result Execute(const QString& program, const QString& workdir,
+                            const QString& params, const QStringList& environment);
+#endif
+
   // @brief asks the shell to execute the given program inside the specified directory,
   // with optional parameters
   //

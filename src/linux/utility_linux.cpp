@@ -326,11 +326,11 @@ namespace shell
 
   Result Execute(const QString& program, const QString& params)
   {
-    return ExecuteIn(program, QDir::currentPath(), params);
+    return Execute(program, QDir::currentPath(), params, {});
   }
 
-  Result ExecuteIn(const QString& program, const QString& workdir,
-                   const QString& params)
+  Result Execute(const QString& program, const QString& workdir, const QString& params,
+                 const QStringList& environment)
   {
     if (!QFile::exists(workdir)) {
       return Result::makeFailure(ENOENT, u"Workdir does not exist"_s);
@@ -392,10 +392,14 @@ namespace shell
       // set CLOEXEC on write end
       fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
 
+      for (const auto& str : environment) {
+        QByteArray envStr = str.toUtf8();
+        putenv(envStr.data());
+      }
+
       QString command = '\"' % program % u"\" "_s % params;
       // store the temporary QByteArray object
       QByteArray utf8Data = command.toUtf8();
-
       if (chdir(workdir.toUtf8().constData()) != 0) {
         const int e = errno;
         log::warn("Could not change directory to '{}': ", workdir, strerror(e));
@@ -433,6 +437,12 @@ namespace shell
     }
 
     return Result::makeFailure(buf, QString::fromStdString(strerror(buf)));
+  }
+
+  Result ExecuteIn(const QString& program, const QString& workdir,
+                   const QString& params)
+  {
+    return Execute(program, workdir, params, {});
   }
 
   void SetUrlHandler(const QString& cmd)
