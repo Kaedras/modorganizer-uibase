@@ -64,9 +64,14 @@ public:  // Information found in ExecutableInfo
   virtual const QString& prefixDirectory() const = 0;
 
   /**
-   * @return true if the steam api/overlay should be enabled
+   * @return true if the steam api should be enabled
    */
   virtual bool enableSteamAPI() const = 0;
+
+  /**
+   * @return true if the steam overlay should be enabled
+   */
+  virtual bool enableSteamOverlay() const = 0;
 #endif
 
 public:  // Information found in flags

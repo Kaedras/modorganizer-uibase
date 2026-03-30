@@ -44,6 +44,14 @@ public:
 
   ExecutableInfo& asCustom();
 
+#ifdef __unix__
+  ExecutableInfo& withPrefixDirectory(const QDir& prefixDirectory);
+
+  ExecutableInfo& withSteamAPI();
+
+  ExecutableInfo& withSteamOverlay();
+#endif
+
   bool isValid() const;
 
   QString title() const;
@@ -52,6 +60,11 @@ public:
   QDir workingDirectory() const;
   QString steamAppID() const;
   bool isCustom() const;
+#ifdef __unix__
+  QDir prefixDirectory() const;
+  bool enableSteamAPI() const;
+  bool enableSteamOverlay() const;
+#endif
 
 private:
   QString m_Title;
@@ -60,6 +73,11 @@ private:
   QDir m_WorkingDirectory;
   QString m_SteamAppID;
   bool m_Custom{false};
+#ifdef __unix__
+  QDir m_PrefixDirectory;
+  bool m_EnableSteamAPI{false};
+  bool m_EnableSteamOverlay{false};
+#endif
 };
 
 }  // namespace MOBase

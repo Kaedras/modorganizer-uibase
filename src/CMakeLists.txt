@@ -19,6 +19,7 @@ if (UNIX)
 			linux/fdcloser.cpp
 			linux/peextractor.cpp
 			linux/icoutils.cpp
+            linux/executableinfo_linux.cpp
 	)
 else()
 	set(os_name win32)
