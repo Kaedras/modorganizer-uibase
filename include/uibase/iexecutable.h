@@ -57,6 +57,18 @@ public:  // Information found in ExecutableInfo
    */
   virtual const QString& workingDirectory() const = 0;
 
+#ifdef __unix__
+  /**
+   * @return the wine prefix directory
+   */
+  virtual const QString& prefixDirectory() const = 0;
+
+  /**
+   * @return true if the steam api/overlay should be enabled
+   */
+  virtual bool enableSteamAPI() const = 0;
+#endif
+
 public:  // Information found in flags
   /**
    * @return true if the executable is shown on the toolbar.
