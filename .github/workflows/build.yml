@@ -29,12 +29,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Install build dependencies
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get install -y \
-          build-essential cmake curl git ninja-build pkg-config tar unzip wget zip
-
       - name: Configure UIBase
         id: configure-uibase
         uses: Kaedras/build-with-mob-action@master
@@ -42,7 +36,6 @@ jobs:
           # skip build because we are going to build both Debug and RelWithDebInfo here
           mo2-skip-build: true
           mo2-owner: Kaedras
-          upgrade-gcc: true
 
       # build both Debug and RelWithDebInfo for package
       - name: Build UI Base
