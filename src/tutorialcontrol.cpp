@@ -144,13 +144,14 @@ void TutorialControl::simulateClick(int x, int y)
   if (!wasTransparent) {
     m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, true);
   }
-  QWidget* hitControl    = m_TargetControl->childAt(x, y);
-  QPoint globalPos       = m_TargetControl->mapToGlobal(QPoint(x, y));
-  QPoint hitPos          = hitControl->mapFromGlobal(globalPos);
-  QMouseEvent* downEvent = new QMouseEvent(
-      QEvent::MouseButtonPress, hitPos, Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+  QWidget* hitControl = m_TargetControl->childAt(x, y);
+  QPoint globalPos    = m_TargetControl->mapToGlobal(QPoint(x, y));
+  QPoint hitPos       = hitControl->mapFromGlobal(globalPos);
+  QMouseEvent* downEvent =
+      new QMouseEvent(QEvent::MouseButtonPress, hitPos, globalPos, Qt::LeftButton,
+                      Qt::LeftButton, Qt::NoModifier);
   QMouseEvent* upEvent =
-      new QMouseEvent(QEvent::MouseButtonRelease, hitPos, Qt::LeftButton,
+      new QMouseEvent(QEvent::MouseButtonRelease, hitPos, globalPos, Qt::LeftButton,
                       Qt::LeftButton, Qt::NoModifier);
 
   qApp->postEvent(hitControl, (QEvent*)downEvent);
