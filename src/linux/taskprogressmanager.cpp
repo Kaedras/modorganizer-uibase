@@ -84,10 +84,9 @@ void TaskProgressManager::showProgress()
         iter = m_Percentages.erase(iter);
       }
     }
-    log::debug("setting progress to {}", total / (count * 100));
-    properties.insert(QStringLiteral("progress"),
-                      total /
-                          (count * 100));  // set the progress value (from 0.0 to 1.0)
+    properties.insert(
+        QStringLiteral("progress"),
+        total / (count * 100.0F));  // set the progress value (from 0.0 to 1.0)
   } else {
     properties.insert(QStringLiteral("progress-visible"), false);
   }
