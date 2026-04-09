@@ -2,6 +2,8 @@
 
 #include "log.h"
 
+using namespace Qt::StringLiterals;
+
 namespace MOBase
 {
 TaskProgressManager& TaskProgressManager::instance()
@@ -49,12 +51,14 @@ quint32 TaskProgressManager::getId()
 bool TaskProgressManager::tryCreateTaskbar()
 {
   auto message = QDBusMessage::createSignal(
-      QStringLiteral("/org/ModOrganizer2/ModOrganizer2"),
+      QStringLiteral("/org/ModOrganizer2/ModOrganizer"),
       QStringLiteral("com.canonical.Unity.LauncherEntry"), QStringLiteral("Update"));
 
   QVariantMap properties;
   properties.insert(QStringLiteral("progress-visible"), false);
-  message << QStringLiteral("application://") + QGuiApplication::desktopFileName()
+  properties.insert(QStringLiteral("count-visible"), false);
+  message << QString(QStringLiteral("application://") %
+                     QGuiApplication::desktopFileName() % ".desktop"_L1)
           << properties;
   return QDBusConnection::sessionBus().send(message);
 }
@@ -62,12 +66,13 @@ bool TaskProgressManager::tryCreateTaskbar()
 void TaskProgressManager::showProgress()
 {
   auto message = QDBusMessage::createSignal(
-      QStringLiteral("/org/ModOrganizer2/ModOrganizer2"),
+      QStringLiteral("/org/ModOrganizer2/ModOrganizer"),
       QStringLiteral("com.canonical.Unity.LauncherEntry"), QStringLiteral("Update"));
 
   QVariantMap properties;
   if (!m_Percentages.empty()) {
     properties.insert(QStringLiteral("progress-visible"), true);  // enable the progress
+    properties.insert(QStringLiteral("count-visible"), true);
 
     QTime now                = QTime::currentTime();
     unsigned long long total = 0;
@@ -84,14 +89,17 @@ void TaskProgressManager::showProgress()
         iter = m_Percentages.erase(iter);
       }
     }
-    properties.insert(
-        QStringLiteral("progress"),
-        total / (count * 100.0F));  // set the progress value (from 0.0 to 1.0)
+    properties.insert(QStringLiteral("progress"),
+                      total /
+                          (count * 100.0));  // set the progress value (from 0.0 to 1.0)
+    properties.insert(QStringLiteral("count"), count);
   } else {
     properties.insert(QStringLiteral("progress-visible"), false);
+    properties.insert(QStringLiteral("count-visible"), false);
   }
 
-  message << QStringLiteral("application://") + QGuiApplication::desktopFileName()
+  message << QString(QStringLiteral("application://") %
+                     QGuiApplication::desktopFileName() % ".desktop"_L1)
           << properties;
   bool result = QDBusConnection::sessionBus().send(message);
   if (!result) {
