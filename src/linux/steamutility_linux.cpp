@@ -124,11 +124,11 @@ QString findProtonByAppID(const QString& appID)
   return proton;
 }
 
-QString getProtonFromPrefixPath(const QString& prefixPath)
+QString getProtonFromPrefixPath(const QDir& prefixPath)
 {
   // read proton path from <prefix>/config_info
 
-  QFile info(prefixPath % "/config_info");
+  QFile info(prefixPath.absoluteFilePath(u"config_info"_s));
   if (!info.open(QIODeviceBase::ReadOnly)) {
     log::error("error opening {}, {}", info.fileName(), info.errorString());
     return {};

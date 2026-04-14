@@ -117,7 +117,7 @@ QDLLEXPORT QString findProtonByAppID(const QString& appID);
  * @return Absolute path of proton executable, empty string if not found
  * @note This does not work with very old proton versions e.g. proton 4
  */
-QDLLEXPORT QString getProtonFromPrefixPath(const QString& prefixPath);
+QDLLEXPORT QString getProtonFromPrefixPath(const QDir& prefixPath);
 
 /**
  * @brief Returns path of compat data directory for the specified appID
