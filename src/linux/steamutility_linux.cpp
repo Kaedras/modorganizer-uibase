@@ -124,6 +124,30 @@ QString findProtonByAppID(const QString& appID)
   return proton;
 }
 
+QString getProtonFromPrefixPath(const QString& prefixPath)
+{
+  // read proton path from <prefix>/config_info
+
+  QFile info(prefixPath % "/config_info");
+  if (!info.open(QIODeviceBase::ReadOnly)) {
+    log::error("error opening {}, {}", info.fileName(), info.errorString());
+    return {};
+  }
+
+  // skip the first line
+  info.readLine();
+
+  QString result = info.readLine();
+
+  // remove trailing "files/share/fonts/\n"
+  result.chop(19);
+
+  // append "proton"
+  result.append(u"proton"_s);
+
+  return result;
+}
+
 QString findCompatDataByAppID(const QString& appID)
 {
   QDir steamDir(findSteamCached());

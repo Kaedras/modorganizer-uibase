@@ -112,6 +112,14 @@ QDLLEXPORT std::string getProtonNameByAppID(const QString& appID);
 QDLLEXPORT QString findProtonByAppID(const QString& appID);
 
 /**
+ * @brief Gets the proton executable for the specified prefix path
+ * @param prefixPath Prefix path of the application
+ * @return Absolute path of proton executable, empty string if not found
+ * @note This does not work with very old proton versions e.g. proton 4
+ */
+QDLLEXPORT QString getProtonFromPrefixPath(const QString& prefixPath);
+
+/**
  * @brief Returns path of compat data directory for the specified appID
  * @param appID Steam appID of application
  * @return Absolute path to compat data, empty string if not found
