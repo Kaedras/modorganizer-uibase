@@ -2,6 +2,7 @@
 
 #include "log.h"
 #include "utility.h"
+#include <vdf_parser.hpp>
 
 using namespace Qt::StringLiterals;
 using namespace std;

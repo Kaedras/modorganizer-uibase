@@ -31,7 +31,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextStream>
 #include <fstream>
 #include <ranges>
-#include <vdf-parser/vdf_parser.hpp>
+#include <vdf_parser.hpp>
 
 using namespace Qt::StringLiterals;
 
