@@ -20,6 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "qinipp.h"
 #include "report.h"
 #include <QApplication>
+#include <QFile>
 #include <QMessageBox>
 #include <QString>
 #include <fstream>
