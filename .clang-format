@@ -4,8 +4,7 @@ BasedOnStyle: LLVM
 IndentWidth: 2
 ---
 Language: Cpp
-DeriveLineEnding: false
-UseCRLF: true
+LineEnding: DeriveCRLF
 DerivePointerAlignment: false
 PointerAlignment: Left
 AlignConsecutiveAssignments: true
