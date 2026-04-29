@@ -1,7 +1,7 @@
 {
   "dependencies": [
     "spdlog",
-    "vdf-parser"
+    "valvefilevdf"
   ],
   "overrides": [
     {
@@ -32,12 +32,12 @@
     "registries": [
       {
         "kind": "git",
-        "baseline": "85dd4f15029e15c0413efb183fa213273ad10639",
+        "baseline": "878470eae031cacfb6407c28552fb69911b50d08",
         "repository": "https://github.com/Kaedras/vcpkg-registry",
         "packages": [
           "mo2-cmake",
           "spdlog",
-          "vdf-parser"
+          "valvefilevdf"
         ]
       }
     ]
