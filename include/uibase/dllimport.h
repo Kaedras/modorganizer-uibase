@@ -21,24 +21,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef DLLIMPORT_H
 #define DLLIMPORT_H
 
+#include <QtCompilerDetection>
+
 namespace MOBase
 {
 
 #if defined(UIBASE_EXPORT)
-#if defined _WIN32
-#define QDLLEXPORT __declspec(dllexport)
-#else
-#define QDLLEXPORT __attribute__((visibility("default")))
-#endif
+#define QDLLEXPORT Q_DECL_EXPORT
 #elif defined(_NODLL)
 #define QDLLEXPORT
 #else
 #undef DLLEXPORT
-#if defined _WIN32
-#define QDLLEXPORT __declspec(dllimport)
-#else
-#define QDLLEXPORT
-#endif
+#define QDLLEXPORT Q_DECL_IMPORT
 #endif
 
 }  // namespace MOBase

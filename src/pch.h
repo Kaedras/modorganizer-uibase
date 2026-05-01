@@ -139,6 +139,7 @@
 #include <QVariantMap>
 #include <QVersionNumber>
 #include <QWidget>
+#include <QtCompilerDetection>
 #include <QtDebug>
 #include <qmetaobject.h>
 #ifdef __unix__
