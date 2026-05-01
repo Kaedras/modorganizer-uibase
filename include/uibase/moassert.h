@@ -25,6 +25,6 @@ inline void MOAssert(T&& t, const char* exp, const char* file, int line,
 
 }  // namespace MOBase
 
-#define MO_ASSERT(v) MOAssert(v, #v, __FILE__, __LINE__, __FUNCSIG__)
+#define MO_ASSERT(v) MOAssert(v, #v, __FILE__, __LINE__, Q_FUNC_INFO)
 
 #endif  // UIBASE_MOASSERT_INCLUDED
