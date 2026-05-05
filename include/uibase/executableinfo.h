@@ -47,9 +47,9 @@ public:
 #ifdef __unix__
   ExecutableInfo& withPrefixDirectory(const QDir& prefixDirectory);
 
-  ExecutableInfo& withSteamAPI();
+  ExecutableInfo& withSteamAPI(bool enabled = true);
 
-  ExecutableInfo& withSteamOverlay();
+  ExecutableInfo& withSteamOverlay(bool enabled = true);
 #endif
 
   bool isValid() const;
@@ -62,8 +62,8 @@ public:
   bool isCustom() const;
 #ifdef __unix__
   QDir prefixDirectory() const;
-  bool enableSteamAPI() const;
-  bool enableSteamOverlay() const;
+  std::optional<bool> enableSteamAPI() const;
+  std::optional<bool> enableSteamOverlay() const;
 #endif
 
 private:
@@ -75,8 +75,8 @@ private:
   bool m_Custom{false};
 #ifdef __unix__
   QDir m_PrefixDirectory;
-  bool m_EnableSteamAPI{false};
-  bool m_EnableSteamOverlay{false};
+  std::optional<bool> m_EnableSteamAPI;
+  std::optional<bool> m_EnableSteamOverlay;
 #endif
 };
 

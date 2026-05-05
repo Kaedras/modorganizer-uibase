@@ -8,15 +8,15 @@ ExecutableInfo& ExecutableInfo::withPrefixDirectory(const QDir& prefixDirectory)
   return *this;
 }
 
-ExecutableInfo& ExecutableInfo::withSteamAPI()
+ExecutableInfo& ExecutableInfo::withSteamAPI(bool enabled)
 {
-  m_EnableSteamAPI = true;
+  m_EnableSteamAPI = enabled;
   return *this;
 }
 
-ExecutableInfo& ExecutableInfo::withSteamOverlay()
+ExecutableInfo& ExecutableInfo::withSteamOverlay(bool enabled)
 {
-  m_EnableSteamOverlay = true;
+  m_EnableSteamOverlay = enabled;
   return *this;
 }
 
@@ -25,12 +25,12 @@ QDir ExecutableInfo::prefixDirectory() const
   return m_PrefixDirectory;
 }
 
-bool ExecutableInfo::enableSteamAPI() const
+std::optional<bool> ExecutableInfo::enableSteamAPI() const
 {
   return m_EnableSteamAPI;
 }
 
-bool ExecutableInfo::enableSteamOverlay() const
+std::optional<bool> ExecutableInfo::enableSteamOverlay() const
 {
   return m_EnableSteamOverlay;
 }
