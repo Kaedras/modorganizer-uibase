@@ -114,39 +114,39 @@
         </translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="97"/>
         <location filename="registry.cpp" line="98"/>
+        <location filename="registry.cpp" line="99"/>
         <location filename="textviewer.cpp" line="173"/>
         <location filename="textviewer.cpp" line="174"/>
         <source>INI file is read-only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="99"/>
+        <location filename="registry.cpp" line="100"/>
         <location filename="textviewer.cpp" line="175"/>
         <source>Mod Organizer is attempting to write to &quot;%1&quot; which is currently set to read-only.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="103"/>
+        <location filename="registry.cpp" line="104"/>
         <location filename="textviewer.cpp" line="179"/>
         <source>Clear the read-only flag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="104"/>
+        <location filename="registry.cpp" line="105"/>
         <location filename="textviewer.cpp" line="180"/>
         <source>Allow the write once</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="105"/>
+        <location filename="registry.cpp" line="106"/>
         <location filename="textviewer.cpp" line="181"/>
         <source>The file will be set to read-only again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="registry.cpp" line="107"/>
+        <location filename="registry.cpp" line="108"/>
         <location filename="textviewer.cpp" line="183"/>
         <source>Skip this file</source>
         <translation type="unfinished"></translation>
@@ -185,84 +185,84 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="60"/>
+        <location filename="utility.cpp" line="62"/>
         <source>removal of &quot;%1&quot; failed: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="69"/>
+        <location filename="utility.cpp" line="71"/>
         <source>removal of &quot;%1&quot; failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="73"/>
+        <location filename="utility.cpp" line="75"/>
         <source>&quot;%1&quot; doesn&apos;t exist (remove)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="169"/>
+        <location filename="utility.cpp" line="171"/>
         <source>Error %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="223"/>
-        <location filename="utility.cpp" line="252"/>
+        <location filename="utility.cpp" line="225"/>
+        <location filename="utility.cpp" line="254"/>
         <source>failed to create directory &quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="232"/>
-        <location filename="utility.cpp" line="259"/>
+        <location filename="utility.cpp" line="234"/>
+        <location filename="utility.cpp" line="261"/>
         <source>failed to copy &quot;%1&quot; to &quot;%2&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="528"/>
+        <location filename="utility.cpp" line="530"/>
         <source>%1 B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="528"/>
+        <location filename="utility.cpp" line="530"/>
         <source>%1 KB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="529"/>
+        <location filename="utility.cpp" line="531"/>
         <source>%1 MB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="529"/>
+        <location filename="utility.cpp" line="531"/>
         <source>%1 GB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="530"/>
+        <location filename="utility.cpp" line="532"/>
         <source>%1 TB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="535"/>
+        <location filename="utility.cpp" line="537"/>
         <source>%1 B/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="535"/>
+        <location filename="utility.cpp" line="537"/>
         <source>%1 KB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="536"/>
+        <location filename="utility.cpp" line="538"/>
         <source>%1 MB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="536"/>
+        <location filename="utility.cpp" line="538"/>
         <source>%1 GB/s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="537"/>
+        <location filename="utility.cpp" line="539"/>
         <source>%1 TB/s</source>
         <translation type="unfinished"></translation>
     </message>
@@ -386,19 +386,19 @@
 <context>
     <name>uibase</name>
     <message>
-        <location filename="utility.cpp" line="599"/>
+        <location filename="utility.cpp" line="601"/>
         <source>h</source>
         <extracomment>Time remaining hours</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="602"/>
+        <location filename="utility.cpp" line="604"/>
         <source>m</source>
         <extracomment>Time remaining minutes</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="utility.cpp" line="605"/>
+        <location filename="utility.cpp" line="607"/>
         <source>s</source>
         <extracomment>Time remaining seconds</extracomment>
         <translation type="unfinished"></translation>
