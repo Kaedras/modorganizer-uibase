@@ -29,7 +29,7 @@ bool iequals(std::string_view lhs, std::string_view rhs)
 void ireplace_all(std::string& input, std::string_view search,
                   std::string_view replace) noexcept
 {
-  const auto search_length  = static_cast<std::string::difference_type>(search.size());
+  const auto search_length  = search.size();
   const auto replace_length = replace.size();
 
   std::size_t i = 0;
