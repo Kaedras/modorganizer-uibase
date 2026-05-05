@@ -3,6 +3,17 @@
 #include "linux/icoutils.h"
 #include "linux/peextractor.h"
 #include "log.h"
+#include <QBuffer>
+#include <QByteArray>
+#include <QDataStream>
+#include <QFile>
+#include <QIODevice>
+#include <QIcon>
+#include <QMessageBox>
+#include <QPixmap>
+#include <QRegularExpression>
+#include <QString>
+#include <QWidget>
 
 using namespace std;
 using namespace Qt::Literals::StringLiterals;

@@ -8,6 +8,13 @@
 
 #include "linux/icoutils.h"
 #include "linux/peextractor.h"
+#include <QBuffer>
+#include <QFile>
+#include <QIODevice>
+#include <QImage>
+#include <QImageReader>
+#include <QList>
+#include <QtTypes>
 
 namespace
 {

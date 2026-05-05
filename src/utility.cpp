@@ -26,10 +26,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QCollator>
 #include <QDir>
 #include <QImage>
+#include <QLayout>
 #include <QScreen>
 #include <QStringEncoder>
 #include <QUuid>
 #include <QtDebug>
+#include <iostream>
 #include <memory>
 #include <sstream>
 

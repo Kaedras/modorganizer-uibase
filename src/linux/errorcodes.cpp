@@ -1,4 +1,5 @@
 #include "errorcodes.h"
+#include <cstring>
 
 namespace MOBase
 {

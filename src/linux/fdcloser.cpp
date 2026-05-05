@@ -1,4 +1,5 @@
 #include "linux/fdcloser.h"
+#include <unistd.h>
 
 FdCloser::FdCloser() noexcept : m_fd(-1) {}
 
