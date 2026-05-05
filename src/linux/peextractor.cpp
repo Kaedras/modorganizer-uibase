@@ -1,5 +1,7 @@
 #include "linux/peextractor.h"
 #include "linux/petypes.h"
+#include <QFile>
+#include <QIODevice>
 
 using namespace peTypes;
 

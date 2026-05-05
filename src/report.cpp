@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ui_taskdialog.h"
 #include "utility.h"
 #include <QComboBox>
+#include <QMainWindow>
 #include <QRadioButton>
 #ifdef _WIN32
 #include <Windows.h>

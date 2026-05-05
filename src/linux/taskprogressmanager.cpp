@@ -1,6 +1,8 @@
 #include "taskprogressmanager.h"
-
 #include "log.h"
+#include <QDBusConnection>
+#include <QDBusMessage>
+#include <QGuiApplication>
 
 using namespace Qt::StringLiterals;
 

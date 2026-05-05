@@ -4,49 +4,49 @@
 <context>
     <name>FilterWidget</name>
     <message>
-        <location filename="filterwidget.cpp" line="610"/>
+        <location filename="filterwidget.cpp" line="615"/>
         <source>Filter options</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="617"/>
+        <location filename="filterwidget.cpp" line="622"/>
         <source>Use regular expressions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="618"/>
+        <location filename="filterwidget.cpp" line="623"/>
         <source>Use regular expressions in filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="627"/>
+        <location filename="filterwidget.cpp" line="632"/>
         <source>Case sensitive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="629"/>
+        <location filename="filterwidget.cpp" line="634"/>
         <source>Make regular expressions case sensitive (/i)</source>
         <extracomment>leave &quot;(/i)&quot; verbatim</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="639"/>
+        <location filename="filterwidget.cpp" line="644"/>
         <source>Extended</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="641"/>
+        <location filename="filterwidget.cpp" line="646"/>
         <source>Ignores unescaped whitespace in regular expressions (/x)</source>
         <extracomment>leave &quot;(/x)&quot; verbatim</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="651"/>
+        <location filename="filterwidget.cpp" line="656"/>
         <source>Keep selection in view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filterwidget.cpp" line="652"/>
+        <location filename="filterwidget.cpp" line="657"/>
         <source>Scroll to keep the current selection in view after filtering</source>
         <translation type="unfinished"></translation>
     </message>
@@ -91,7 +91,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="filterwidget.cpp" line="128"/>
+        <location filename="filterwidget.cpp" line="133"/>
         <source>Filter</source>
         <translation type="unfinished"></translation>
     </message>
@@ -152,30 +152,30 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="67"/>
-        <location filename="report.cpp" line="74"/>
-        <location filename="report.cpp" line="76"/>
+        <location filename="report.cpp" line="68"/>
+        <location filename="report.cpp" line="75"/>
+        <location filename="report.cpp" line="77"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="344"/>
+        <location filename="report.cpp" line="345"/>
         <source>You can reset these choices by clicking &quot;Reset Dialog Choices&quot; in the General tab of the Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="353"/>
+        <location filename="report.cpp" line="354"/>
         <source>Always ask</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="354"/>
-        <location filename="report.cpp" line="362"/>
+        <location filename="report.cpp" line="355"/>
+        <location filename="report.cpp" line="363"/>
         <source>Remember my choice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="report.cpp" line="356"/>
+        <location filename="report.cpp" line="357"/>
         <source>Remember my choice for %1</source>
         <translation type="unfinished"></translation>
     </message>

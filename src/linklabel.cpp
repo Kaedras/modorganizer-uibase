@@ -1,4 +1,5 @@
 #include "linklabel.h"
+#include <QApplication>
 
 QColor LinkLabel::m_linkColor;
 

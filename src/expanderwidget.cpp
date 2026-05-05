@@ -1,4 +1,5 @@
 #include "expanderwidget.h"
+#include <QIODevice>
 
 namespace MOBase
 {

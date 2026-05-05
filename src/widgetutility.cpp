@@ -2,6 +2,8 @@
 #include "eventfilter.h"
 #include <QCheckBox>
 #include <QHeaderView>
+#include <QMenu>
+#include <QTreeView>
 #include <QWidgetAction>
 
 namespace MOBase

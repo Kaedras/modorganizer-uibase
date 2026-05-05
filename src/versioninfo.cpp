@@ -19,6 +19,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "versioninfo.h"
+#include <QDateTime>
+#include <QLocale>
 #include <QRegularExpression>
 #include <QVersionNumber>
 

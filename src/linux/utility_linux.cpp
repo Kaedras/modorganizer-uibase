@@ -5,7 +5,10 @@
 #include "log.h"
 #include <QBuffer>
 #include <QByteArray>
+#include <QDBusInterface>
+#include <QDBusMessage>
 #include <QDataStream>
+#include <QDesktopServices>
 #include <QFile>
 #include <QIODevice>
 #include <QIcon>
