@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-include(CMakePackageConfigHelpers)
+project(uibase LANGUAGES CXX)
 
-project(uibase)
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
 
 find_package(mo2-cmake CONFIG REQUIRED)
 
@@ -13,7 +14,7 @@ set_property(DIRECTORY ${PROJECT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT uibase)
 
 configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/config.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config.cmake"
-  INSTALL_DESTINATION "lib/cmake/mo2-uibase"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/mo2-uibase"
   NO_SET_AND_CHECK_MACRO
   NO_CHECK_REQUIRED_COMPONENTS_MACRO
 )
@@ -34,7 +35,7 @@ write_basic_package_version_file(
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/mo2-uibase-config-version.cmake
-  DESTINATION lib/cmake/mo2-uibase
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mo2-uibase
 )
 
 set(BUILD_TESTING ${BUILD_TESTING} CACHE BOOL "build tests for uibase")

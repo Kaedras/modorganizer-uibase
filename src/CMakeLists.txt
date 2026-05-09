@@ -249,5 +249,5 @@ mo2_install_pdb(TARGET uibase)
 install(EXPORT uibaseTargets
 	FILE mo2-uibase-targets.cmake
 	NAMESPACE mo2::
-	DESTINATION lib/cmake/mo2-uibase
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/mo2-uibase
 )
