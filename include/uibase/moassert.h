@@ -3,8 +3,8 @@
 
 #include "log.h"
 
-#ifdef __unix__
-#include <linux/compatibility.h>
+#ifdef __cpp_lib_debugging
+#include <debugging>
 #endif
 
 namespace MOBase
@@ -17,9 +17,13 @@ inline void MOAssert(T&& t, const char* exp, const char* file, int line,
   if (!t) {
     log::error("assertion failed: {}:{} {}: '{}'", file, line, func, exp);
 
+#ifdef __cpp_lib_debugging
+    std::breakpoint_if_debugging();
+#else
     if (IsDebuggerPresent()) {
       DebugBreak();
     }
+#endif
   }
 }
 

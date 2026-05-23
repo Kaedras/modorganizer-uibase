@@ -35,8 +35,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <memory>
 #include <sstream>
 
-#ifdef __unix__
-#include "linux/compatibility.h"
+#ifdef __cpp_lib_debugging
+#include <debugging>
+using std::breakpoint;
+#else
+#define breakpoint DebugBreak
 #endif
 
 namespace MOBase
@@ -618,7 +621,7 @@ QDLLEXPORT void localizedByteSizeTests()
 #define CHECK_EQ(a, b)                                                                 \
   if ((a) != (b)) {                                                                    \
     std::cerr << "failed: " << a << " == " << b << "\n";                               \
-    DebugBreak();                                                                      \
+    breakpoint();                                                                      \
   }
 
   CHECK_EQ(f(0), "0 B");

@@ -135,6 +135,12 @@ add_library(uibase SHARED)
 mo2_configure_target(uibase NO_SOURCES WARNINGS ON EXTERNAL_WARNINGS ON)
 mo2_default_source_group()
 
+# todo: change this once linking against libstdc++exp is no longer required for std::breakpoint
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    # required for std::breakpoint
+    target_link_libraries(uibase PRIVATE stdc++exp)
+endif()
+
 mo2_target_sources(uibase
 	FOLDER src
 	PRIVATE
