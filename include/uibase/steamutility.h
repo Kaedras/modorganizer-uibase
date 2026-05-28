@@ -121,11 +121,11 @@ QDLLEXPORT QString findProtonByAppID(const QString& appID);
 QDLLEXPORT QString getProtonFromPrefixPath(const QDir& prefixPath);
 
 /**
- * @brief Returns path of compat data directory for the specified appID
+ * @brief Returns the prefix path for the specified appID
  * @param appID Steam appID of application
- * @return Absolute path to compat data, empty string if not found
+ * @return Absolute path prefix or empty string if not found
  */
-QDLLEXPORT QString findCompatDataByAppID(const QString& appID);
+QDLLEXPORT QString findPrefixByAppID(const QString& appID);
 
 #endif  // __unix__
 

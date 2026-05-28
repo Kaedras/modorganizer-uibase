@@ -149,7 +149,7 @@ QString getProtonFromPrefixPath(const QDir& prefixPath)
   return result;
 }
 
-QString findCompatDataByAppID(const QString& appID)
+QString findPrefixByAppID(const QString& appID)
 {
   QDir steamDir(findSteamCached());
   if (!steamDir.exists()) {
