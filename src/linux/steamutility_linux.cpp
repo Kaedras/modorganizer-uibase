@@ -156,18 +156,23 @@ QString findCompatDataByAppID(const QString& appID)
     return {};
   }
 
-  for (const auto& library : getAllSteamLibrariesCached()) {
-    for (const auto& game : library.games) {
-      if (appID.toStdString() == game.appID) {
-        filesystem::path compatDataPath = library.path / "steamapps/common" /
-                                          game.installDir / "../../compatdata" /
-                                          appID.toStdString();
-        // clean up path
-        compatDataPath = canonical(compatDataPath);
-        log::debug("found compatdata for appID {}: {}", appID, compatDataPath.string());
-        return QString::fromStdString(absolute(compatDataPath).string());
+  try {
+    for (const auto& library : getAllSteamLibrariesCached()) {
+      for (const auto& game : library.games) {
+        if (appID.toStdString() == game.appID) {
+          filesystem::path compatDataPath = library.path / "steamapps/common" /
+                                            game.installDir / "../../compatdata" /
+                                            appID.toStdString();
+          // clean up path
+          compatDataPath = canonical(compatDataPath);
+          log::debug("found compatdata for appID {}: {}", appID,
+                     compatDataPath.string());
+          return QString::fromStdString(absolute(compatDataPath).string());
+        }
       }
     }
+  } catch (const filesystem::filesystem_error& ex) {
+    log::error("Error getting prefix path: {}", ex.what());
   }
   return {};
 }
