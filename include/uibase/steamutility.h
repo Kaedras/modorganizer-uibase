@@ -60,14 +60,6 @@ QDLLEXPORT QString appIdByGamePath(const QString& gameLocation);
 // proton-specific functions
 
 /**
- * @brief Gets proton executable for specified appID
- * @param appID Steam appID of application
- * @return Absolute path of proton executable, empty string if not found
- * @note Use protonByPrefixPath() when possible
- */
-QDLLEXPORT QString protonByAppID(const QString& appID);
-
-/**
  * @brief Gets the proton executable for the specified prefix path
  * @param prefixPath Prefix path of the application
  * @return Absolute path of proton executable, empty string if not found

@@ -86,12 +86,32 @@ QString protonByAppID(const QString& appID)
 
   log::debug("Found proton name {}", protonName);
 
+  // create the directory name from proton name, e.g.
+  // proton_411 -> Proton 4.11
+  // proton_5 -> Proton 5.0
+  // proton_513 -> Proton 5.13
+
   QString proton;
   if (protonName.startsWith("proton_"_L1)) {
     // normal proton, installed as steam tool
 
     // convert "proton_<version>" to "Proton <version>"
     protonName.replace("proton_"_L1, "Proton "_L1);
+
+    static const QRegularExpression regex(u"\\d"_s);
+    qsizetype index = protonName.indexOf(regex);
+    if (index == -1) {
+      log::error("Could not find proton path for appid {}", appID);
+      return {};
+    }
+
+    // append `.0` if name contains a single digit
+    if (index == protonName.size() - 1) {
+      protonName.append(".0"_L1);
+    } else {
+      // insert `.` after first digit
+      protonName.insert(index + 1, '.');
+    }
 
     proton = findSteamGame(protonName, u"proton"_s);
   } else {
@@ -111,6 +131,17 @@ QString protonByPrefixPath(const QDir& prefixPath)
 {
   // read proton path from <prefix>/config_info
 
+  if (!prefixPath.exists()) {
+    log::error("prefix path {} does not exist", prefixPath.absolutePath());
+    return {};
+  }
+
+  // fallback for old proton versions
+  if (!prefixPath.exists(u"config_info"_s)) {
+    log::debug("config_info does not exist, falling back to protonByAppID()");
+    return protonByAppID(prefixPath.dirName());
+  }
+
   QFile info(prefixPath.absoluteFilePath(u"config_info"_s));
   if (!info.open(QIODeviceBase::ReadOnly)) {
     log::error("error opening {}, {}", info.fileName(), info.errorString());
@@ -121,6 +152,10 @@ QString protonByPrefixPath(const QDir& prefixPath)
   info.readLine();
 
   QString result = info.readLine();
+  if (!result.endsWith("/files/share/fonts/\n"_L1)) {
+    log::error("Error parsing {}", info.fileName());
+    return {};
+  }
 
   // remove trailing "files/share/fonts/\n"
   result.chop(19);
