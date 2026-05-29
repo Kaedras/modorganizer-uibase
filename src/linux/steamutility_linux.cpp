@@ -27,7 +27,7 @@ QString findSteam()
   return "";
 }
 
-std::string getProtonNameByAppID(const QString& appID)
+QString protonNameByAppID(const QString& appID)
 {
   // proton versions can be parsed from <steamDir>/config/config.vdf
   // InstallConfigStore -> Software -> Valve -> Steam -> CompatToolMapping
@@ -61,61 +61,43 @@ std::string getProtonNameByAppID(const QString& appID)
     auto compatToolMapping = valve->childs.at("Steam")->childs.at("CompatToolMapping");
     auto tmp               = compatToolMapping->childs[appID.toStdString()];
     if (tmp != nullptr) {
-      return tmp->attribs.at("name");
+      return QString::fromStdString(tmp->attribs.at("name"));
     }
     // version is not set manually, use the version from appID 0
-    return compatToolMapping->childs.at("0")->attribs.at("name");
+    return QString::fromStdString(
+        compatToolMapping->childs.at("0")->attribs.at("name"));
   } catch (const out_of_range& ex) {
     log::error("Error getting proton name for appid {}, {}", appID, ex.what());
     return {};
   }
 }
 
-// separate function to return from nested loops
-QString findInstalledProton(string_view protonName)
-{
-  for (const auto& library : getAllSteamLibrariesCached()) {
-    for (const auto& game : library.games) {
-      if (game.name.starts_with(protonName)) {
-        QString location = QString::fromStdString(
-            (library.path / "steamapps/common" / game.installDir / "proton").string());
-        if (QFile::exists(location)) {
-          log::debug("found proton location: {}", location);
-          return location;
-        }
-        log::warn("found proton in config, but file {} does not exist", location);
-      }
-    }
-  }
-  return {};
-}
-
-QString findProtonByAppID(const QString& appID)
+QString protonByAppID(const QString& appID)
 {
   QDir steamDir(findSteamCached());
   if (!steamDir.exists()) {
     return {};
   }
 
-  string protonName = getProtonNameByAppID(appID);
-  if (protonName.empty()) {
+  QString protonName = protonNameByAppID(appID);
+  if (protonName.isEmpty()) {
     return {};
   }
 
   log::debug("Found proton name {}", protonName);
 
   QString proton;
-  if (protonName.starts_with("proton_")) {
+  if (protonName.startsWith("proton_"_L1)) {
     // normal proton, installed as steam tool
 
     // convert "proton_<version>" to "Proton <version>"
-    protonName.replace(0, strlen("proton_"), "Proton ");
+    protonName.replace("proton_"_L1, "Proton "_L1);
 
-    proton = findInstalledProton(protonName);
+    proton = findSteamGame(protonName, u"proton"_s);
   } else {
     // custom proton e.g. GE-Proton9-25, located in <steamDir>/compatibilitytools.d/
-    proton = steamDir.absolutePath() % u"/compatibilitytools.d/"_s %
-             QString::fromStdString(protonName) % u"/proton"_s;
+    proton = steamDir.absolutePath() % u"/compatibilitytools.d/"_s % protonName %
+             u"/proton"_s;
     if (!QFile::exists(proton)) {
       log::error("Detected proton path \"{}\" does not exist", proton);
       return {};
@@ -125,7 +107,7 @@ QString findProtonByAppID(const QString& appID)
   return proton;
 }
 
-QString getProtonFromPrefixPath(const QDir& prefixPath)
+QString protonByPrefixPath(const QDir& prefixPath)
 {
   // read proton path from <prefix>/config_info
 
@@ -147,34 +129,6 @@ QString getProtonFromPrefixPath(const QDir& prefixPath)
   result.append(u"proton"_s);
 
   return result;
-}
-
-QString findPrefixByAppID(const QString& appID)
-{
-  QDir steamDir(findSteamCached());
-  if (!steamDir.exists()) {
-    return {};
-  }
-
-  try {
-    for (const auto& library : getAllSteamLibrariesCached()) {
-      for (const auto& game : library.games) {
-        if (appID.toStdString() == game.appID) {
-          filesystem::path compatDataPath = library.path / "steamapps/common" /
-                                            game.installDir / "../../compatdata" /
-                                            appID.toStdString();
-          // clean up path
-          compatDataPath = canonical(compatDataPath);
-          log::debug("found compatdata for appID {}: {}", appID,
-                     compatDataPath.string());
-          return QString::fromStdString(absolute(compatDataPath).string());
-        }
-      }
-    }
-  } catch (const filesystem::filesystem_error& ex) {
-    log::error("Error getting prefix path: {}", ex.what());
-  }
-  return {};
 }
 
 }  // namespace MOBase
