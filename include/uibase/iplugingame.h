@@ -181,16 +181,6 @@ public:
    */
   virtual void setGamePath(const QString& path) = 0;
 
-#ifdef __unix__
-  /**
-   * @brief set the wine prefix path of the managed game
-   * @param path to the prefix
-   * @note this will be called by MO to set the concrete path of the prefix.
-   * any stored path should be updated accordingly
-   */
-  virtual void setPrefixPath(const QString& path) = 0;
-#endif
-
   /**
    * @return directory of the documents folder where configuration files and such for
    * this game reside
@@ -385,6 +375,23 @@ public:
     map[""] = dataDirs;
     return map;
   }
+
+#ifdef __unix__
+
+  /**
+   * @return true if this game is a native linux application
+   */
+  virtual bool isNativeLinuxVersion() const { return false; }
+
+  /**
+   * @brief set the wine prefix path of the managed game
+   * @param path to the prefix
+   * @note MO will call this to set the concrete path of the prefix.
+   * any stored path should be updated accordingly
+   */
+  virtual void setPrefixPath(const QString& path) = 0;
+
+#endif
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)
