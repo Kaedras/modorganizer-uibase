@@ -49,7 +49,12 @@
       "generator": "Visual Studio 17 2022",
       "inherits": ["cmake-dev", "vcpkg-dev"],
       "name": "vs2022-windows",
-      "toolset": "v143"
+      "toolset": "v143",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
     },
     {
       "cacheVariables": {
@@ -72,7 +77,12 @@
       },
       "generator": "Ninja Multi-Config",
       "inherits": ["cmake-dev", "vcpkg-dev"],
-      "name": "linux"
+      "name": "linux",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
     },
     {
       "binaryDir": "${sourceDir}/build-mingw",
@@ -88,7 +98,12 @@
       },
       "generator": "Ninja Multi-Config",
       "inherits": ["cmake-dev", "vcpkg"],
-      "name": "linux-mingw"
+      "name": "linux-mingw",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
     },
     {
       "cacheVariables": {
