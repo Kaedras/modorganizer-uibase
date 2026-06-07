@@ -58,9 +58,9 @@
 #ifndef WIN32_MEAN_AND_LEAN
 #define WIN32_MEAN_AND_LEAN
 #endif
-#include <ShlObj.h>
-#include <Windows.h>
+#include <shlobj.h>
 #include <shobjidl.h>
+#include <windows.h>
 #endif
 
 // linux

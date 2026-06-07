@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifdef __unix__
 #include "linux/compatibility.h"
 #else
-#include <Windows.h>
+#include <windows.h>
 #endif
 #include <any>
 #include <functional>

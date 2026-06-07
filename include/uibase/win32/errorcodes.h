@@ -2,7 +2,7 @@
 #define UIBASE_ERRORCODES_H
 
 #include "../dllimport.h"
-#include <Windows.h>
+#include <windows.h>
 
 namespace MOBase
 {

@@ -6,9 +6,9 @@
 #include <QObject>
 #include <QTime>
 #include <QTimer>
-#include <Windows.h>
 #include <map>
 #include <shobjidl.h>
+#include <windows.h>
 
 namespace MOBase
 {

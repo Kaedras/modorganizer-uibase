@@ -25,7 +25,7 @@ if (UNIX)
 else()
 	set(os_name win32)
 
-	set(os_specific_private_deps Version)
+	set(os_specific_private_deps version)
 
 	set(os_specific_headers)
 	set(os_specific_sources)
@@ -251,7 +251,9 @@ target_link_libraries(uibase
 
 # installation
 install(TARGETS uibase EXPORT uibaseTargets FILE_SET HEADERS)
-mo2_install_pdb(TARGET uibase)
+if(MSVC)
+    install(FILES $<TARGET_PDB_FILE:uibase> DESTINATION pdb)
+endif()
 install(EXPORT uibaseTargets
 	FILE mo2-uibase-targets.cmake
 	NAMESPACE mo2::

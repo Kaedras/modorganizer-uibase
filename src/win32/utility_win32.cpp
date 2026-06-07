@@ -2,9 +2,9 @@
 
 #include "log.h"
 #include <QUuid>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 #include <format>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 #define FO_RECYCLE 0x1003
 
