@@ -43,7 +43,6 @@ QString protonNameByAppID(const QString& appID)
 
     log::debug("parsing {}", configPath);
 
-    const string message = format("error parsing {}", configPath);
     ifstream config(configPath);
     if (!config.is_open()) {
       const int error = errno;
