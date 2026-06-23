@@ -57,7 +57,7 @@ QDLLEXPORT QString findSteamGame(const QString& appName, const QString& validFil
 QDLLEXPORT QString appIdByGamePath(const QString& gameLocation);
 
 #ifdef __unix__
-// proton-specific functions
+// proton and linux-specific functions
 
 /**
  * @brief Gets the proton executable for the specified prefix path
@@ -66,6 +66,18 @@ QDLLEXPORT QString appIdByGamePath(const QString& gameLocation);
  * @note This does not work with very old proton versions e.g. proton 4
  */
 QDLLEXPORT QString protonByPrefixPath(const QDir& prefixPath);
+
+/**
+ * @brief Gets the linux runtime that should be used for the specified game.
+ * @details Reads `Steam/appcache/appconfig.vdf` and
+ * `<gameLocation>/../../appmanifest_<appID>.vdf` to determine the linux runtime to use
+ * for the specified game. Retrieving this dynamically is required because game updates
+ * and beta/legacy branches can require different runtimes.
+ * @note This is only relevant for native linux games.
+ * @throws std::runtime_error
+ */
+QDLLEXPORT QString getRequiredLinuxRuntime(const QString& gameLocation,
+                                           const QString& appID) noexcept(false);
 
 #endif  // __unix__
 
