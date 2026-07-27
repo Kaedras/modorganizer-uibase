@@ -114,6 +114,10 @@ QString protonByAppID(const QString& appID)
     }
 
     proton = findSteamGame(protonName, u"proton"_s);
+    if (proton.isEmpty()) {
+      log::error("Could not find proton path for '{}'", protonName);
+      return {};
+    }
   } else {
     // custom proton e.g. GE-Proton9-25, located in <steamDir>/compatibilitytools.d/
     proton = steamDir.absolutePath() % u"/compatibilitytools.d/"_s % protonName %
@@ -123,13 +127,13 @@ QString protonByAppID(const QString& appID)
       return {};
     }
   }
-  log::debug("Proton found at {}", proton);
+  log::debug("Proton found at '{}'", proton);
   return proton;
 }
 
 QString protonByPrefixPath(const QDir& prefixPath)
 {
-  // read proton path from <prefix>/config_info
+  // read proton path from <prefix>/pfx/config_info
 
   if (!prefixPath.exists()) {
     log::error("prefix path {} does not exist", prefixPath.absolutePath());
@@ -137,12 +141,12 @@ QString protonByPrefixPath(const QDir& prefixPath)
   }
 
   // fallback for old proton versions
-  if (!prefixPath.exists(u"config_info"_s)) {
+  if (!prefixPath.exists(u"pfx/config_info"_s)) {
     log::debug("config_info does not exist, falling back to protonByAppID()");
     return protonByAppID(prefixPath.dirName());
   }
 
-  QFile info(prefixPath.absoluteFilePath(u"config_info"_s));
+  QFile info(prefixPath.absoluteFilePath(u"pfx/config_info"_s));
   if (!info.open(QIODeviceBase::ReadOnly)) {
     log::error("error opening {}, {}", info.fileName(), info.errorString());
     return {};
