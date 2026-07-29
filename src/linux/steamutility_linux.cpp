@@ -133,7 +133,7 @@ QString protonByAppID(const QString& appID)
 
 QString protonByPrefixPath(const QDir& prefixPath)
 {
-  // read proton path from <prefix>/pfx/config_info
+  // read proton path from <prefix>/config_info
 
   if (!prefixPath.exists()) {
     log::error("prefix path {} does not exist", prefixPath.absolutePath());
@@ -141,12 +141,12 @@ QString protonByPrefixPath(const QDir& prefixPath)
   }
 
   // fallback for old proton versions
-  if (!prefixPath.exists(u"pfx/config_info"_s)) {
+  if (!prefixPath.exists(u"config_info"_s)) {
     log::debug("config_info does not exist, falling back to protonByAppID()");
     return protonByAppID(prefixPath.dirName());
   }
 
-  QFile info(prefixPath.absoluteFilePath(u"pfx/config_info"_s));
+  QFile info(prefixPath.absoluteFilePath(u"config_info"_s));
   if (!info.open(QIODeviceBase::ReadOnly)) {
     log::error("error opening {}, {}", info.fileName(), info.errorString());
     return {};
