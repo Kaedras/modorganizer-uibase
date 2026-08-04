@@ -129,14 +129,40 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
         return false;
       }
     }
+
+    auto opts = fs::copy_options::recursive;
+    if (yesToAll) {
+      opts |= fs::copy_options::overwrite_existing;
+    }
+
     if (operation == FO_COPY) {
-      auto opts = fs::copy_options::recursive;
-      if (yesToAll) {
-        opts |= fs::copy_options::overwrite_existing;
-      }
       fs::copy(src, dst, opts);
     } else {
-      fs::rename(src, dst);
+      error_code ec;
+      // try rename
+      fs::rename(src, dst, ec);
+      if (!ec) {
+        return true;
+      }
+
+      // fall back to copy + delete on EXDEV
+      if (ec == std::errc::cross_device_link) {
+        fs::copy(src, dst, opts, ec);
+
+        if (ec) {
+          errno = ec.value();
+          return false;
+        }
+
+        fs::remove_all(src, ec);
+        if (ec) {
+          errno = ec.value();
+          return false;
+        }
+      } else {
+        errno = ec.value();
+        return false;
+      }
     }
     return true;
   } catch (const fs::filesystem_error& ex) {
