@@ -253,17 +253,38 @@ bool shellDelete(const QStringList& fileNames, bool recycle, QWidget* dialog)
   (void)dialog;
 
   return std::ranges::all_of(fileNames, [recycle](const QString& fileName) {
-    QFile file(fileName);
-    if (recycle) {
-      if (!file.moveToTrash()) {
-        errno = fileErrorToErrno(file.error());
-        return false;
+    const QFileInfo info(fileName);
+    if (!info.exists()) {
+      errno = ENOENT;
+      return false;
+    }
+
+    // handle files
+    // also handle directories when moving to trash
+    if (info.isFile() || recycle) {
+      QFile file(fileName);
+      if (recycle) {
+        if (!file.moveToTrash()) {
+          errno = fileErrorToErrno(file.error());
+          return false;
+        }
+      } else {
+        if (!file.remove()) {
+          errno = fileErrorToErrno(file.error());
+          return false;
+        }
       }
-    } else {
-      if (!file.remove()) {
-        errno = fileErrorToErrno(file.error());
-        return false;
-      }
+      return true;
+    }
+
+    // handle directories
+    // std::filesystem::remove_all() has better error reporting than
+    // QDir::removeRecursively()
+    std::error_code ec;
+    fs::remove_all(info.filesystemAbsoluteFilePath(), ec);
+    if (ec) {
+      errno = ec.value();
+      return false;
     }
     return true;
   });
