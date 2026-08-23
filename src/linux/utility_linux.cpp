@@ -60,11 +60,6 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
   return {};
 }
 
-}  // namespace
-
-namespace MOBase
-{
-
 int fileErrorToErrno(QFile::FileError error)
 {
   switch (error) {
@@ -171,8 +166,8 @@ bool doOperation(const fs::path& src, const fs::path& dst, QWidget* dialog,
   }
 }
 
-static bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
-                    QWidget* dialog, op operation, bool yesToAll)
+bool shellOp(const QStringList& sourceNames, const QStringList& destinationNames,
+             QWidget* dialog, op operation, bool yesToAll)
 {
   // sourceNames and destinationNames should either be of identical size, or
   // destinationNames size should be 1 and be a directory
@@ -182,8 +177,8 @@ static bool shellOp(const QStringList& sourceNames, const QStringList& destinati
     return false;
   }
 
-  std::vector<fs::path> sources;
-  std::vector<fs::path> destinations;
+  vector<fs::path> sources;
+  vector<fs::path> destinations;
 
   // allocate memory
   sources.reserve(sourceNames.size());
@@ -217,6 +212,51 @@ static bool shellOp(const QStringList& sourceNames, const QStringList& destinati
 
   return true;
 }
+
+using namespace MOBase;
+using namespace MOBase::shell;
+Result OpenUrl(const QUrl& url)
+{
+  bool result = QDesktopServices::openUrl(url);
+  if (!result) {
+    const int e = errno;
+    return Result::makeFailure(e, strerror(e));
+  }
+  return Result::makeSuccess();
+}
+
+Result OpenCustomURL(const QString& format, const QString& url)
+{
+  log::debug("custom url handler: '{}'", format);
+
+  QString formatStr = format;
+
+  // remove %2 %3 ... %98 %99
+  static auto regex = QRegularExpression(u"%([2-9]|[1-9][0-9](?![0-9]))"_s);
+  formatStr.replace(regex, "");
+
+  QString cmd = QString(formatStr).arg(url);
+
+  log::debug("running '{}'", cmd);
+
+  // split cmd into program and arguments
+  QString program, args;
+  if (cmd.contains(' ')) {
+    auto pos = cmd.indexOf(' ');
+
+    program = cmd.mid(0, pos);
+    args    = cmd.sliced(pos);
+  } else {
+    program = cmd;
+  }
+
+  return Execute(program, args);
+}
+
+}  // namespace
+
+namespace MOBase
+{
 
 bool shellCopy(const QStringList& sourceNames, const QStringList& destinationNames,
                QWidget* dialog)
@@ -295,16 +335,6 @@ namespace shell
 
   static QString g_urlHandler;
 
-  Result OpenUrl(const QUrl& url)
-  {
-    bool result = QDesktopServices::openUrl(url);
-    if (!result) {
-      const int e = errno;
-      return Result::makeFailure(e, strerror(e));
-    }
-    return Result::makeSuccess();
-  }
-
   Result ExploreDirectory(const QFileInfo& info)
   {
     return Open(info.absoluteFilePath());
@@ -347,34 +377,6 @@ namespace shell
   Result Open(const QString& path)
   {
     return OpenUrl(QUrl::fromLocalFile(path));
-  }
-
-  Result OpenCustomURL(const QString& format, const QString& url)
-  {
-    log::debug("custom url handler: '{}'", format);
-
-    QString formatStr = format;
-
-    // remove %2 %3 ... %98 %99
-    static auto regex = QRegularExpression(u"%([2-9]|[1-9][0-9](?![0-9]))"_s);
-    formatStr.replace(regex, "");
-
-    QString cmd = QString(formatStr).arg(url);
-
-    log::debug("running '{}'", cmd);
-
-    // split cmd into program and arguments
-    QString program, args;
-    if (cmd.contains(' ')) {
-      auto pos = cmd.indexOf(' ');
-
-      program = cmd.mid(0, pos);
-      args    = cmd.sliced(pos);
-    } else {
-      program = cmd;
-    }
-
-    return Execute(program, args);
   }
 
   Result Open(const QUrl& url)

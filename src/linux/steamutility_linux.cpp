@@ -8,25 +8,10 @@
 using namespace Qt::StringLiterals;
 using namespace std;
 
-namespace MOBase
+namespace
 {
 
-QString findSteam()
-{
-  QString home = QDir::homePath();
-
-  static const QStringList paths = {
-      home % "/.local/share/Steam"_L1, home % "/.steam/steam"_L1,
-      home % "/.var/app/com.valvesoftware.Steam/.local/share/Steam"_L1};
-
-  for (const auto& path : paths) {
-    if (QFile::exists(path)) {
-      return path;
-    }
-  }
-
-  return "";
-}
+using namespace MOBase;
 
 QString protonNameByAppID(const QString& appID)
 {
@@ -129,6 +114,28 @@ QString protonByAppID(const QString& appID)
   }
   log::debug("Proton found at '{}'", proton);
   return proton;
+}
+
+}  // namespace
+
+namespace MOBase
+{
+
+QString findSteam()
+{
+  QString home = QDir::homePath();
+
+  static const QStringList paths = {
+      home % "/.local/share/Steam"_L1, home % "/.steam/steam"_L1,
+      home % "/.var/app/com.valvesoftware.Steam/.local/share/Steam"_L1};
+
+  for (const auto& path : paths) {
+    if (QFile::exists(path)) {
+      return path;
+    }
+  }
+
+  return "";
 }
 
 QString protonByPrefixPath(const QDir& prefixPath)
