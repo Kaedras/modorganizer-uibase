@@ -335,11 +335,13 @@ namespace shell
 
   static QString g_urlHandler;
 
+  // ReSharper disable once CppUseInternalLinkage
   Result ExploreDirectory(const QFileInfo& info)
   {
     return Open(info.absoluteFilePath());
   }
 
+  // ReSharper disable once CppUseInternalLinkage
   Result ExploreFileInDirectory(const QFileInfo& info)
   {
     // clang-format off
