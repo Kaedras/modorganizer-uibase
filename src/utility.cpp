@@ -42,6 +42,13 @@ using std::breakpoint;
 #define breakpoint DebugBreak
 #endif
 
+// forward declarations for functions located in os-specific source files
+namespace MOBase::shell
+{
+Result ExploreDirectory(const QFileInfo&);
+Result ExploreFileInDirectory(const QFileInfo&);
+}  // namespace MOBase::shell
+
 namespace MOBase
 {
 
@@ -176,10 +183,6 @@ namespace shell
       return m_message;
     }
   }
-
-  // definitions are located in os-specific source files
-  extern Result ExploreDirectory(const QFileInfo&);
-  extern Result ExploreFileInDirectory(const QFileInfo&);
 
   Result Explore(const QFileInfo& info)
   {
