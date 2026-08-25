@@ -16,12 +16,13 @@ public:
   FdCloser(std::nullptr_t) noexcept;
   FdCloser(int fd) noexcept;
 
-  FdCloser(FdCloser&&) noexcept = default;
-  FdCloser(const FdCloser&)     = delete;
+  FdCloser(FdCloser&) = delete;
+  FdCloser(FdCloser&&) noexcept;
 
   ~FdCloser() noexcept;
 
-  FdCloser& operator=(FdCloser&& other) noexcept;
+  FdCloser& operator=(FdCloser&) = delete;
+  FdCloser& operator=(FdCloser&&) noexcept;
   FdCloser& operator=(int fd) noexcept;
   int operator->() const noexcept;
   int operator*() const noexcept;

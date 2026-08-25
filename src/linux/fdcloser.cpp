@@ -7,13 +7,9 @@ FdCloser::FdCloser(std::nullptr_t) noexcept : m_fd(-1) {}
 
 FdCloser::FdCloser(int fd) noexcept : m_fd(fd) {}
 
-FdCloser& FdCloser::operator=(FdCloser&& other) noexcept
+FdCloser::FdCloser(FdCloser&& other) noexcept : m_fd(other.m_fd)
 {
-  if (m_fd != -1) {
-    close(m_fd);
-  }
-  m_fd = other.m_fd;
-  return *this;
+  other.m_fd = -1;
 }
 
 FdCloser::~FdCloser() noexcept
@@ -21,6 +17,15 @@ FdCloser::~FdCloser() noexcept
   if (m_fd != -1) {
     close(m_fd);
   }
+}
+
+FdCloser& FdCloser::operator=(FdCloser&& other) noexcept
+{
+  if (m_fd != -1) {
+    close(m_fd);
+  }
+  m_fd = other.m_fd;
+  return *this;
 }
 
 FdCloser& FdCloser::operator=(int fd) noexcept
@@ -33,11 +38,6 @@ FdCloser& FdCloser::operator=(int fd) noexcept
   return *this;
 }
 
-FdCloser::operator bool() const noexcept
-{
-  return isValid();
-}
-
 int FdCloser::operator->() const noexcept
 {
   return m_fd;
@@ -46,6 +46,11 @@ int FdCloser::operator->() const noexcept
 int FdCloser::operator*() const noexcept
 {
   return m_fd;
+}
+
+FdCloser::operator bool() const noexcept
+{
+  return isValid();
 }
 
 int FdCloser::get() const noexcept
