@@ -5,6 +5,8 @@
 
 #ifdef __cpp_lib_debugging
 #include <debugging>
+#elif __unix__
+#include "linux/compatibility.h"
 #endif
 
 namespace MOBase

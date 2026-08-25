@@ -130,3 +130,31 @@ int sprintf_s(char* buffer, const char* format, Params&&... params)
 {
   return sprintf(buffer, format, std::forward<Params>(params)...);
 }
+
+#ifndef __cpp_lib_debugging
+#include <csignal>
+#include <fstream>
+
+// Detect if the application is running inside a debugger.
+// Source: https://stackoverflow.com/a/69842462
+inline bool IsDebuggerPresent()
+{
+  std::ifstream sf("/proc/self/status");
+  std::string s;
+  while (sf >> s) {
+    if (s == "TracerPid:") {
+      int pid;
+      sf >> pid;
+      return pid != 0;
+    }
+    std::getline(sf, s);
+  }
+
+  return false;
+}
+
+inline void DebugBreak()
+{
+  raise(SIGTRAP);
+}
+#endif

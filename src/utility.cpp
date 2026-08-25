@@ -39,6 +39,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <debugging>
 using std::breakpoint;
 #else
+#ifdef __unix__
+#include "linux/compatibility.h"
+#endif
 #define breakpoint DebugBreak
 #endif
 
