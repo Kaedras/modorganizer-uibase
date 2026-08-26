@@ -140,14 +140,12 @@ if (UNIX)
     include(CheckCXXSourceCompiles)
 
     check_cxx_source_compiles([[
-        #ifndef __GLIBCXX__
-        #error "Not using GNU libstdc++"
-        #endif
+        #include <debugging>
 
         int main() {}
-        ]] USING_LIBSTDCXX)
+        ]] HAS_DEBUGGING)
 
-    if (USING_LIBSTDCXX)
+    if (HAS_DEBUGGING)
         # required for std::breakpoint
         target_link_libraries(uibase PUBLIC stdc++exp)
     endif()
