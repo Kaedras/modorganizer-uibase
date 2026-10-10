@@ -1,12 +1,163 @@
-#include "linux/peextractor.h"
-#include "linux/petypes.h"
+#include "linux/exeutils.h"
 #include <QFile>
 #include <QIODevice>
 
-using namespace peTypes;
-
 namespace
 {
+
+struct DosHeader
+{
+  char signature[2];
+  quint32 newHeaderOffset;
+};
+
+struct PeResourceDataEntry
+{
+  quint32 dataAddress;
+  quint32 size;
+  quint32 codepage;
+  quint32 reserved;
+};
+
+// Resource Directory
+enum class ResourceType : quint32
+{
+  Icon      = 3,
+  GroupIcon = 14,
+  Version   = 16,
+};
+
+struct RtGroupIconDirectory
+{
+  quint16 reserved;
+  quint16 type;
+  quint16 count;
+};
+
+struct RtGroupIconDirectoryEntry
+{
+  quint8 width;
+  quint8 height;
+  quint8 colorCount;
+  quint8 reserved;
+  quint16 numPlanes;
+  quint16 bpp;
+  quint32 size;
+  quint16 resourceId;
+};
+
+// Icon file (.ico)
+struct IconDir
+{
+  quint16 reserved;
+  quint16 type;
+  quint16 count;
+};
+
+constexpr int IconDirSize = 6;
+
+struct IconDirEntry
+{
+  quint8 width;
+  quint8 height;
+  quint8 colorCount;
+  quint8 reserved;
+  quint16 numPlanes;
+  quint16 bpp;
+  quint32 size;
+  quint32 imageOffset;
+
+  IconDirEntry(const RtGroupIconDirectoryEntry& entry, quint32 dataOffset)
+  {
+    width       = entry.width;
+    height      = entry.height;
+    colorCount  = entry.colorCount;
+    reserved    = entry.reserved;
+    numPlanes   = entry.numPlanes;
+    bpp         = entry.bpp;
+    size        = entry.size;
+    imageOffset = dataOffset;
+  }
+};
+
+constexpr int IconDirEntrySize = 16;
+
+// version info
+struct PeVersionInfo
+{
+  quint16 StructLength;
+  quint16 ValueLength;
+  quint16 StructType;
+  QChar Info[16];
+  quint8 Padding[2];
+  quint32 Signature;
+  quint16 StructVersion[2];
+  quint16 FileVersion[4];
+  quint16 ProductVersion[4];
+  quint32 FileFlagsMask[2];
+  quint32 FileFlags;
+  quint32 FileOS;
+  quint32 FileType;
+  quint32 FileSubtype;
+  quint32 FileTimestamp;
+};
+
+// Win32 Portable Executable
+
+constexpr quint16 PeOptionalHeaderMagicPe32     = 0x010b;
+constexpr quint16 PeOptionalHeaderMagicPe32Plus = 0x020b;
+constexpr quint32 PeSubdirBitMask               = 0x80000000;
+
+constexpr int PeSignatureSize                 = 4;
+constexpr int PeFileHeaderSize                = 20;
+constexpr int PeOffsetToDataDirectoryPe32     = 120;
+constexpr int PeOffsetToDataDirectoryPe32Plus = 136;
+constexpr int PeDataDirectorySize             = 8;
+
+enum class PeDataDirectoryIndex
+{
+  Resource = 2,
+};
+
+struct PeFileHeader
+{
+  quint16 machine;
+  quint16 numSections;
+  quint32 timestamp;
+  quint32 offsetToSymbolTable;
+  quint32 numberOfSymbols;
+  quint16 sizeOfOptionalHeader;
+  quint16 fileCharacteristics;
+};
+
+struct PeDataDirectory
+{
+  quint32 virtualAddress, size;
+};
+
+struct PeSection
+{
+  char name[8];
+  quint32 virtualSize, virtualAddress;
+  quint32 sizeOfRawData, pointerToRawData;
+  quint32 pointerToRelocs, pointerToLineNums;
+  quint16 numRelocs, numLineNums;
+  quint32 characteristics;
+};
+
+struct PeResourceDirectoryTable
+{
+  quint32 characteristics;
+  quint32 timestamp;
+  quint16 majorVersion, minorVersion;
+  quint16 numNameEntries, numIDEntries;
+};
+
+struct PeResourceDirectoryEntry
+{
+  quint32 resourceId, offset;
+};
+
 QDataStream& operator>>(QDataStream& s, DosHeader& v)
 {
   s.readRawData(v.signature, sizeof(v.signature));
@@ -126,6 +277,50 @@ QVector<PeResourceDirectoryEntry> readResourceDataDirectoryEntry(QDataStream& ds
   }
   return entries;
 }
+
+quint32 selectBestLanguage(const QMap<quint32, PeResourceDataEntry>& langMap)
+{
+  if (langMap.empty()) {
+    return 0;
+  }
+  for (auto it = langMap.keyBegin(); it != langMap.keyEnd(); ++it) {
+    if ((*it & 0xff) == 9) {
+      return *it;
+    }
+  }
+  for (auto it = langMap.keyBegin(); it != langMap.keyEnd(); ++it) {
+    if (*it != 0 && *it != 1024 && *it != 2048) {
+      return *it;
+    }
+  }
+  if (langMap.contains(0)) {
+    return 0;
+  }
+  if (langMap.contains(1024)) {
+    return 1024;
+  }
+  return langMap.firstKey();
+}
+
+class PeExtractor
+{
+public:
+  explicit PeExtractor(QIODevice* inputDevice, QIODevice* outputDevice);
+
+  QVector<PeSection> m_sections;
+  QIODevice* m_inputDevice  = nullptr;
+  QIODevice* m_outputDevice = nullptr;
+  QDataStream m_inputStream;
+  DosHeader m_dosHeader{};
+
+  QMap<quint32, QMap<quint32, PeResourceDataEntry>> m_iconResources;
+  QMap<quint32, QMap<quint32, PeResourceDataEntry>> m_groupIconResources;
+  std::optional<PeResourceDataEntry> m_versionResource;
+
+  bool readPeData();
+  bool readIcon();
+  bool readVersionInfo() const;
+};
 
 }  // namespace
 
@@ -256,14 +451,11 @@ bool PeExtractor::readPeData()
 
         switch (static_cast<ResourceType>(entry1.resourceId)) {
         case ResourceType::Icon:
-          m_iconResources[entry2.resourceId] = dataEntry;
+          m_iconResources[entry2.resourceId][entry3.resourceId] = dataEntry;
           break;
 
         case ResourceType::GroupIcon:
-          if (!m_primaryIconGroupResource.has_value()) {
-            m_primaryIconGroupResource = dataEntry;
-          }
-
+          m_groupIconResources[entry2.resourceId][entry3.resourceId] = dataEntry;
           break;
 
         case ResourceType::Version:
@@ -279,15 +471,27 @@ bool PeExtractor::readPeData()
 
 bool PeExtractor::readIcon()
 {
-  if (!m_primaryIconGroupResource.has_value()) {
+  if (m_groupIconResources.isEmpty()) {
     return false;
   }
 
   QDataStream ds{m_inputDevice};
   ds.setByteOrder(QDataStream::LittleEndian);
 
+  const auto& primaryGroupLanguageMap = m_groupIconResources.first();
+  quint32 primaryIconGroupLanguage    = selectBestLanguage(primaryGroupLanguageMap);
+  auto groupIt = primaryGroupLanguageMap.find(primaryIconGroupLanguage);
+  if (groupIt == primaryGroupLanguageMap.end()) {
+    groupIt = primaryGroupLanguageMap.begin();
+    if (groupIt == primaryGroupLanguageMap.end()) {
+      return false;
+    }
+    primaryIconGroupLanguage = groupIt.key();
+  }
+  PeResourceDataEntry primaryIconGroupResource = *groupIt;
+
   if (!ds.device()->seek(
-          addressToOffset(m_sections, m_primaryIconGroupResource->dataAddress))) {
+          addressToOffset(m_sections, primaryIconGroupResource.dataAddress))) {
     return false;
   }
 
@@ -308,10 +512,23 @@ bool PeExtractor::readIcon()
     ds >> entry;
 
     IconDirEntry icoFileEntry{entry, dataOffset};
-    out << icoFileEntry;
 
     if (auto it = m_iconResources.find(entry.resourceId); it != m_iconResources.end()) {
-      PeResourceDataEntry iconResource = *it;
+      const auto& languageMap = it.value();
+      if (languageMap.isEmpty()) {
+        return false;
+      }
+      auto langIt = languageMap.find(primaryIconGroupLanguage);
+      if (langIt == languageMap.end()) {
+        quint32 bestLang = selectBestLanguage(languageMap);
+        langIt           = languageMap.find(bestLang);
+      }
+      if (langIt == languageMap.end()) {
+        langIt = languageMap.begin();
+      }
+      PeResourceDataEntry iconResource = *langIt;
+      icoFileEntry.size                = iconResource.size;
+      out << icoFileEntry;
       resourceOffsetSizePairs.append(
           {addressToOffset(m_sections, iconResource.dataAddress), iconResource.size});
       dataOffset += iconResource.size;
@@ -367,7 +584,7 @@ PeExtractor::PeExtractor(QIODevice* inputDevice, QIODevice* outputDevice)
     : m_inputDevice(inputDevice), m_outputDevice(outputDevice)
 {}
 
-bool PeExtractor::loadIconData(QIODevice* inputDevice, QIODevice* outputDevice)
+bool ExeUtils::loadIconData(QIODevice* inputDevice, QIODevice* outputDevice)
 {
   PeExtractor extractor(inputDevice, outputDevice);
 
@@ -378,7 +595,7 @@ bool PeExtractor::loadIconData(QIODevice* inputDevice, QIODevice* outputDevice)
   return extractor.readIcon();
 }
 
-bool PeExtractor::loadIconData(const QString& exeFile, QIODevice* outputDevice)
+bool ExeUtils::loadIconData(const QString& exeFile, QIODevice* outputDevice)
 {
   QFile file(exeFile);
   if (!file.open(QIODeviceBase::ReadOnly)) {
@@ -387,7 +604,7 @@ bool PeExtractor::loadIconData(const QString& exeFile, QIODevice* outputDevice)
   return loadIconData(&file, outputDevice);
 }
 
-bool PeExtractor::loadVersionData(QIODevice* inputDevice, QIODevice* outputDevice)
+bool ExeUtils::loadVersionData(QIODevice* inputDevice, QIODevice* outputDevice)
 {
   PeExtractor extractor(inputDevice, outputDevice);
 
@@ -398,7 +615,7 @@ bool PeExtractor::loadVersionData(QIODevice* inputDevice, QIODevice* outputDevic
   return extractor.readVersionInfo();
 }
 
-bool PeExtractor::loadVersionData(const QString& exeFile, QIODevice* outputDevice)
+bool ExeUtils::loadVersionData(const QString& exeFile, QIODevice* outputDevice)
 {
   QFile file(exeFile);
   if (!file.open(QIODeviceBase::ReadOnly)) {

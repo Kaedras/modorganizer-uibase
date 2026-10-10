@@ -7,7 +7,7 @@
 */
 
 #include "linux/icoutils.h"
-#include "linux/peextractor.h"
+#include "linux/exeutils.h"
 #include <QBuffer>
 #include <QFile>
 #include <QIODevice>
@@ -50,14 +50,14 @@ bool IcoUtils::loadIcoImageFromExe(QIODevice* inputDevice, QImage& image, int ne
     return false;
   }
 
-  if (!PeExtractor::loadIconData(inputDevice, &iconData))
+  if (!ExeUtils::loadIconData(inputDevice, &iconData))
     return false;
 
   if (!iconData.seek(0)) {
     return false;
   }
 
-  return IcoUtils::loadIcoImage(&iconData, image, needWidth, needHeight);
+  return loadIcoImage(&iconData, image, needWidth, needHeight);
 }
 
 bool IcoUtils::loadIcoImageFromExe(const QString& inputFileName, QImage& image,
@@ -69,7 +69,7 @@ bool IcoUtils::loadIcoImageFromExe(const QString& inputFileName, QImage& image,
     return false;
   }
 
-  return IcoUtils::loadIcoImageFromExe(&inputFile, image, needWidth, needHeight);
+  return loadIcoImageFromExe(&inputFile, image, needWidth, needHeight);
 }
 
 bool IcoUtils::loadIcoImage(QImageReader& reader, QImage& image, int needWidth,
@@ -121,12 +121,12 @@ bool IcoUtils::loadIcoImage(QIODevice* inputDevice, QImage& image, int needWidth
                             int needHeight)
 {
   QImageReader reader(inputDevice, "ico");
-  return IcoUtils::loadIcoImage(reader, image, needWidth, needHeight);
+  return loadIcoImage(reader, image, needWidth, needHeight);
 }
 
 bool IcoUtils::loadIcoImage(const QString& inputFileName, QImage& image, int needWidth,
                             int needHeight)
 {
   QImageReader reader(inputFileName, "ico");
-  return IcoUtils::loadIcoImage(reader, image, needWidth, needHeight);
+  return loadIcoImage(reader, image, needWidth, needHeight);
 }

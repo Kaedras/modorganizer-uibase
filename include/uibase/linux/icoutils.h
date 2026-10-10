@@ -13,6 +13,7 @@
 #ifndef ICO_UTILS_H
 #define ICO_UTILS_H
 
+#include "dllimport.h"
 #include <QtGlobal>
 
 class QString;
@@ -23,16 +24,17 @@ class QImageReader;
 namespace IcoUtils
 {
 
-bool loadIcoImageFromExe(QIODevice* inputDevice, QImage& image, int needWidth = 512,
-                         int needHeight = 512);
-bool loadIcoImageFromExe(const QString& inputFileName, QImage& image,
-                         int needWidth = 512, int needHeight = 512);
+bool QDLLEXPORT loadIcoImageFromExe(QIODevice* inputDevice, QImage& image,
+                                    int needWidth = 512, int needHeight = 512);
+bool QDLLEXPORT loadIcoImageFromExe(const QString& inputFileName, QImage& image,
+                                    int needWidth = 512, int needHeight = 512);
 
-bool loadIcoImage(QIODevice* inputDevice, QImage& image, int needWidth = 512,
-                  int needHeight = 512);
-bool loadIcoImage(const QString& inputFileName, QImage& image, int needWidth = 512,
-                  int needHeight = 512);
-bool loadIcoImage(QImageReader& reader, QImage& image, int needWidth, int needHeight);
+bool QDLLEXPORT loadIcoImage(QIODevice* inputDevice, QImage& image, int needWidth = 512,
+                             int needHeight = 512);
+bool QDLLEXPORT loadIcoImage(const QString& inputFileName, QImage& image,
+                             int needWidth = 512, int needHeight = 512);
+bool QDLLEXPORT loadIcoImage(QImageReader& reader, QImage& image, int needWidth,
+                             int needHeight);
 
 }  // namespace IcoUtils
 

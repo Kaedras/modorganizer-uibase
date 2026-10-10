@@ -12,13 +12,12 @@ if (UNIX)
 	set(os_specific_headers
 			../include/uibase/linux/compatibility.h
 			../include/uibase/linux/fdcloser.h
-			../include/uibase/linux/petypes.h
-			../include/uibase/linux/peextractor.h
+			../include/uibase/linux/exeutils.h
 			../include/uibase/linux/icoutils.h
 	)
 	set(os_specific_sources
 			linux/fdcloser.cpp
-			linux/peextractor.cpp
+			linux/exeutils.cpp
 			linux/icoutils.cpp
             linux/executableinfo_linux.cpp
 	)

@@ -1,7 +1,7 @@
 #include "utility.h"
 
+#include "linux/exeutils.h"
 #include "linux/icoutils.h"
-#include "linux/peextractor.h"
 #include "log.h"
 #include <QBuffer>
 #include <QByteArray>
@@ -41,7 +41,7 @@ QString getFileVersionInfo(QString const& filepath, version_t type)
     return {};
   }
 
-  if (!PeExtractor::loadVersionData(&exeFile, &buffer)) {
+  if (!ExeUtils::loadVersionData(&exeFile, &buffer)) {
     return {};
   }
 
