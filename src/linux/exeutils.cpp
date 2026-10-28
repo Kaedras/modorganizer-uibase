@@ -278,28 +278,29 @@ QVector<PeResourceDirectoryEntry> readResourceDataDirectoryEntry(QDataStream& ds
   return entries;
 }
 
-quint32 selectBestLanguage(const QMap<quint32, PeResourceDataEntry>& langMap)
+// Language IDs
+constexpr quint16 LocaleNeutral       = 0x0000;
+constexpr quint16 LocaleUserDefault   = 0x0400;
+constexpr quint16 LocaleSystemDefault = 0x0800;
+
+QMap<quint32, PeResourceDataEntry>::const_iterator
+selectLanguage(const QMap<quint32, PeResourceDataEntry>& languageMap)
 {
-  if (langMap.empty()) {
-    return 0;
-  }
-  for (auto it = langMap.keyBegin(); it != langMap.keyEnd(); ++it) {
-    if ((*it & 0xff) == 9) {
-      return *it;
+  for (auto it = languageMap.begin(); it != languageMap.end(); ++it) {
+    if (it.key() != LocaleNeutral && it.key() != LocaleUserDefault &&
+        it.key() != LocaleSystemDefault) {
+      return it;
     }
   }
-  for (auto it = langMap.keyBegin(); it != langMap.keyEnd(); ++it) {
-    if (*it != 0 && *it != 1024 && *it != 2048) {
-      return *it;
-    }
+  auto it = languageMap.find(LocaleNeutral);
+  if (it != languageMap.end()) {
+    return it;
   }
-  if (langMap.contains(0)) {
-    return 0;
+  it = languageMap.find(LocaleUserDefault);
+  if (it != languageMap.end()) {
+    return it;
   }
-  if (langMap.contains(1024)) {
-    return 1024;
-  }
-  return langMap.firstKey();
+  return languageMap.begin();
 }
 
 class PeExtractor
@@ -479,15 +480,11 @@ bool PeExtractor::readIcon()
   ds.setByteOrder(QDataStream::LittleEndian);
 
   const auto& primaryGroupLanguageMap = m_groupIconResources.first();
-  quint32 primaryIconGroupLanguage    = selectBestLanguage(primaryGroupLanguageMap);
-  auto groupIt = primaryGroupLanguageMap.find(primaryIconGroupLanguage);
-  if (groupIt == primaryGroupLanguageMap.end()) {
-    groupIt = primaryGroupLanguageMap.begin();
-    if (groupIt == primaryGroupLanguageMap.end()) {
-      return false;
-    }
-    primaryIconGroupLanguage = groupIt.key();
+  if (primaryGroupLanguageMap.empty()) {
+    return false;
   }
+  auto groupIt                     = selectLanguage(primaryGroupLanguageMap);
+  quint32 primaryIconGroupLanguage = groupIt.key();
   PeResourceDataEntry primaryIconGroupResource = *groupIt;
 
   if (!ds.device()->seek(
@@ -515,18 +512,14 @@ bool PeExtractor::readIcon()
 
     if (auto it = m_iconResources.find(entry.resourceId); it != m_iconResources.end()) {
       const auto& languageMap = it.value();
-      if (languageMap.isEmpty()) {
+      if (languageMap.empty()) {
         return false;
       }
-      auto langIt = languageMap.find(primaryIconGroupLanguage);
-      if (langIt == languageMap.end()) {
-        quint32 bestLang = selectBestLanguage(languageMap);
-        langIt           = languageMap.find(bestLang);
+      auto languageIt = languageMap.find(primaryIconGroupLanguage);
+      if (languageIt == languageMap.end()) {
+        languageIt = selectLanguage(languageMap);
       }
-      if (langIt == languageMap.end()) {
-        langIt = languageMap.begin();
-      }
-      PeResourceDataEntry iconResource = *langIt;
+      PeResourceDataEntry iconResource = *languageIt;
       icoFileEntry.size                = iconResource.size;
       out << icoFileEntry;
       resourceOffsetSizePairs.append(
